@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Астролог - v6 (Standard Input Fix)</title>
+    <!-- Підключення Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Шрифт Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #121212;
+            --primary-text-color: #e0e0e0;
+            --secondary-text-color: #a0a0a0;
+            --accent-color: #cda45e;
+            --card-bg-color: #1a1a1a;
+            --border-color: #333333;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            -webkit-tap-highlight-color: transparent; 
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+        }
+
+        /* V7 FIX: Повертаємося до стандартного, але стилізованого input.
+           Це найнадійніший метод, який працює в iframe.
+        */
+        #birth-date {
+            position: relative;
+            /* V7 FIX: Встановлюємо початковий колір на сірий */
+            color: var(--secondary-text-color);
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg-color);
+            border-radius: 0.5rem; /* rounded-lg */
+            width: 100%;
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            cursor: pointer;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        /* Стилізуємо стан фокусу */
+        #birth-date:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        /* Стилізуємо плейсхолдер та іконку календаря.
+           Це працює в Chrome/Safari (Webkit).
+        */
+        #birth-date::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(0.8) sepia(1) hue-rotate(10deg) saturate(1500%); /* Робимо іконку золотою */
+            cursor: pointer;
+            opacity: 0.8;
+            font-size: 1.25rem;
+        }
+        
+        /* V7 FIX: Повністю видалено ::before та :valid::before, 
+           щоб уникнути накладання тексту.
+        */
+
+        /* V7 FIX: Коли дата обрана (валидна), текст стає головним кольором */
+        #birth-date:valid {
+             color: var(--primary-text-color);
+        }
+        
+        /* ... (інші стилі без змін) ... */
+
+        /* Анімація набору тексту */
+        .typing-container {
+            font-size: 1.5rem;
+            color: var(--secondary-text-color);
+        }
+        .typing-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.5rem;
+            background-color: var(--accent-color);
+            animation: blink 0.7s infinite;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen w-full p-8 transition-all duration-300">
+
+    <div id="app-container" class="max-w-md mx-auto flex flex-col min-h-[90vh] justify-center">
+
+        <!-- КРОК 2: ЛЕНДІНГ (Збір дати народження) -->
+        <div id="landing-step" class="flex flex-col space-y-10 text-center animate-fade-in">
+            
+            <!-- Логотип (без змін) -->
+            <div>
+                <svg class="w-16 h-16 mx-auto" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-color);">
+                    <circle cx="32" cy="32" r="2.5" fill="currentColor"/>
+                    <path d="M52 32C52 43.0457 43.0457 52 32 52C20.9543 52 12 43.0457 12 32C12 20.9543 20.9543 12 32 12C43.0457 12 52 20.9543 52 32Z" stroke="currentColor" stroke-width="2.5" stroke-opacity="0.3"/>
+                    <path d="M46.8564 32C46.8564 39.098 40.098 44.8564 32 44.8564C23.902 44.8564 17.1436 39.098 17.1436 32C17.1436 24.902 23.902 19.1436 32 19.1436C40.098 19.1436 46.8564 24.902 46.8564 32Z" stroke="currentColor" stroke-width="2.5"/>
+                </svg>
+            </div>
+            
+            <h1 class="text-4xl font-bold text-white tracking-tight">
+                Хто ви за своєю натальною картою?
+            </h1>
+
+            <p class="text-lg text-[var(--secondary-text-color)] max-w-sm mx-auto">
+                Отримайте миттєвий аналіз вашого характеру від персонального ШІ-астролога.
+            </p>
+
+            <!-- Форма збору дати -->
+            <form id="birth-form" class="w-full max-w-sm mx-auto space-y-6">
+                <div>
+                    <label for="birth-date" class="block text-sm font-medium text-[var(--secondary-text-color)] mb-2 text-left">Ваша дата народження:</label>
+                    
+                    <!-- НОВИЙ БЛОК ВВОДУ ДАТИ (V6) -->
+                    <!-- Повертаємось до надійного, стандартного input type="date" -->
+                    <input 
+                        type="date" 
+                        id="birth-date" 
+                        name="birth-date"
+                        required
+                    >
+                    <!-- Кінець нового блоку -->
+
+                    <p id="error-message" class="text-red-400 text-sm text-left mt-2 hidden">Будь ласка, оберіть вашу дату народження.</p>
+                </div>
+                
+                <!-- CTA Кнопка (Золотий стиль) -->
+                <button type="submit" 
+                        class="w-full text-lg font-bold text-[var(--accent-color)] border border-[var(--accent-color)] 
+                               bg-transparent rounded-lg py-4 px-6
+                               transition-all duration-300 hover:bg-[var(--accent-color)] hover:text-[var(--bg-color)]">
+                    Дізнатися безкоштовно
+                </button>
+            </form>
+        </div>
+
+        <!-- КРОК 3: ЕКРАН ЗАВАНТАЖЕННЯ (без змін) -->
+        <div id="loading-step" class="hidden text-center space-y-6">
+            <div class="typing-container">
+                <span id="loading-text"></span>
+                <span class="typing-cursor"></span>
+            </div>
+        </div>
+
+        <!-- КРОК 4: РЕЗУЛЬТАТ + СТІНА ОПЛАТИ (без змін) -->
+        <div id="result-step" class="hidden flex-col space-y-6">
+            <h2 class="text-3xl font-bold text-center text-white">Ваш безкоштовний аналіз</h2>
+            <!-- 1. Безкоштовний Блок -->
+            <div class="bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl p-6 shadow-lg">
+                <h3 class="text-2xl font-bold text-green-500 mb-3">
+                    ✅ Ваше Ядро Особистості
+                </h3>
+                <p class="text-[var(--secondary-text-color)] space-y-4">
+                    <span>(Це імітація тексту...)</span><br>
+                    Як **Сонячний Лев**... 
+                    <br><br>
+                    ...Однак, ваш **Місяць у Скорпіоні**...
+                </p>
+            </div>
+            <!-- 2. Стіна Оплати (Емоційний тригер) -->
+            <div class="space-y-4 pt-4">
+                <h3 class="text-2xl font-bold text-center text-[var(--accent-color)]">Розкрийте свою повну карту</h3>
+                <!-- Заблокований елемент 1 -->
+                <div class="relative bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl p-5 overflow-hidden shadow-sm">
+                    <h4 class="text-xl font-semibold text-[var(--secondary-text-color)] mb-2" style="color: var(--accent-color); opacity: 0.8;">
+                        🔒 [ЗАБЛОКОВАНО] Кохання та Сумісність
+                    </h4>
+                    <p class="text-gray-600 filter blur-sm select-none">
+                        Ваша Венера показує, що вам потрібен партнер...
+                    </p>
+                </div>
+                <!-- Заблокований елемент 2 -->
+                <div class="relative bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl p-5 overflow-hidden shadow-sm">
+                    <h4 class="text-xl font-semibold text-[var(--secondary-text-color)] mb-2" style="color: var(--accent-color); opacity: 0.8;">
+                        🔒 [ЗАБЛОКОВАНО] Кар'єра та Гроші
+                    </h4>
+                    <p class="text-gray-600 filter blur-sm select-none">
+                        Ваш Юпітер у 10-му домі дає вам унікальні можливості...
+                    </p>
+                </div>
+            </div>
+            <!-- 3. CTA (Заклик до Оплати) -->
+            <div class="space-y-4 pt-6">
+                <button class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
+                    Розблокувати Повний Аналіз за €2.49
+                </button>
+                <button class="w-full bg-black text-white text-lg font-semibold rounded-lg py-3 px-6 flex items-center justify-center space-x-2 border border-gray-700 hover:bg-gray-800 transition-colors">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18.882 17.554c-.022 3.522-2.825 5.002-2.825 5.002s-2.288 1.583-4.058 1.583c-1.77 0-3.633-1.553-4.685-1.553-1.052 0-3.003 1.002-4.524 2.887-.126-3.48.868-6.95 2.15-9.2s2.002-4.228 4.2-4.228c2.197 0 3.085 2.198 5.11 2.198 2.024 0 3.093-2.522 4.63-2.522s2.001 1.053 2.001 3.523c.001 1.03-.352 2.14-1.012 3.088-.66.947-1.125 1.748-1.082 2.971M16.19 10.443c-.352-1.522-1.74-2.583-3.152-2.583-1.83 0-3.413 1.144-4.322 1.144s-2.14-.978-3.773-.978c-2.024 0-3.804 1.353-4.834 3.442C-.78 13.91 1.11 20.916 3.134 24c1.242-1.29 2.4-3.13 3.033-3.13.632 0 1.942 1.32 3.183 1.32 1.24 0 2.258-1.74 4.028-1.74 1.77 0 2.862 1.41 3.992 1.41 1.13 0 2.228-1.113 2.943-2.433-1.802-1.09-3.033-2.827-3.033-4.896 0-2.31 1.553-3.692 1.682-3.82z"></path>
+                    </svg>
+                    <span>Pay</span>
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const birthForm = document.getElementById('birth-form');
+        const errorMessage = document.getElementById('error-message');
+        
+        // V6 FIX: Використовуємо ID нашого стандартного інпуту
+        const birthDateInput = document.getElementById('birth-date');
+
+        const landingStep = document.getElementById('landing-step');
+        const loadingStep = document.getElementById('loading-step');
+        const resultStep = document.getElementById('result-step');
+        const loadingText = document.getElementById('loading-text');
+
+        // Ми видалили всі складні обробники для .showPicker()
+        // Нам потрібен лише обробник відправки форми
+
+        // Функція для анімації набору тексту (без змін)
+        function typeWriter(element, text, speed, onComplete) {
+            let i = 0;
+            element.innerHTML = '';
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML = text.substring(0, i + 1);
+                    i++;
+                    setTimeout(type, speed);
+                } else {
+                    if (onComplete) setTimeout(onComplete, 500); 
+                }
+            }
+            type();
+        }
+
+        // Обробник відправки форми (V6)
+        birthForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Перевіряємо значення нашого стандартного інпуту
+            if (birthDateInput.value === '') {
+                errorMessage.classList.remove('hidden');
+            } else {
+                errorMessage.classList.add('hidden');
+                landingStep.classList.add('hidden');
+                
+                loadingStep.classList.remove('hidden');
+                loadingStep.classList.add('flex', 'flex-col', 'justify-center', 'flex-1');
+                
+                // Запускаємо анімацію
+                typeWriter(loadingText, 'Аналізуємо ваш космос...', 100, () => {
+                    typeWriter(loadingText, 'Будуємо натальну карту...', 80, () => {
+                        typeWriter(loadingText, 'ШІ генерує ваш аналіз...', 90, () => {
+                            loadingStep.classList.add('hidden');
+                            loadingStep.classList.remove('flex', 'flex-col', 'justify-center', 'flex-1');
+                            resultStep.classList.remove('hidden');
+                            resultStep.classList.add('flex');
+                        });
+                    });
+                });
+            }
+        });
+
+        /* V7 FIX: Видалено непотрібний JS-код для керування плейсхолдером,
+           оскільки він не працював і призводив до помилок.
+           Тепер цим керує виключно CSS (:invalid колір)
+        */
+
+    </script>
+</body>
+</html>
