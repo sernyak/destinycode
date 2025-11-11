@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Астролог - Фінальна версія</title>
+    <title>AI Астролог - Premium Upgrade</title>
     <!-- Підключення Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome для іконок -->
@@ -31,10 +31,10 @@
             color: var(--primary-text-color);
         }
 
-        /* Стилізація нативного date input (Темна/Золота тема) */
-        #birth-date {
+        /* Стилізація нативного input (Темна/Золота тема) */
+        input[type="date"], input[type="time"], input[type="text"] {
             position: relative;
-            color: var(--secondary-text-color); /* Початковий колір - сірий */
+            color: var(--secondary-text-color);
             padding: 1rem;
             border: 1px solid var(--border-color);
             background-color: var(--card-bg-color);
@@ -46,23 +46,24 @@
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
         
-        /* Стилізуємо стан фокусу */
-        #birth-date:focus {
+        input:focus {
             outline: none;
             box-shadow: 0 0 0 2px var(--accent-color);
             border-color: var(--accent-color);
         }
 
-        /* Стилізуємо іконку календаря (для WebKit браузерів) */
-        #birth-date::-webkit-calendar-picker-indicator {
-            filter: invert(1) brightness(0.8) sepia(1) hue-rotate(10deg) saturate(1500%); /* Робимо іконку золотою */
+        /* Стилізація іконки календаря та годинника */
+        input::-webkit-calendar-picker-indicator,
+        input::-webkit-datetime-edit-hour-field,
+        input::-webkit-datetime-edit-minute-field,
+        input::-webkit-datetime-edit-ampm-field {
+            filter: invert(1) brightness(0.8) sepia(1) hue-rotate(10deg) saturate(1500%);
             cursor: pointer;
             opacity: 0.8;
             font-size: 1.25rem;
         }
-        
-        /* Коли дата обрана (валідна), текст стає головним кольором */
-        #birth-date:valid {
+
+        input:valid {
              color: var(--primary-text-color);
         }
         
@@ -84,6 +85,17 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
+
+        /* Скріни для переходу */
+        .screen {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            flex-grow: 1;
+        }
+        .screen.active {
+            display: flex;
+        }
     </style>
 </head>
 <body class="min-h-screen w-full p-8 transition-all duration-300">
@@ -91,7 +103,7 @@
     <div id="app-container" class="max-w-md mx-auto flex flex-col min-h-[90vh] justify-center">
 
         <!-- КРОК 2: ЛЕНДІНГ (Збір дати народження) -->
-        <div id="landing-step" class="flex flex-col space-y-10 text-center animate-fade-in">
+        <div id="landing-step" class="screen active space-y-10 text-center animate-fade-in">
             
             <!-- Логотип (Золотий) -->
             <div>
@@ -136,7 +148,7 @@
         </div>
 
         <!-- КРОК 3: ЕКРАН ЗАВАНТАЖЕННЯ (Анімація набору тексту) -->
-        <div id="loading-step" class="hidden text-center space-y-6">
+        <div id="loading-step" class="screen text-center space-y-6">
             <div class="typing-container">
                 <span id="loading-text"></span>
                 <span class="typing-cursor"></span>
@@ -144,7 +156,7 @@
         </div>
 
         <!-- КРОК 4: РЕЗУЛЬТАТ + СТІНА ОПЛАТИ (Paywall) -->
-        <div id="result-step" class="hidden flex-col space-y-6">
+        <div id="result-step" class="screen space-y-6">
             <h2 class="text-3xl font-bold text-center text-white">Ваш безкоштовний аналіз</h2>
 
             <!-- 1. Безкоштовний Блок -->
@@ -186,16 +198,46 @@
             <!-- 3. CTA (Заклик до Оплати) -->
             <div class="space-y-4 pt-6">
                 <!-- Головна кнопка (ціна) -->
-                <button class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
+                <button id="upgrade-button" 
+                        class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
                     Розблокувати Повний Аналіз за €2.49
                 </button>
 
-                <!-- Кнопка Apple Pay (Ключовий елемент для iOS) -->
+                <!-- Кнопка Apple Pay (залишаємо для вигляду, поки не підключений Stripe) -->
                 <button class="w-full bg-black text-white text-lg font-semibold rounded-lg py-3 px-6 flex items-center justify-center space-x-2 border border-gray-700 hover:bg-gray-800 transition-colors">
-                    <i class="fab fa-apple text-xl"></i> <!-- Font Awesome для Apple Pay -->
+                    <i class="fab fa-apple text-xl"></i> 
                     <span>Pay</span>
                 </button>
             </div>
+        </div>
+        
+        <!-- КРОК 5: ЗБІР ЧАСУ ТА МІСЦЯ -->
+        <div id="premium-data-step" class="screen space-y-10 text-center">
+             <h2 class="text-3xl font-bold text-white tracking-tight">
+                Розкрийте повний потенціал
+            </h2>
+
+            <p class="text-lg text-[var(--secondary-text-color)] max-w-sm mx-auto">
+                Для точного розрахунку **Асценденту та Домів** нам потрібен точний час та місце вашого народження.
+            </p>
+            
+            <form id="premium-form" class="w-full max-w-sm mx-auto space-y-6">
+                <div>
+                    <label for="birth-time" class="block text-sm font-medium text-[var(--secondary-text-color)] mb-2 text-left">Точний час народження:</label>
+                    <input type="time" id="birth-time" name="birth-time" required>
+                </div>
+                 <div>
+                    <label for="birth-city" class="block text-sm font-medium text-[var(--secondary-text-color)] mb-2 text-left">Місто народження:</label>
+                    <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ" required>
+                </div>
+
+                <!-- Фінальна CTA, яка перейде до оплати -->
+                <button type="submit" 
+                        class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
+                    Продовжити до оплати (€2.49)
+                </button>
+            </form>
+
         </div>
 
     </div>
@@ -204,20 +246,22 @@
         const birthForm = document.getElementById('birth-form');
         const birthDateInput = document.getElementById('birth-date');
         const errorMessage = document.getElementById('error-message');
+        const upgradeButton = document.getElementById('upgrade-button'); // Нова кнопка апгрейду
+        const premiumForm = document.getElementById('premium-form'); // Нова форма
         
         const landingStep = document.getElementById('landing-step');
         const loadingStep = document.getElementById('loading-step');
         const resultStep = document.getElementById('result-step');
+        const premiumDataStep = document.getElementById('premium-data-step'); // Новий екран
         const loadingText = document.getElementById('loading-text');
         
-        // Елемент для вставки згенерованого тексту
         const freeReportText = document.getElementById('free-report-text');
 
         // *** ВСТАВЛЕНИЙ API-КЛЮЧ ***
         const apiKey = "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-        // Наш "Системний Промпт" - серце ШІ
+        // Наш "Системний Промпт" - серце ШІ (ВЗЯТИ З gemini_prompt.txt)
         const systemPrompt = `
             Ти - преміальний ШІ-астролог. Твоя роль - писати як глибокий психолог та емпатичний друг, а не як містик.
             Твій стиль: сучасний, поетичний, надихаючий.
@@ -235,11 +279,18 @@
             - Відповідай ТІЛЬКИ згенерованим текстом аналізу, без жодних привітань ("Звісно, ось...").
         `;
 
+        // Функція для зміни екранів
+        function showScreen(targetId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(targetId).classList.add('active');
+        }
+
         // Асинхронна функція для виклику Gemini API
         async function generateAstrologyReport(birthDate) {
-            
-            // Виправляємо обробку дати, щоб уникнути проблем з часовими поясами
-            const parts = birthDate.split('-'); // [YYYY, MM, DD]
+            // ... (логіка API виклику, як у v11) ...
+            const parts = birthDate.split('-');
             const dateObj = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
             
             const options = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' };
@@ -270,20 +321,17 @@
                         if (candidate && candidate.content?.parts?.[0]?.text) {
                             return candidate.content.parts[0].text;
                         } else {
-                            // Якщо відповідь успішна, але тексту немає (наприклад, через safety filters)
                              return "На жаль, аналіз не вдалося завершити через обмеження безпеки. Будь ласка, спробуйте іншу дату або пізніше.";
                         }
                     }
-                    if (response.status === 429) { // Throttling
+                    if (response.status === 429) {
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
                         continue;
                     }
-                    // Для інших помилок 4xx/5xx пробуємо ще раз
                     await new Promise(resolve => setTimeout(resolve, delay));
                     delay *= 2;
                 } catch (error) {
-                    // console.error("Помилка запиту до ШІ:", error);
                     if (i === 2) { 
                          return "На жаль, сервіс тимчасово недоступний через проблему з підключенням. Будь ласка, спробуйте пізніше.";
                     }
@@ -293,7 +341,6 @@
             }
              return "На жаль, сервіс тимчасово недоступний. Будь ласка, спробуйте пізніше.";
         }
-
 
         // Функція для анімації набору тексту
         function typeWriter(element, text, speed, onComplete) {
@@ -311,7 +358,7 @@
             type();
         }
 
-        // Обробник відправки форми
+        // 1. Обробник відправки форми (Крок 2 -> Крок 3 -> Крок 4)
         birthForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -319,46 +366,55 @@
                 errorMessage.classList.remove('hidden');
             } else {
                 errorMessage.classList.add('hidden');
-                landingStep.classList.add('hidden');
+                showScreen('loading-step'); 
                 
-                loadingStep.classList.remove('hidden');
-                loadingStep.classList.add('flex', 'flex-col', 'justify-center', 'flex-1');
-                
-                let reportText = "Завантаження аналізу..."; // Тимчасовий текст
-                
-                // Запускаємо генерацію ШІ у фоні
+                let reportText = "Завантаження аналізу...";
                 const reportPromise = generateAstrologyReport(birthDateInput.value);
 
-                // Запускаємо анімацію
                 typeWriter(loadingText, 'Аналізуємо ваш космос...', 100, () => {
                     typeWriter(loadingText, 'Будуємо натальну карту...', 80, async () => {
                         typeWriter(loadingText, 'ШІ генерує ваш аналіз...', 90, async () => {
                             
-                            // Чекаємо на відповідь від ШІ
                             try {
                                 reportText = await reportPromise;
                             } catch (error) {
                                 reportText = "На жаль, сталася помилка. Спробуйте ще раз.";
                             }
                             
-                            // Вставляємо текст у блок
                             freeReportText.innerHTML = reportText
-                                .replace(/\n/g, '<br><br>') // Зберігаємо абзаци
-                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Робимо текст жирним
+                                .replace(/\n/g, '<br><br>')
+                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
 
-                            // Ховаємо завантаження
-                            loadingStep.classList.add('hidden');
-                            loadingStep.classList.remove('flex', 'flex-col', 'justify-center', 'flex-1');
-                            
-                            // Показуємо результат
-                            resultStep.classList.remove('hidden');
-                            resultStep.classList.add('flex');
+                            showScreen('result-step');
                         });
                     });
                 });
             }
         });
         
+        // 2. Обробник кнопки UPGRADE (Крок 4 -> Крок 5)
+        upgradeButton.addEventListener('click', () => {
+            // Перехід на новий екран збору даних
+            showScreen('premium-data-step');
+        });
+        
+        // 3. Обробник Premium форми (Крок 5 -> Фінальна оплата) - ПОКИ ЩО СИМУЛЯЦІЯ
+        premiumForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // В цьому місці ми будемо інтегрувати Stripe
+            
+            const time = document.getElementById('birth-time').value;
+            const city = document.getElementById('birth-city').value;
+
+            // ПОКИ ЩО: Просто виведемо повідомлення (це буде замінено на Stripe)
+            alert(`Дані зібрано: Час: ${time}, Місто: ${city}. \n\nНаступний крок: Інтеграція Stripe для безпечної оплати.`);
+            
+            // Наприклад, повернемося на головну (Це буде замінено на "Повний звіт")
+            showScreen('landing-step');
+        });
+
+
         // Встановлюємо плейсхолдер для дати
         birthDateInput.setAttribute('placeholder', 'Оберіть дату');
 
