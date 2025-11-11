@@ -3,23 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Астролог - v9 (Date Fix)</title>
+    <title>AI Астролог - Фінальна версія</title>
     <!-- Підключення Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome для іконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Шрифт Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- V10 FIX: Підключаємо Font Awesome, як у вашому зразку -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
     <style>
+        /* Стилі для преміальної золотої теми */
         :root {
             --bg-color: #121212;
             --primary-text-color: #e0e0e0;
             --secondary-text-color: #a0a0a0;
-            --accent-color: #cda45e;
+            --accent-color: #cda45e; /* Золотий акцент */
             --card-bg-color: #1a1a1a;
             --border-color: #333333;
         }
@@ -31,13 +31,10 @@
             color: var(--primary-text-color);
         }
 
-        /* V7 FIX: Повертаємося до стандартного, але стилізованого input.
-           Це найнадійніший метод, який працює в iframe.
-        */
+        /* Стилізація нативного date input (Темна/Золота тема) */
         #birth-date {
             position: relative;
-            /* V7 FIX: Встановлюємо початковий колір на сірий */
-            color: var(--secondary-text-color);
+            color: var(--secondary-text-color); /* Початковий колір - сірий */
             padding: 1rem;
             border: 1px solid var(--border-color);
             background-color: var(--card-bg-color);
@@ -56,9 +53,7 @@
             border-color: var(--accent-color);
         }
 
-        /* Стилізуємо плейсхолдер та іконку календаря.
-           Це працює в Chrome/Safari (Webkit).
-        */
+        /* Стилізуємо іконку календаря (для WebKit браузерів) */
         #birth-date::-webkit-calendar-picker-indicator {
             filter: invert(1) brightness(0.8) sepia(1) hue-rotate(10deg) saturate(1500%); /* Робимо іконку золотою */
             cursor: pointer;
@@ -66,17 +61,11 @@
             font-size: 1.25rem;
         }
         
-        /* V7 FIX: Повністю видалено ::before та :valid::before, 
-           щоб уникнути накладання тексту.
-        */
-
-        /* V7 FIX: Коли дата обрана (валидна), текст стає головним кольором */
+        /* Коли дата обрана (валідна), текст стає головним кольором */
         #birth-date:valid {
              color: var(--primary-text-color);
         }
         
-        /* ... (інші стилі без змін) ... */
-
         /* Анімація набору тексту */
         .typing-container {
             font-size: 1.5rem;
@@ -104,7 +93,7 @@
         <!-- КРОК 2: ЛЕНДІНГ (Збір дати народження) -->
         <div id="landing-step" class="flex flex-col space-y-10 text-center animate-fade-in">
             
-            <!-- Логотип (без змін) -->
+            <!-- Логотип (Золотий) -->
             <div>
                 <svg class="w-16 h-16 mx-auto" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-color);">
                     <circle cx="32" cy="32" r="2.5" fill="currentColor"/>
@@ -126,15 +115,12 @@
                 <div>
                     <label for="birth-date" class="block text-sm font-medium text-[var(--secondary-text-color)] mb-2 text-left">Ваша дата народження:</label>
                     
-                    <!-- НОВИЙ БЛОК ВВОДУ ДАТИ (V6) -->
-                    <!-- Повертаємось до надійного, стандартного input type="date" -->
                     <input 
                         type="date" 
                         id="birth-date" 
                         name="birth-date"
                         required
                     >
-                    <!-- Кінець нового блоку -->
 
                     <p id="error-message" class="text-red-400 text-sm text-left mt-2 hidden">Будь ласка, оберіть вашу дату народження.</p>
                 </div>
@@ -149,7 +135,7 @@
             </form>
         </div>
 
-        <!-- КРОК 3: ЕКРАН ЗАВАНТАЖЕННЯ (без змін) -->
+        <!-- КРОК 3: ЕКРАН ЗАВАНТАЖЕННЯ (Анімація набору тексту) -->
         <div id="loading-step" class="hidden text-center space-y-6">
             <div class="typing-container">
                 <span id="loading-text"></span>
@@ -157,52 +143,56 @@
             </div>
         </div>
 
-        <!-- КРОК 4: РЕЗУЛЬТАТ + СТІНА ОПЛАТИ (без змін) -->
+        <!-- КРОК 4: РЕЗУЛЬТАТ + СТІНА ОПЛАТИ (Paywall) -->
         <div id="result-step" class="hidden flex-col space-y-6">
             <h2 class="text-3xl font-bold text-center text-white">Ваш безкоштовний аналіз</h2>
+
             <!-- 1. Безкоштовний Блок -->
             <div class="bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl p-6 shadow-lg">
                 <h3 class="text-2xl font-bold text-green-500 mb-3">
                     ✅ Ваше Ядро Особистості
                 </h3>
-                <!-- V8 UPDATE: Ми додали ID, щоб вставити сюди текст з ШІ -->
+                <!-- Тут з'явиться текст з ШІ -->
                 <p id="free-report-text" class="text-[var(--secondary-text-color)] space-y-4 text-left leading-relaxed">
                     <i>(Тут з'явиться ваш персональний аналіз...)</i>
                 </p>
             </div>
+
             <!-- 2. Стіна Оплати (Емоційний тригер) -->
             <div class="space-y-4 pt-4">
                 <h3 class="text-2xl font-bold text-center text-[var(--accent-color)]">Розкрийте свою повну карту</h3>
+                
                 <!-- Заблокований елемент 1 -->
                 <div class="relative bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl p-5 overflow-hidden shadow-sm">
                     <h4 class="text-xl font-semibold text-[var(--secondary-text-color)] mb-2" style="color: var(--accent-color); opacity: 0.8;">
                         🔒 [ЗАБЛОКОВАНО] Кохання та Сумісність
                     </h4>
                     <p class="text-gray-600 filter blur-sm select-none">
-                        Ваша Венера показує, що вам потрібен партнер...
+                        Ваша Венера показує, що вам потрібен партнер, який цінує вашу незалежність... Дізнайтеся, з якими знаками у вас найвища сумісність...
                     </p>
                 </div>
+
                 <!-- Заблокований елемент 2 -->
                 <div class="relative bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl p-5 overflow-hidden shadow-sm">
                     <h4 class="text-xl font-semibold text-[var(--secondary-text-color)] mb-2" style="color: var(--accent-color); opacity: 0.8;">
                         🔒 [ЗАБЛОКОВАНО] Кар'єра та Гроші
                     </h4>
                     <p class="text-gray-600 filter blur-sm select-none">
-                        Ваш Юпітер у 10-му домі дає вам унікальні можливості...
+                        Ваш Юпітер у 10-му домі дає вам унікальні можливості... але Сатурн у 2-му домі попереджає про...
                     </p>
                 </div>
             </div>
+
             <!-- 3. CTA (Заклик до Оплати) -->
             <div class="space-y-4 pt-6">
+                <!-- Головна кнопка (ціна) -->
                 <button class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
                     Розблокувати Повний Аналіз за €2.49
                 </button>
+
                 <!-- Кнопка Apple Pay (Ключовий елемент для iOS) -->
                 <button class="w-full bg-black text-white text-lg font-semibold rounded-lg py-3 px-6 flex items-center justify-center space-x-2 border border-gray-700 hover:bg-gray-800 transition-colors">
-                    
-                    <!-- V10 FIX: Замінено "бракований" SVG на чисту іконку Font Awesome -->
-                    <i class="fa-brands fa-apple text-2xl"></i>
-                    
+                    <i class="fab fa-apple text-xl"></i> <!-- Font Awesome для Apple Pay -->
                     <span>Pay</span>
                 </button>
             </div>
@@ -212,24 +202,22 @@
 
     <script>
         const birthForm = document.getElementById('birth-form');
+        const birthDateInput = document.getElementById('birth-date');
         const errorMessage = document.getElementById('error-message');
         
-        // V6 FIX: Використовуємо ID нашого стандартного інпуту
-        const birthDateInput = document.getElementById('birth-date');
-
         const landingStep = document.getElementById('landing-step');
         const loadingStep = document.getElementById('loading-step');
         const resultStep = document.getElementById('result-step');
         const loadingText = document.getElementById('loading-text');
         
-        // V8 UPDATE: Елемент для вставки згенерованого тексту
+        // Елемент для вставки згенерованого тексту
         const freeReportText = document.getElementById('free-report-text');
 
-        // V8 UPDATE: API-конфігурація
-        const apiKey = ""; // API-ключ (залишаємо порожнім)
+        // *** ВАШ API-КЛЮЧ ТУТ ***
+        const apiKey = "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-        // V8 UPDATE: Наш "Системний Промпт" - серце ШІ
+        // Наш "Системний Промпт" - серце ШІ
         const systemPrompt = `
             Ти - преміальний ШІ-астролог. Твоя роль - писати як глибокий психолог та емпатичний друг, а не як містик.
             Твій стиль: сучасний, поетичний, надихаючий.
@@ -247,16 +235,13 @@
             - Відповідай ТІЛЬКИ згенерованим текстом аналізу, без жодних привітань ("Звісно, ось...").
         `;
 
-        // V8 UPDATE: Асинхронна функція для виклику Gemini API
+        // Асинхронна функція для виклику Gemini API
         async function generateAstrologyReport(birthDate) {
             
-            // V9 FIX: Виправляємо обробку дати, щоб уникнути проблем з часовими поясами
-            // birthDate (значення з input type="date") має формат 'YYYY-MM-DD'
+            // Виправляємо обробку дати, щоб уникнути проблем з часовими поясами
             const parts = birthDate.split('-'); // [YYYY, MM, DD]
-            // Ми створюємо дату в UTC, щоб уникнути зсувів. 'parts[1] - 1' тому що місяці в JS 0-індексовані.
             const dateObj = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
             
-            // Ми також форматуємо її в UTC
             const options = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' };
             const formattedDate = dateObj.toLocaleDateString('uk-UA', options).replace(' р.', '');
 
@@ -269,7 +254,6 @@
                 },
             };
 
-            // Логіка запиту з повторними спробами (exponential backoff)
             let response;
             let delay = 1000;
             for (let i = 0; i < 3; i++) {
@@ -286,19 +270,22 @@
                         if (candidate && candidate.content?.parts?.[0]?.text) {
                             return candidate.content.parts[0].text;
                         } else {
-                            throw new Error("Відповідь від ШІ не містить тексту.");
+                            // Якщо відповідь успішна, але тексту немає (наприклад, через safety filters)
+                             return "На жаль, аналіз не вдалося завершити через обмеження безпеки. Будь ласка, спробуйте іншу дату або пізніше.";
                         }
                     }
-                    if (response.status === 429) {
-                        // Throttling, чекаємо і пробуємо знову
+                    if (response.status === 429) { // Throttling
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
                         continue;
                     }
+                    // Для інших помилок 4xx/5xx пробуємо ще раз
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
                 } catch (error) {
-                    console.error("Помилка запиту до ШІ:", error);
-                    if (i === 2) { // Остання спроба
-                         return "На жаль, сталася помилка під час генерації вашого аналізу. Будь ласка, спробуйте трохи пізніше.";
+                    // console.error("Помилка запиту до ШІ:", error);
+                    if (i === 2) { 
+                         return "На жаль, сервіс тимчасово недоступний через проблему з підключенням. Будь ласка, спробуйте пізніше.";
                     }
                     await new Promise(resolve => setTimeout(resolve, delay));
                     delay *= 2;
@@ -308,7 +295,7 @@
         }
 
 
-        // Функція для анімації набору тексту (без змін)
+        // Функція для анімації набору тексту
         function typeWriter(element, text, speed, onComplete) {
             let i = 0;
             element.innerHTML = '';
@@ -324,11 +311,10 @@
             type();
         }
 
-        // Обробник відправки форми (V8 UPDATE - став async)
+        // Обробник відправки форми
         birthForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            // Перевіряємо значення нашого стандартного інпуту
             if (birthDateInput.value === '') {
                 errorMessage.classList.remove('hidden');
             } else {
@@ -337,9 +323,6 @@
                 
                 loadingStep.classList.remove('hidden');
                 loadingStep.classList.add('flex', 'flex-col', 'justify-center', 'flex-1');
-                
-                // V8 UPDATE: Ми спершу запускаємо анімацію,
-                // А ПАРАЛЕЛЬНО запускаємо генерацію в ШІ
                 
                 let reportText = "Завантаження аналізу..."; // Тимчасовий текст
                 
@@ -351,7 +334,7 @@
                     typeWriter(loadingText, 'Будуємо натальну карту...', 80, async () => {
                         typeWriter(loadingText, 'ШІ генерує ваш аналіз...', 90, async () => {
                             
-                            // Тепер чекаємо на відповідь від ШІ (вона, скоріш за все, вже готова)
+                            // Чекаємо на відповідь від ШІ
                             try {
                                 reportText = await reportPromise;
                             } catch (error) {
@@ -359,7 +342,6 @@
                             }
                             
                             // Вставляємо текст у блок
-                            // V8 FIX: Переконуємось, що текст форматується як HTML (зберігаємо абзаци)
                             freeReportText.innerHTML = reportText
                                 .replace(/\n/g, '<br><br>') // Зберігаємо абзаци
                                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); // Робимо текст жирним
@@ -376,9 +358,6 @@
                 });
             }
         });
-
-        /* V7 FIX: Видалено непотрібний JS-код ... */
-
     </script>
 </body>
 </html>
