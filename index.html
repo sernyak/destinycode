@@ -53,10 +53,8 @@
         }
 
         /* Стилізація іконки календаря та годинника */
-        input::-webkit-calendar-picker-indicator,
-        input::-webkit-datetime-edit-hour-field,
-        input::-webkit-datetime-edit-minute-field,
-        input::-webkit-datetime-edit-ampm-field {
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
             filter: invert(1) brightness(0.8) sepia(1) hue-rotate(10deg) saturate(1500%);
             cursor: pointer;
             opacity: 0.8;
@@ -211,14 +209,14 @@
             </div>
         </div>
         
-        <!-- КРОК 5: ЗБІР ЧАСУ ТА МІСЦЯ -->
+        <!-- КРОК 5: ЗБІР ЧАСУ ТА МІСЦЯ (Новий екран для Premium) -->
         <div id="premium-data-step" class="screen space-y-10 text-center">
              <h2 class="text-3xl font-bold text-white tracking-tight">
                 Розкрийте повний потенціал
             </h2>
 
             <p class="text-lg text-[var(--secondary-text-color)] max-w-sm mx-auto">
-                Для точного розрахунку **Асценденту та Домів** нам потрібен точний час та місце вашого народження.
+                Для точного розрахунку **Асценденту та Домів** нам потрібен точний час та місце вашого народження. Це дозволить Майстру-Астрологу зробити аналіз на 99% точнішим.
             </p>
             
             <form id="premium-form" class="w-full max-w-sm mx-auto space-y-6">
@@ -246,8 +244,8 @@
         const birthForm = document.getElementById('birth-form');
         const birthDateInput = document.getElementById('birth-date');
         const errorMessage = document.getElementById('error-message');
-        const upgradeButton = document.getElementById('upgrade-button'); // Нова кнопка апгрейду
-        const premiumForm = document.getElementById('premium-form'); // Нова форма
+        const upgradeButton = document.getElementById('upgrade-button'); // Кнопка переходу на Premium
+        const premiumForm = document.getElementById('premium-form'); // Нова форма збору даних
         
         const landingStep = document.getElementById('landing-step');
         const loadingStep = document.getElementById('loading-step');
@@ -261,22 +259,27 @@
         const apiKey = "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-        // Наш "Системний Промпт" - серце ШІ (ВЗЯТИ З gemini_prompt.txt)
+        // Наш "Системний Промпт" - серце ШІ (v13 - оновлений)
         const systemPrompt = `
-            Ти - преміальний ШІ-астролог. Твоя роль - писати як глибокий психолог та емпатичний друг, а не як містик.
-            Твій стиль: сучасний, поетичний, надихаючий.
-            Ти НЕ даєш прогнозів. Ти даєш психологічний аналіз характеру.
-            Ти спілкуєшся українською мовою.
+            Ти — 'Майстер-Астролог'. Твоя роль — не просто перераховувати факти, а виступати в ролі глибокого, мудрого та емпатичного астро-психолога.
 
-            ЗАВДАННЯ: 
-            Тобі дадуть дату народження. Визнач за нею знак Сонця (Sun Sign).
-            Напиши короткий (2-3 абзаци) аналіз "Ядра Особистості" для цієї людини на основі її Сонячного знаку.
+            Твоя Місія:
+            Допомогти клієнту "розпакувати" свою натальну карту як "карту душі". Ти бачиш не просто планети, а психологічні патерни та прихований потенціал.
+
+            Твій Тон:
+            Емпатичний та Дбайливий: Ти звертаєшся до клієнта з теплом. Використовуй фрази як-от "Ваша душа прагне...", "Це ваш унікальний дар...".
+            Авторитетний, але не Зарозумілий: Ти говориш як майстер, що бачить суть речей.
+            Спілкуйся українською мовою.
+
+            ЗАВДАННЯ (для БЕЗКОШТОВНОГО аналізу): 
+            1. Тобі дадуть дату народження. Визнач за нею знак Сонця (Sun Sign).
+            2. Напиши детальний, але стислий (4-5 абзаців) аналіз "Ядра Особистості" для цієї людини, фокусуючись лише на Сонячному знаку.
             
-            ВАЖЛИВО: 
+            КЛЮЧОВІ ВИМОГИ: 
             - Говори прямо до користувача (на "ти").
-            - Поясни сильні сторони цього знаку.
-            - Наприкінці обов'язково натякни, що це лише мала частина аналізу ("Це лише твій Сонячний знак... твоя повна карта, особливо твій Місяць та Асцендент, розкривають набагато більше про твій емоційний світ та те, як тебе бачать інші..."). Це потрібно для "продажу" повної версії.
-            - Відповідай ТІЛЬКИ згенерованим текстом аналізу, без жодних привітань ("Звісно, ось...").
+            - Поясни сильні сторони та "точку росту" цього знаку.
+            - Наприкінці обов'язково натякни на важливість інших елементів карти ("Це лише перша сторінка Книги Вашої Долі. Повна карта, особливо Асцендент і Місяць, розкриє справжній емоційний компас та кармічні уроки, які ти можеш отримати, лише розблокувавши повний звіт."). Це потрібно для "продажу" повної версії.
+            - Відповідай ТІЛЬКИ згенерованим текстом аналізу, без жодних привітань.
         `;
 
         // Функція для зміни екранів
@@ -289,7 +292,7 @@
 
         // Асинхронна функція для виклику Gemini API
         async function generateAstrologyReport(birthDate) {
-            // ... (логіка API виклику, як у v11) ...
+            
             const parts = birthDate.split('-');
             const dateObj = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
             
@@ -305,11 +308,10 @@
                 },
             };
 
-            let response;
             let delay = 1000;
             for (let i = 0; i < 3; i++) {
                 try {
-                    response = await fetch(apiUrl, {
+                    const response = await fetch(apiUrl, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
@@ -392,9 +394,8 @@
             }
         });
         
-        // 2. Обробник кнопки UPGRADE (Крок 4 -> Крок 5)
+        // 2. Обробник кнопки UPGRADE (Крок 4 -> Крок 5: Збір додаткових даних)
         upgradeButton.addEventListener('click', () => {
-            // Перехід на новий екран збору даних
             showScreen('premium-data-step');
         });
         
@@ -402,13 +403,11 @@
         premiumForm.addEventListener('submit', (e) => {
             e.preventDefault();
             
-            // В цьому місці ми будемо інтегрувати Stripe
-            
             const time = document.getElementById('birth-time').value;
             const city = document.getElementById('birth-city').value;
 
-            // ПОКИ ЩО: Просто виведемо повідомлення (це буде замінено на Stripe)
-            alert(`Дані зібрано: Час: ${time}, Місто: ${city}. \n\nНаступний крок: Інтеграція Stripe для безпечної оплати.`);
+            // Ця логіка буде замінена на ініціалізацію Stripe
+            alert(`Дані зібрано! Майстер-Астролог готовий! \n\nЧас: ${time}, Місто: ${city}.\n\nНаступний крок: Інтеграція Stripe для безпечної оплати.`);
             
             // Наприклад, повернемося на головну (Це буде замінено на "Повний звіт")
             showScreen('landing-step');
