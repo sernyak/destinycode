@@ -11,6 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- V10 FIX: Підключаємо Font Awesome, як у вашому зразку -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" xintegrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <style>
         :root {
             --bg-color: #121212;
@@ -194,10 +197,12 @@
                 <button class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
                     Розблокувати Повний Аналіз за €2.49
                 </button>
+                <!-- Кнопка Apple Pay (Ключовий елемент для iOS) -->
                 <button class="w-full bg-black text-white text-lg font-semibold rounded-lg py-3 px-6 flex items-center justify-center space-x-2 border border-gray-700 hover:bg-gray-800 transition-colors">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M18.882 17.554c-.022 3.522-2.825 5.002-2.825 5.002s-2.288 1.583-4.058 1.583c-1.77 0-3.633-1.553-4.685-1.553-1.052 0-3.003 1.002-4.524 2.887-.126-3.48.868-6.95 2.15-9.2s2.002-4.228 4.2-4.228c2.197 0 3.085 2.198 5.11 2.198 2.024 0 3.093-2.522 4.63-2.522s2.001 1.053 2.001 3.523c.001 1.03-.352 2.14-1.012 3.088-.66.947-1.125 1.748-1.082 2.971M16.19 10.443c-.352-1.522-1.74-2.583-3.152-2.583-1.83 0-3.413 1.144-4.322 1.144s-2.14-.978-3.773-.978c-2.024 0-3.804 1.353-4.834 3.442C-.78 13.91 1.11 20.916 3.134 24c1.242-1.29 2.4-3.13 3.033-3.13.632 0 1.942 1.32 3.183 1.32 1.24 0 2.258-1.74 4.028-1.74 1.77 0 2.862 1.41 3.992 1.41 1.13 0 2.228-1.113 2.943-2.433-1.802-1.09-3.033-2.827-3.033-4.896 0-2.31 1.553-3.692 1.682-3.82z"></path>
-                    </svg>
+                    
+                    <!-- V10 FIX: Замінено "бракований" SVG на чисту іконку Font Awesome -->
+                    <i class="fa-brands fa-apple text-2xl"></i>
+                    
                     <span>Pay</span>
                 </button>
             </div>
