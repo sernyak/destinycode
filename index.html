@@ -126,6 +126,21 @@
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
         }
+
+        /* Стиль для нової кнопки "Пропустити" */
+        .skip-button {
+            background: none;
+            border: none;
+            color: var(--secondary-text-color);
+            font-size: 0.9rem; /* Трохи менша */
+            font-weight: 500;
+            cursor: pointer;
+            padding: 0.75rem;
+            transition: color 0.3s ease;
+        }
+        .skip-button:hover {
+            color: var(--primary-text-color);
+        }
     </style>
 </head>
 <body class="min-h-screen w-full p-8 transition-all duration-300">
@@ -145,29 +160,21 @@
             </div>
             
             <h1 class="text-4xl font-bold text-white tracking-tight">
-                Приховані подробиці твоєї особистості 😈
+                Приховані подробиці твого характеру 😈
             </h1>
 
             <p class="text-lg text-[var(--secondary-text-color)] max-w-sm mx-auto">
-                Вкажи дату народження щоб дізнатися на скільки ти ахуєнна 😇
+                Обери дату народження, щоб дізнатися, на скільки ти ахуєнна 😇
             </p>
 
             <!-- Форма збору дати -->
             <form id="birth-form" class="w-full max-w-sm mx-auto space-y-6">
                 <div>
                     <label for="birth-date" class="block text-sm font-medium text-[var(--secondary-text-color)] mb-2 text-left">Ваша дата народження:</label>
-                    
-                    <input 
-                        type="date" 
-                        id="birth-date" 
-                        name="birth-date"
-                        required
-                    >
-
+                    <input type="date" id="birth-date" name="birth-date" required>
                     <p id="error-message" class="text-red-400 text-sm text-left mt-2 hidden">Будь ласка, оберіть вашу дату народження.</p>
                 </div>
                 
-                <!-- CTA Кнопка (Золотий стиль) -->
                 <button type="submit" 
                         class="w-full text-lg font-bold text-[var(--accent-color)] border border-[var(--accent-color)] 
                                bg-transparent rounded-lg py-4 px-6
@@ -188,21 +195,15 @@
         <!-- КРОК 4: РЕЗУЛЬТАТ / БЕЗКОШТОВНИЙ АНАЛІЗ -->
         <div id="result-step" class="screen space-y-6">
             <h2 class="text-3xl font-bold text-center text-white">Ваш безкоштовний аналіз</h2>
-
-            <!-- 1. Безкоштовний Блок -->
             <div class="bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl p-6 shadow-lg">
                 <h3 class="text-2xl font-bold text-green-500 mb-3">
                     ✅ Ваше Ядро Особистості
                 </h3>
-                <!-- Тут з'явиться текст з ШІ -->
                 <div id="free-report-text" class="text-[var(--secondary-text-color)] space-y-4 text-left leading-relaxed">
                     <i>(Тут з'явиться ваш персональний аналіз...)</i>
                 </div>
             </div>
-
-            <!-- 2. CTA (Заклик до Оплати) -->
             <div class="space-y-4 pt-6">
-                <!-- Головна кнопка (ціна) -->
                 <button id="upgrade-button" 
                         class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
                     Отримати повний аналіз за часом та місцем народження
@@ -210,7 +211,7 @@
             </div>
         </div>
         
-        <!-- КРОК 5: ЗБІР ЧАСУ ТА МІСЦЯ (Проміжний екран для посилення імпульсу) -->
+        <!-- КРОК 5: ЗБІР ЧАСУ ТА МІСЦЯ (V16 ОНОВЛЕННЯ) -->
         <div id="premium-data-step" class="screen space-y-10 text-center">
              <h2 class="text-3xl font-bold text-white tracking-tight">
                 Розкрийте повний потенціал
@@ -220,22 +221,25 @@
                 Для точного розрахунку **Асценденту та Домів** нам потрібен точний час та місце вашого народження. Це дозволить Майстру-Астрологу зробити аналіз на 99% точнішим.
             </p>
             
-            <form id="premium-form" class="w-full max-w-sm mx-auto space-y-6">
+            <div id="premium-form-container" class="w-full max-w-sm mx-auto space-y-6">
                 <div>
-                    <label for="birth-time" class="block text-sm font-medium text-[var(--secondary-text-color)] mb-2 text-left">Точний час народження:</label>
-                    <input type="time" id="birth-time" name="birth-time" required>
+                    <label for="birth-time" class="block text-sm font-medium text-[var(--secondary-text-color)] mb-2 text-left">Точний час народження (опціонально):</label>
+                    <input type="time" id="birth-time" name="birth-time">
                 </div>
                  <div>
-                    <label for="birth-city" class="block text-sm font-medium text-[var(--secondary-text-color)] mb-2 text-left">Місто народження:</label>
-                    <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ" required>
+                    <label for="birth-city" class="block text-sm font-medium text-[var(--secondary-text-color)] mb-2 text-left">Місто народження (опціонально):</label>
+                    <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ">
                 </div>
 
-                <!-- Фінальна CTA, яка перейде до фінального Paywall -->
-                <button type="submit" id="continue-to-paywall-button"
+                <button type="button" id="continue-to-paywall-button"
                         class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
                     Отримати детальний аналіз
                 </button>
-            </form>
+                
+                <button type="button" id="skip-button" class="w-full skip-button">
+                    Пропустити та продовжити без них
+                </button>
+            </div>
         </div>
         
         <!-- КРОК 6: ФІНАЛЬНИЙ PAYWALL (Оплата) -->
@@ -245,18 +249,15 @@
                 Майстер-Астролог завершив розрахунки. Розблокуйте **повну карту (Асцендент, Доми, Карма)**, щоб побачити свій **повний потенціал**.
             </p>
             
-            <!-- Заблоковані розділи (Копія з Кроку 4, але тут вони фінальні) -->
             <div class="space-y-4 pt-4">
                 <h3 class="text-2xl font-bold text-center text-[var(--accent-color)]">Що ви отримаєте:</h3>
                 
-                <!-- Заблокований елемент 1 -->
                 <div class="relative bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl p-5 overflow-hidden shadow-sm">
                     <h4 class="text-xl font-semibold text-[var(--secondary-text-color)] mb-2" style="color: var(--accent-color); opacity: 0.8;">
                         🔒 Кохання та Сумісність
                     </h4>
                 </div>
 
-                <!-- Заблокований елемент 2 -->
                 <div class="relative bg-[var(--card-bg-color)] border border-[var(--border-color)] rounded-xl p-5 overflow-hidden shadow-sm">
                     <h4 class="text-xl font-semibold text-[var(--secondary-text-color)] mb-2" style="color: var(--accent-color); opacity: 0.8;">
                         🔒 Кар'єра та Гроші
@@ -264,7 +265,6 @@
                 </div>
             </div>
 
-            <!-- Фінальна CTA (Оплата) -->
             <div class="space-y-4 pt-6">
                 <button id="final-checkout-button"
                         class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
@@ -290,19 +290,20 @@
     </div>
 
     <script>
+        // *** V16: ОНОВЛЕННЯ ЗМІННИХ ***
         const birthForm = document.getElementById('birth-form');
         const birthDateInput = document.getElementById('birth-date');
         const errorMessage = document.getElementById('error-message');
         const upgradeButton = document.getElementById('upgrade-button');
-        const premiumForm = document.getElementById('premium-form');
         const checkoutButton = document.getElementById('final-checkout-button');
         const continueToPaywallButton = document.getElementById('continue-to-paywall-button');
+        const skipButton = document.getElementById('skip-button'); // V16: Нова кнопка
         
         const landingStep = document.getElementById('landing-step');
         const loadingStep = document.getElementById('loading-step');
         const resultStep = document.getElementById('result-step');
         const premiumDataStep = document.getElementById('premium-data-step');
-        const finalPaywallStep = document.getElementById('final-paywall-step'); // Новий екран
+        const finalPaywallStep = document.getElementById('final-paywall-step');
         const loadingText = document.getElementById('loading-text');
         const freeReportText = document.getElementById('free-report-text');
         const paymentModal = document.getElementById('payment-modal');
@@ -321,8 +322,7 @@
             city: ''
         };
 
-
-        // Наш "Системний Промпт" - серце ШІ 
+        // *** Наш "Системний Промпт" - серце ШІ ***
         const systemPrompt = `
             Ти — 'Майстер-Астролог'. Твоя роль — не просто перераховувати факти, а виступати в ролі глибокого, мудрого та емпатичного астро-психолога.
 
@@ -444,15 +444,15 @@
                 errorMessage.classList.remove('hidden');
             } else {
                 errorMessage.classList.add('hidden');
-                birthData.date = selectedDate; // Зберігаємо дату
+                birthData.date = selectedDate; 
                 
                 showScreen('loading-step'); 
                 
                 const reportPromise = generateAstrologyReport(selectedDate);
 
-                // Нові тексти для анімації завантаження
+                // ОНОВЛЕНІ ТЕКСТИ (з v15/v17)
                 const loadingSteps = [
-                    'Аналізує положення планет на небі під час твого народження', 
+                    'Аналізую положення планет', 
                     'Будую твою натальну карту', 
                     'Приготуйся дізнатись, наскільки ти ахуєнна'
                 ];
@@ -463,14 +463,13 @@
                         await new Promise(resolve => typeWriter(loadingText, loadingSteps[stepIndex], 90, resolve));
                         stepIndex++;
                         if (stepIndex === loadingSteps.length) {
-                            // Фінальний етап
                             const reportText = await reportPromise;
                             
                             freeReportText.innerHTML = reportText
                                 .replace(/\n/g, '<br><br>')
                                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
                             
-                            showScreen('result-step'); // Перехід на Крок 4
+                            showScreen('result-step'); 
                         } else {
                             runTyping();
                         }
@@ -486,19 +485,24 @@
             showScreen('premium-data-step');
         });
         
-        // 3. Обробник Premium форми (Крок 5 -> Крок 6: Фінальний Paywall)
-        premiumForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+        // 3. V16: ОНОВЛЕНА ЛОГІКА для Кроку 5 (Опціональний ввід)
+        
+        // 3.1 Обробник кнопки "Отримати детальний аналіз"
+        continueToPaywallButton.addEventListener('click', (e) => {
+            e.preventDefault(); 
             
             birthData.time = document.getElementById('birth-time').value;
             birthData.city = document.getElementById('birth-city').value;
             
-            // Якщо дані є, переходимо на Фінальний екран оплати (Крок 6)
-            if (birthData.time && birthData.city) {
-                 showScreen('final-paywall-step');
-            } else {
-                showModal("Помилка", "Будь ласка, вкажи точний час та місто народження.");
-            }
+            showScreen('final-paywall-step');
+        });
+        
+        // 3.2 НОВИЙ Обробник кнопки "Пропустити"
+        skipButton.addEventListener('click', () => {
+            birthData.time = '';
+            birthData.city = '';
+            
+            showScreen('final-paywall-step');
         });
         
         // 4. Обробник Фінальної кнопки Оплати (Крок 6 -> Stripe)
@@ -511,15 +515,17 @@
                 // *** 3.1. ЕТАП: ВИКЛИК ТВОГО БЕКЕНДУ ДЛЯ СТВОРЕННЯ STRIPE CHECKOUT SESSION ***
                 
                 // ВАЖЛИВО: Ти маєш замінити URL-адресу нижче на URL-адресу твого власного сервера!
-                // Тут буде реальна інтеграція Stripe після того, як ти налаштуєш свій бекенд.
+                // const response = await fetch('/create-checkout-session', { ... });
+                // const session = await response.json();
+                // const result = await stripe.redirectToCheckout({ sessionId: session.id });
 
                 // *** СИМУЛЯЦІЯ УСПІХУ ТА ІНСТРУКЦІЇ ***
                 const message = `
                     <p class="text-left mb-4">Дані народження зібрано:</p>
                     <ul class="list-disc list-inside text-left mx-auto max-w-xs space-y-2 mb-6">
                         <li>Дата: <strong>${birthData.date}</strong></li>
-                        <li>Час: <strong>${birthData.time}</strong></li>
-                        <li>Місто: <strong>${birthData.city}</strong></li>
+                        <li>Час: <strong>${birthData.time || 'Не вказано'}</strong></li>
+                        <li>Місто: <strong>${birthData.city || 'Не вказано'}</strong></li>
                     </ul>
                     <p class="text-xl font-bold text-red-400">Наступний крок:</p>
                     <p class="text-left">
