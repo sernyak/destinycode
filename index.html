@@ -13,6 +13,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- *** 1. ПІДКЛЮЧЕННЯ STRIPE.JS *** -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
     <style>
         /* Стилі для преміальної золотої теми */
         :root {
@@ -94,6 +97,35 @@
         .screen.active {
             display: flex;
         }
+        
+        /* Модальне вікно для інформації/помилок */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.75);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .modal-content {
+            background-color: var(--card-bg-color);
+            border: 2px solid var(--accent-color);
+            border-radius: 1rem;
+            padding: 2rem;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(205, 164, 94, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body class="min-h-screen w-full p-8 transition-all duration-300">
@@ -163,9 +195,9 @@
                     ✅ Ваше Ядро Особистості
                 </h3>
                 <!-- Тут з'явиться текст з ШІ -->
-                <p id="free-report-text" class="text-[var(--secondary-text-color)] space-y-4 text-left leading-relaxed">
+                <div id="free-report-text" class="text-[var(--secondary-text-color)] space-y-4 text-left leading-relaxed">
                     <i>(Тут з'явиться ваш персональний аналіз...)</i>
-                </p>
+                </div>
             </div>
 
             <!-- 2. Стіна Оплати (Емоційний тригер) -->
@@ -230,36 +262,59 @@
                 </div>
 
                 <!-- Фінальна CTA, яка перейде до оплати -->
-                <button type="submit" 
+                <button type="submit" id="checkout-button"
                         class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
                     Продовжити до оплати (€2.49)
                 </button>
             </form>
-
         </div>
-
+    </div>
+    
+    <!-- Модальне вікно для Stripe Simulation/Error -->
+    <div id="payment-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title" class="text-2xl font-bold text-[var(--accent-color)] mb-4">Інтеграція Stripe</h3>
+            <p id="modal-message" class="text-[var(--secondary-text-color)] mb-6">
+                Успіх! На стороні клієнта ми готові. Тепер **Тобі потрібно** інтегрувати свій бекенд, який створить Stripe Checkout Session.
+            </p>
+            <button onclick="closeModal()" class="w-full text-lg font-bold text-[var(--bg-color)] bg-gray-500 hover:bg-gray-600 transition-colors rounded-lg py-3">Закрити</button>
+        </div>
     </div>
 
     <script>
         const birthForm = document.getElementById('birth-form');
         const birthDateInput = document.getElementById('birth-date');
         const errorMessage = document.getElementById('error-message');
-        const upgradeButton = document.getElementById('upgrade-button'); // Кнопка переходу на Premium
-        const premiumForm = document.getElementById('premium-form'); // Нова форма збору даних
+        const upgradeButton = document.getElementById('upgrade-button');
+        const premiumForm = document.getElementById('premium-form');
+        const checkoutButton = document.getElementById('checkout-button');
         
         const landingStep = document.getElementById('landing-step');
         const loadingStep = document.getElementById('loading-step');
         const resultStep = document.getElementById('result-step');
-        const premiumDataStep = document.getElementById('premium-data-step'); // Новий екран
+        const premiumDataStep = document.getElementById('premium-data-step');
         const loadingText = document.getElementById('loading-text');
-        
         const freeReportText = document.getElementById('free-report-text');
+        const paymentModal = document.getElementById('payment-modal');
 
-        // *** ВСТАВЛЕНИЙ API-КЛЮЧ ***
+        // *** ВСТАВЛЕНИЙ API-КЛЮЧ (Gemini) ***
         const apiKey = "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-        // Наш "Системний Промпт" - серце ШІ (v13 - оновлений)
+        // *** 2. КОНФІГУРАЦІЯ STRIPE ***
+        // ЗАМІНИ ЦЕЙ КЛЮЧ НА СВІЙ РЕАЛЬНИЙ ПУБЛІЧНИЙ (pk_live_...)
+        const STRIPE_PUBLIC_KEY = 'pk_test_51PxxxxxxxxxxxxxxxxxxxxW9Y'; 
+        const stripe = Stripe(STRIPE_PUBLIC_KEY);
+        
+        // Зберігаємо дані про народження для використання у Stripe-сесії
+        let birthData = {
+            date: '',
+            time: '',
+            city: ''
+        };
+
+
+        // Наш "Системний Промпт" - серце ШІ 
         const systemPrompt = `
             Ти — 'Майстер-Астролог'. Твоя роль — не просто перераховувати факти, а виступати в ролі глибокого, мудрого та емпатичного астро-психолога.
 
@@ -289,10 +344,22 @@
             });
             document.getElementById(targetId).classList.add('active');
         }
+        
+        // Функції для модального вікна
+        function showModal(title, message) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerHTML = message;
+            paymentModal.style.display = 'flex';
+        }
+        
+        function closeModal() {
+            paymentModal.style.display = 'none';
+        }
 
         // Асинхронна функція для виклику Gemini API
         async function generateAstrologyReport(birthDate) {
             
+            // ... (Логіка API виклику така ж, як і в попередній версії)
             const parts = birthDate.split('-');
             const dateObj = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
             
@@ -364,29 +431,34 @@
         birthForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            if (birthDateInput.value === '') {
+            const selectedDate = birthDateInput.value;
+            
+            if (selectedDate === '') {
                 errorMessage.classList.remove('hidden');
             } else {
                 errorMessage.classList.add('hidden');
+                birthData.date = selectedDate; // Зберігаємо дату
+                
                 showScreen('loading-step'); 
                 
-                let reportText = "Завантаження аналізу...";
-                const reportPromise = generateAstrologyReport(birthDateInput.value);
+                const reportPromise = generateAstrologyReport(selectedDate);
 
                 typeWriter(loadingText, 'Аналізуємо ваш космос...', 100, () => {
                     typeWriter(loadingText, 'Будуємо натальну карту...', 80, async () => {
                         typeWriter(loadingText, 'ШІ генерує ваш аналіз...', 90, async () => {
                             
                             try {
-                                reportText = await reportPromise;
+                                const reportText = await reportPromise;
+                                
+                                freeReportText.innerHTML = reportText
+                                    .replace(/\n/g, '<br><br>')
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+
                             } catch (error) {
-                                reportText = "На жаль, сталася помилка. Спробуйте ще раз.";
+                                freeReportText.innerHTML = "Помилка при генерації звіту.";
+                                console.error("Generation error:", error);
                             }
                             
-                            freeReportText.innerHTML = reportText
-                                .replace(/\n/g, '<br><br>')
-                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-
                             showScreen('result-step');
                         });
                     });
@@ -399,18 +471,70 @@
             showScreen('premium-data-step');
         });
         
-        // 3. Обробник Premium форми (Крок 5 -> Фінальна оплата) - ПОКИ ЩО СИМУЛЯЦІЯ
-        premiumForm.addEventListener('submit', (e) => {
+        // 3. Обробник Premium форми (Крок 5 -> Фінальна оплата)
+        premiumForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const time = document.getElementById('birth-time').value;
-            const city = document.getElementById('birth-city').value;
-
-            // Ця логіка буде замінена на ініціалізацію Stripe
-            alert(`Дані зібрано! Майстер-Астролог готовий! \n\nЧас: ${time}, Місто: ${city}.\n\nНаступний крок: Інтеграція Stripe для безпечної оплати.`);
+            birthData.time = document.getElementById('birth-time').value;
+            birthData.city = document.getElementById('birth-city').value;
             
-            // Наприклад, повернемося на головну (Це буде замінено на "Повний звіт")
-            showScreen('landing-step');
+            checkoutButton.innerText = "Обробка...";
+            checkoutButton.disabled = true;
+
+            try {
+                // *** 3.1. ЕТАП: ВИКЛИК ТВОГО БЕКЕНДУ ДЛЯ СТВОРЕННЯ STRIPE CHECKOUT SESSION ***
+                
+                // ВАЖЛИВО: Ти маєш замінити URL-адресу нижче на URL-адресу твого власного сервера!
+                // const response = await fetch('/create-checkout-session', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ 
+                //         amount: 249, // €2.49 у центах
+                //         currency: 'eur',
+                //         metadata: birthData, // Передаємо дані в метаданих Stripe
+                //         // ... інші параметри
+                //     }),
+                // });
+
+                // const session = await response.json();
+
+                // if (response.ok) {
+                //     // *** 3.2. ЕТАП: ПЕРЕНАПРАВЛЕННЯ НА STRIPE ***
+                //     const result = await stripe.redirectToCheckout({ sessionId: session.id });
+
+                //     if (result.error) {
+                //         // Якщо перенаправлення не відбулося
+                //         showModal("Помилка оплати", result.error.message);
+                //     }
+                // } else {
+                //     // Помилка сервера
+                //     showModal("Помилка сервера", session.error || "Не вдалося створити платіжну сесію на сервері.");
+                // }
+
+                // *** СИМУЛЯЦІЯ УСПІХУ ТА ІНСТРУКЦІЇ ***
+                const message = `
+                    <p class="text-left mb-4">Дані народження зібрано:</p>
+                    <ul class="list-disc list-inside text-left mx-auto max-w-xs space-y-2 mb-6">
+                        <li>Дата: <strong>${birthData.date}</strong></li>
+                        <li>Час: <strong>${birthData.time}</strong></li>
+                        <li>Місто: <strong>${birthData.city}</strong></li>
+                    </ul>
+                    <p class="text-xl font-bold text-red-400">Наступний крок:</p>
+                    <p class="text-left">
+                        Тобі потрібно створити **бек-енд функцію** (наприклад, у Firebase Cloud Functions або Node.js), яка прийматиме ці дані, створюватиме **Stripe Checkout Session** і повертатиме його \`sessionId\`.
+                    </p>
+                `;
+                showModal("Майже Готово до Монетизації!", message);
+
+
+            } catch (error) {
+                console.error('Payment process error:', error);
+                showModal("Системна Помилка", "Сталася непередбачена помилка при ініціалізації оплати.");
+            } finally {
+                // Reset button state
+                checkoutButton.innerText = "Продовжити до оплати (€2.49)";
+                checkoutButton.disabled = false;
+            }
         });
 
 
