@@ -13,11 +13,11 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- *** 1. ПІДКЛЮЧЕННЯ STRIPE.JS (Потрібен для Кроку 6) *** -->
-    <script src="https://js.stripe.com/v3/"></script>
+    <!-- *** V18: Нам більше не потрібен Stripe.js *** -->
+    <!-- <script src="https://js.stripe.com/v3/"></script> -->
     
     <style>
-        /* Стилі для преміальної золотої теми */
+        /* Стилі (v17) залишаються без змін */
         :root {
             --bg-color: #121212;
             --primary-text-color: #e0e0e0;
@@ -34,7 +34,7 @@
             color: var(--primary-text-color);
         }
 
-        /* Стилізація нативного input (Темна/Золота тема) */
+        /* ... (всі стилі input, .typing-container, .screen, .modal, .skip-button) ... */
         input[type="date"], input[type="time"], input[type="text"] {
             position: relative;
             color: var(--secondary-text-color);
@@ -55,7 +55,6 @@
             border-color: var(--accent-color);
         }
 
-        /* Стилізація іконки календаря та годинника */
         input[type="date"]::-webkit-calendar-picker-indicator,
         input[type="time"]::-webkit-calendar-picker-indicator {
             filter: invert(1) brightness(0.8) sepia(1) hue-rotate(10deg) saturate(1500%);
@@ -68,7 +67,6 @@
              color: var(--primary-text-color);
         }
         
-        /* Анімація набору тексту */
         .typing-container {
             font-size: 1.5rem;
             color: var(--secondary-text-color);
@@ -87,7 +85,6 @@
             50% { opacity: 0; }
         }
 
-        /* Скріни для переходу */
         .screen {
             display: none;
             flex-direction: column;
@@ -98,7 +95,6 @@
             display: flex;
         }
         
-        /* Модальне вікно для інформації/помилок */
         .modal {
             position: fixed;
             top: 0;
@@ -127,7 +123,6 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Стиль для нової кнопки "Пропустити" */
         .skip-button {
             background: none;
             border: none;
@@ -141,11 +136,19 @@
         .skip-button:hover {
             color: var(--primary-text-color);
         }
+
+        /* V18: Стиль для прихованої форми WayForPay */
+        #wfp-form-container {
+            display: none;
+        }
     </style>
 </head>
 <body class="min-h-screen w-full p-8 transition-all duration-300">
 
     <div id="app-container" class="max-w-md mx-auto flex flex-col min-h-[90vh] justify-center">
+
+        <!-- КРОКИ 2, 3, 4, 5 (Без змін) -->
+        <!-- ... (Весь HTML для landing-step, loading-step, result-step, premium-data-step) ... -->
 
         <!-- КРОК 2: ЛЕНДІНГ (Збір дати народження) -->
         <div id="landing-step" class="screen active space-y-10 text-center animate-fade-in">
@@ -241,7 +244,7 @@
                 </button>
             </div>
         </div>
-        
+
         <!-- КРОК 6: ФІНАЛЬНИЙ PAYWALL (Оплата) -->
         <div id="final-paywall-step" class="screen space-y-6">
              <h2 class="text-3xl font-bold text-center text-white">Фінальний звіт готовий!</h2>
@@ -265,39 +268,52 @@
                 </div>
             </div>
 
+            <!-- V18: ОНОВЛЕННЯ ЛОГІКИ КНОПОК -->
             <div class="space-y-4 pt-6">
+                <!-- V18: Ця кнопка тепер запускає логіку WayForPay -->
                 <button id="final-checkout-button"
                         class="w-full text-lg font-bold text-[var(--bg-color)] bg-[var(--accent-color)] hover:opacity-90 transition-all duration-300 shadow-lg shadow-yellow-500/20 rounded-lg py-4 px-6">
                     Розблокувати зараз за €2.49
                 </button>
-                <button class="w-full bg-black text-white text-lg font-semibold rounded-lg py-3 px-6 flex items-center justify-center space-x-2 border border-gray-700 hover:bg-gray-800 transition-colors">
-                    <i class="fab fa-apple text-xl"></i> 
+                
+                <!-- V18: Ми можемо стилізувати головну кнопку під Apple/Google Pay, 
+                     але WayForPay покаже їх на своїй сторінці. 
+                     Тому ми прибираємо окремі кнопки Apple/Google Pay. -->
+                <!-- 
+                <button class="w-full bg-black ...">
+                    <i class="fab fa-apple ..."></i> 
                     <span>Pay</span>
-                </button>
+                </button> 
+                -->
             </div>
         </div>
     </div>
     
-    <!-- Модальне вікно для Stripe Simulation/Error -->
+    <!-- V18: Прихований контейнер для динамічної форми WayForPay -->
+    <div id="wfp-form-container"></div>
+    
+    <!-- Модальне вікно для Помилок -->
     <div id="payment-modal" class="modal">
         <div class="modal-content">
-            <h3 id="modal-title" class="text-2xl font-bold text-[var(--accent-color)] mb-4">Інтеграція Stripe</h3>
+            <h3 id="modal-title" class="text-2xl font-bold text-red-500 mb-4">Помилка</h3>
             <p id="modal-message" class="text-[var(--secondary-text-color)] mb-6">
-                Успіх! На стороні клієнта ми готові. Тепер **Тобі потрібно** інтегрувати свій бекенд, який створить Stripe Checkout Session.
+                Сталася помилка.
             </p>
             <button onclick="closeModal()" class="w-full text-lg font-bold text-[var(--bg-color)] bg-gray-500 hover:bg-gray-600 transition-colors rounded-lg py-3">Закрити</button>
         </div>
     </div>
 
     <script>
-        // *** V16: ОНОВЛЕННЯ ЗМІННИХ ***
+        // *** V18: ОНОВЛЕННЯ ЛОГІКИ ДЛЯ WAYFORPAY ***
+        
+        // ... (Всі змінні до 'checkoutButton' залишаються) ...
         const birthForm = document.getElementById('birth-form');
         const birthDateInput = document.getElementById('birth-date');
         const errorMessage = document.getElementById('error-message');
         const upgradeButton = document.getElementById('upgrade-button');
-        const checkoutButton = document.getElementById('final-checkout-button');
+        const checkoutButton = document.getElementById('final-checkout-button'); // V18: Наша головна кнопка оплати
         const continueToPaywallButton = document.getElementById('continue-to-paywall-button');
-        const skipButton = document.getElementById('skip-button'); // V16: Нова кнопка
+        const skipButton = document.getElementById('skip-button');
         
         const landingStep = document.getElementById('landing-step');
         const loadingStep = document.getElementById('loading-step');
@@ -307,37 +323,44 @@
         const loadingText = document.getElementById('loading-text');
         const freeReportText = document.getElementById('free-report-text');
         const paymentModal = document.getElementById('payment-modal');
+        const wfpFormContainer = document.getElementById('wfp-form-container'); // V18: Контейнер для форми
 
-        // *** ВСТАВЛЕНИЙ API-КЛЮЧ (Gemini) ***
+        // *** ВСТАВЛЕНИЙ API-КЛЮЧ (Gemini) (Без змін) ***
         const apiKey = "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc";
         const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-        // *** 2. КОНФІГУРАЦІЯ STRIPE (Тестовий ключ) ***
-        const STRIPE_PUBLIC_KEY = 'pk_test_51PxxxxxxxxxxxxxxxxxxxxW9Y'; 
-        const stripe = Stripe(STRIPE_PUBLIC_KEY);
+        // *** V18: КОНФІГУРАЦІЯ WAYFORPAY (ФРОНТЕНД) ***
         
+        // 1. URL ТВОГО БЕКЕНДУ (Firebase Function), який генерує підпис
+        // !! ВАЖЛИВО: Заміни це на реальний URL своєї опублікованої функції !!
+        const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; 
+        
+        // 2. Твій публічний логін магазину з WayForPay
+        // !! ВАЖЛИВО: Заміни це на свій реальний merchantLogin !!
+        const MERCHANT_LOGIN = 'destinycode_online';
+        
+        // 3. URL, куди WayForPay поверне клієнта
+        const RETURN_URL = 'https://destinycode.online/success.html'; // Має існувати!
+
+        // ... (Глобальний об'єкт birthData без змін) ...
         let birthData = {
             date: '',
             time: '',
             city: ''
         };
 
-        // *** Наш "Системний Промпт" - серце ШІ ***
+        // ... (systemPrompt без змін) ...
         const systemPrompt = `
             Ти — 'Майстер-Астролог'. Твоя роль — не просто перераховувати факти, а виступати в ролі глибокого, мудрого та емпатичного астро-психолога.
-
             Твоя Місія:
             Допомогти клієнту "розпакувати" свою натальну карту як "карту душі". Ти бачиш не просто планети, а психологічні патерни та прихований потенціал.
-
             Твій Тон:
             Емпатичний та Дбайливий: Ти звертаєшся до клієнта з теплом. Використовуй фрази як-от "Ваша душа прагне...", "Це ваш унікальний дар...".
             Авторитетний, але не Зарозумілий: Ти говориш як майстер, що бачить суть речей.
             Спілкуйся українською мовою.
-
             ЗАВДАННЯ (для БЕЗКОШТОВНОГО аналізу): 
             1. Тобі дадуть дату народження. Визнач за нею знак Сонця (Sun Sign).
             2. Напиши детальний, але стислий (4-5 абзаців) аналіз "Ядра Особистості" для цієї людини, фокусуючись лише на Сонячному знаку.
-            
             КЛЮЧОВІ ВИМОГИ: 
             - Говори прямо до користувача (на "ти").
             - Поясни сильні сторони та "точку росту" цього знаку.
@@ -345,7 +368,7 @@
             - Відповідай ТІЛЬКИ згенерованим текстом аналізу, без жодних привітань.
         `;
 
-        // Функція для зміни екранів
+        // ... (Функції showScreen, showModal, closeModal, generateAstrologyReport, typeWriter без змін) ...
         function showScreen(targetId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
@@ -353,7 +376,6 @@
             document.getElementById(targetId).classList.add('active');
         }
         
-        // Функції для модального вікна
         function showModal(title, message) {
             document.getElementById('modal-title').innerText = title;
             document.getElementById('modal-message').innerHTML = message;
@@ -364,24 +386,16 @@
             paymentModal.style.display = 'none';
         }
 
-        // Асинхронна функція для виклику Gemini API
         async function generateAstrologyReport(birthDate) {
-            
             const parts = birthDate.split('-');
             const dateObj = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
-            
             const options = { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' };
             const formattedDate = dateObj.toLocaleDateString('uk-UA', options).replace(' р.', '');
-
             const userQuery = `Моя дата народження: ${formattedDate}. Розкажи про моє "Ядро Особистості".`;
-
             const payload = {
                 contents: [{ parts: [{ text: userQuery }] }],
-                systemInstruction: {
-                    parts: [{ text: systemPrompt }]
-                },
+                systemInstruction: { parts: [{ text: systemPrompt }] },
             };
-
             let delay = 1000;
             for (let i = 0; i < 3; i++) {
                 try {
@@ -390,7 +404,6 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
                     });
-
                     if (response.ok) {
                         const result = await response.json();
                         const candidate = result.candidates?.[0];
@@ -418,7 +431,6 @@
              return "На жаль, сервіс тимчасово недоступний. Будь ласка, спробуйте пізніше.";
         }
 
-        // Функція для анімації набору тексту
         function typeWriter(element, text, speed, onComplete) {
             let i = 0;
             element.innerHTML = '';
@@ -434,117 +446,160 @@
             type();
         }
 
-        // 1. Обробник відправки форми (Крок 2 -> Крок 3 -> Крок 4)
+        // ... (Обробники birthForm, upgradeButton, continueToPaywallButton, skipButton без змін) ...
         birthForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
             const selectedDate = birthDateInput.value;
-            
             if (selectedDate === '') {
                 errorMessage.classList.remove('hidden');
             } else {
                 errorMessage.classList.add('hidden');
                 birthData.date = selectedDate; 
-                
                 showScreen('loading-step'); 
-                
                 const reportPromise = generateAstrologyReport(selectedDate);
-
-                // ОНОВЛЕНІ ТЕКСТИ (з v15/v17)
                 const loadingSteps = [
                     'Аналізую положення планет', 
                     'Будую твою натальну карту', 
                     'Приготуйся дізнатись, наскільки ти ахуєнна'
                 ];
                 let stepIndex = 0;
-
                 const runTyping = async () => {
                     if (stepIndex < loadingSteps.length) {
                         await new Promise(resolve => typeWriter(loadingText, loadingSteps[stepIndex], 90, resolve));
                         stepIndex++;
                         if (stepIndex === loadingSteps.length) {
                             const reportText = await reportPromise;
-                            
                             freeReportText.innerHTML = reportText
                                 .replace(/\n/g, '<br><br>')
                                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-                            
                             showScreen('result-step'); 
                         } else {
                             runTyping();
                         }
                     }
                 };
-
                 runTyping();
             }
         });
         
-        // 2. Обробник кнопки UPGRADE (Крок 4 -> Крок 5: Збір додаткових даних)
         upgradeButton.addEventListener('click', () => {
             showScreen('premium-data-step');
         });
         
-        // 3. V16: ОНОВЛЕНА ЛОГІКА для Кроку 5 (Опціональний ввід)
-        
-        // 3.1 Обробник кнопки "Отримати детальний аналіз"
         continueToPaywallButton.addEventListener('click', (e) => {
             e.preventDefault(); 
-            
             birthData.time = document.getElementById('birth-time').value;
             birthData.city = document.getElementById('birth-city').value;
-            
             showScreen('final-paywall-step');
         });
         
-        // 3.2 НОВИЙ Обробник кнопки "Пропустити"
         skipButton.addEventListener('click', () => {
             birthData.time = '';
             birthData.city = '';
-            
             showScreen('final-paywall-step');
         });
         
-        // 4. Обробник Фінальної кнопки Оплати (Крок 6 -> Stripe)
+
+        // *** V18: НОВИЙ ОБРОБНИК ДЛЯ WAYFORPAY ***
         checkoutButton.addEventListener('click', async () => {
             
-            checkoutButton.innerText = "Обробка...";
+            checkoutButton.innerText = "Створюю замовлення...";
             checkoutButton.disabled = true;
 
             try {
-                // *** 3.1. ЕТАП: ВИКЛИК ТВОГО БЕКЕНДУ ДЛЯ СТВОРЕННЯ STRIPE CHECKOUT SESSION ***
+                // 1. Готуємо дані для WayForPay
+                const orderReference = `destinycode-${Date.now()}`; // Унікальний ID замовлення
+                const amount = '2.49'; // Сума. WayForPay приймає як рядок
+                const currency = 'EUR'; // Валюта
+                const productName = 'Повний ШІ-Аналіз Натальної Карти';
+
+                // 2. Звертаємось до нашого БЕКЕНДУ, щоб отримати безпечний підпис
+                const response = await fetch(BACKEND_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        orderReference: orderReference,
+                        amount: amount,
+                        currency: currency,
+                        productName: productName,
+                        // Передаємо наші дані, щоб бекенд їх повернув для форми
+                        date: birthData.date, 
+                        time: birthData.time, 
+                        city: birthData.city 
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Помилка сервера при отриманні підпису.");
+                }
+
+                // 3. Динамічно створюємо і відправляємо форму на WayForPay
                 
-                // ВАЖЛИВО: Ти маєш замінити URL-адресу нижче на URL-адресу твого власного сервера!
-                // const response = await fetch('/create-checkout-session', { ... });
-                // const session = await response.json();
-                // const result = await stripe.redirectToCheckout({ sessionId: session.id });
+                // Очищуємо контейнер
+                wfpFormContainer.innerHTML = ''; 
+                
+                // Створюємо форму
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = 'https://secure.wayforpay.com/pay';
+                form.acceptCharset = 'utf-8';
 
-                // *** СИМУЛЯЦІЯ УСПІХУ ТА ІНСТРУКЦІЇ ***
-                const message = `
-                    <p class="text-left mb-4">Дані народження зібрано:</p>
-                    <ul class="list-disc list-inside text-left mx-auto max-w-xs space-y-2 mb-6">
-                        <li>Дата: <strong>${birthData.date}</strong></li>
-                        <li>Час: <strong>${birthData.time || 'Не вказано'}</strong></li>
-                        <li>Місто: <strong>${birthData.city || 'Не вказано'}</strong></li>
-                    </ul>
-                    <p class="text-xl font-bold text-red-400">Наступний крок:</p>
-                    <p class="text-left">
-                        Тобі потрібно створити **бек-енд функцію** (наприклад, у Firebase Cloud Functions або Node.js), яка прийматиме ці дані, створюватиме **Stripe Checkout Session** і повертатиме його \`sessionId\`.
-                    </p>
-                `;
-                showModal("Майже Готово до Монетизації!", message);
+                // Створюємо об'єкт з усіма полями, які вимагає WayForPay
+                const fields = {
+                    merchantAccount: data.merchantLogin,
+                    merchantAuthType: 'SimpleSignature',
+                    merchantDomainName: 'destinycode.online',
+                    merchantSignature: data.merchantSignature,
+                    orderReference: data.orderReference,
+                    orderDate: data.orderDate,
+                    amount: data.amount,
+                    currency: data.currency,
+                    productName: [data.productName], // WFP очікує масив
+                    productCount: [1], // Масив
+                    productPrice: [data.amount], // Масив
+                    returnUrl: RETURN_URL,
+                    // Додаємо наші дані, щоб отримати їх у вебхуку
+                    merchantTransactionSecureType: 'AUTO',
+                    customParam_date: birthData.date,
+                    customParam_time: birthData.time,
+                    customParam_city: birthData.city,
+                };
+                
+                // Додаємо кожне поле як прихований input
+                for (const key in fields) {
+                    // WFP очікує масиви у форматі key[]
+                    if (Array.isArray(fields[key])) {
+                        fields[key].forEach(value => {
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = `${key}[]`;
+                            input.value = value;
+                            form.appendChild(input);
+                        });
+                    } else {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = fields[key];
+                        form.appendChild(input);
+                    }
+                }
 
+                // Додаємо форму на сторінку і відправляємо її
+                wfpFormContainer.appendChild(form);
+                form.submit();
 
             } catch (error) {
-                console.error('Payment process error:', error);
-                showModal("Системна Помилка", "Сталася непередбачена помилка при ініціалізації оплати.");
-            } finally {
-                // Reset button state
+                console.error('WayForPay process error:', error);
+                showModal("Системна Помилка", error.message || "Сталася непередбачена помилка при ініціалізації оплати.");
+                
+                // Повертаємо кнопку в робочий стан
                 checkoutButton.innerText = "Розблокувати зараз за €2.49";
                 checkoutButton.disabled = false;
             }
         });
-
 
         // Встановлюємо плейсхолдер для дати
         birthDateInput.setAttribute('placeholder', 'Оберіть дату');
