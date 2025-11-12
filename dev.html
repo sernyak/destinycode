@@ -73,7 +73,7 @@
              color: var(--primary-text-color);
         }
         
-        /* ... (інші стилі: .typing-container, .screen, .modal, .skip-button) ... */
+        /* Анімація набору тексту */
         .typing-container {
             font-size: 1.5rem;
             color: var(--secondary-text-color);
@@ -92,6 +92,7 @@
             50% { opacity: 0; }
         }
 
+        /* Скріни для переходу */
         .screen {
             display: none;
             flex-direction: column;
@@ -102,6 +103,7 @@
             display: flex;
         }
         
+        /* Модальне вікно для інформації/помилок */
         .modal {
             position: fixed;
             top: 0;
@@ -130,6 +132,12 @@
             to { opacity: 1; transform: scale(1); }
         }
 
+        /* V19: ВИДАЛЕНО АНІМАЦІЮ СПАЛАХУ */
+        /* @keyframes flash-gold ... (видалено) */
+        /* .animate-flash-gold ... (видалено) */
+
+
+        /* Стиль для нової кнопки "Пропустити" */
         .skip-button {
             background: none;
             border: none;
@@ -174,7 +182,6 @@
                 <div>
                     <!-- V20 FIX: Збільшуємо шрифт лейблу для балансу -->
                     <label for="birth-date" class="block text-md font-medium text-[var(--secondary-text-color)] mb-2 text-left">Ваша дата народження:</label>
-                    <!-- V20: Наше стилізоване поле вводу -->
                     <input type="date" id="birth-date" name="birth-date" required>
                     <p id="error-message" class="text-red-400 text-sm text-left mt-2 hidden">Будь ласка, оберіть вашу дату народження.</p>
                 </div>
@@ -229,13 +236,11 @@
                 <div>
                     <!-- V20 FIX: Збільшуємо шрифт лейблу для балансу -->
                     <label for="birth-time" class="block text-md font-medium text-[var(--secondary-text-color)] mb-2 text-left">Точний час народження (опціонально):</label>
-                    <!-- V20: Наше стилізоване поле вводу -->
                     <input type="time" id="birth-time" name="birth-time">
                 </div>
                  <div>
                     <!-- V20 FIX: Збільшуємо шрифт лейблу для балансу -->
                     <label for="birth-city" class="block text-md font-medium text-[var(--secondary-text-color)] mb-2 text-left">Місто народження (опціонально):</label>
-                    <!-- V20: Наше стилізоване поле вводу -->
                     <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ">
                 </div>
 
@@ -338,7 +343,7 @@
             Допомогти клієнту "розпакувати" свою натальну карту як "карту душі". Ти бачиш не просто планети, а психологічні патерни та прихований потенціал.
 
             Твій Тон:
-            Емпатичний та Дбайливий: Ти звертаєшся до клієнта з теплом. Використовуй фрази як-от "Ваша душа прагне...", "Це ваш уніканий дар...".
+            Емпатичний та Дбайливий: Ти звертаєшся до клієнта з теплом. Використовуй фрази як-от "Ваша душа прагне...", "Це ваш унікальний дар...".
             Авторитетний, але не Зарозумілий: Ти говориш як майстер, що бачить суть речей.
             Спілкуйся українською мовою.
 
