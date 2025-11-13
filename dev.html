@@ -99,14 +99,11 @@
             text-align: center; /* Центруємо обрану дату */
         }
 
-        /* Приховуємо "битий" текст "дд/мм/рррр" */
-        input[type="date"]:not(:focus):not([value])::-webkit-datetime-edit {
+        /* * === ЗМІНА 1 (CSS): Замінили :not([value]) на .date-input-empty ===
+         * Приховуємо "битий" текст "дд/мм/рррр"
+         */
+        input[type="date"].date-input-empty:not(:focus)::-webkit-datetime-edit {
             color: transparent;
-        }
-        
-        /* === НОВИЙ ФІКС: Центрування ОБРАНОЇ дати === */
-        input[type="date"]::-webkit-datetime-edit {
-             text-align: center;
         }
         
         /* Позиціонуємо іконку календаря */
@@ -118,8 +115,10 @@
             opacity: 0.7;
         }
         
-        /* Створюємо наш плейсхолдер */
-        input[type="date"]:not(:focus):not([value])::before {
+        /* * === ЗМІНА 2 (CSS): Замінили :not([value]) на .date-input-empty ===
+         * Створюємо наш плейсхолдер 
+         */
+        input[type="date"].date-input-empty:not(:focus)::before {
             content: attr(placeholder);
             position: absolute;
             left: 50%;
@@ -307,6 +306,7 @@
                 <!-- === ОНОВЛЕНО: Виправлено для iOS === -->
                 <div class="relative">
                     <label for="birth-date" class="sr-only">Ваша дата народження:</label>
+                    <!-- Інпут не змінився, магія в CSS та JS -->
                     <input type="date" id="birth-date" name="birth-date" class="input-field text-center h-14" required placeholder="Оберіть дату">
                     <p id="error-message" class="text-red-400 text-sm text-left mt-2" style="display: none;">
                         Будь ласка, оберіть вашу дату народження.
@@ -979,7 +979,7 @@
 
                 } catch (error) {
                     console.error('WayForPay process error:', error);
-                    showModal("Системна Помилка", error.message || "Сталася непередбачена помилка при ініціалізації оплати.");
+                    showModal("Системна Помилка", error.message || "Сталася непередбачена помилка при ініціалілізації оплати.");
                     finalCheckoutButton.innerText = "Розблокувати зараз за 149 грн";
                     finalCheckoutButton.disabled = false;
                 }
@@ -1099,8 +1099,24 @@
 
             // --- 6. ІНІЦІАЛІЗАЦІЯ ---
             
-            // Встановлюємо плейсхолдер для дати
+            // === ЗМІНА 3 (JS): ПОКРАЩЕНА ЛОГІКА ПЛЕЙСХОЛДЕРА ДАТИ ===
             birthDateInput.setAttribute('placeholder', 'Оберіть дату');
+
+            function updateDatePlaceholder() {
+                if (birthDateInput.value === '') {
+                    birthDateInput.classList.add('date-input-empty');
+                } else {
+                    birthDateInput.classList.remove('date-input-empty');
+                }
+            }
+            
+            // Додаємо слухачів для миттєвої реакції
+            birthDateInput.addEventListener('input', updateDatePlaceholder);
+            birthDateInput.addEventListener('change', updateDatePlaceholder);
+            
+            // Встановлюємо початковий стан при завантаженні
+            updateDatePlaceholder();
+            // === КІНЕЦЬ ЛОГІКИ ПЛЕЙСХОЛДЕРА ===
             
             // Перевіряємо, чи ми не повернулися з WayForPay
             handlePaymentReturn();
