@@ -553,9 +553,10 @@
             
             // !!! УВАГА: ВСТАВ СВІЙ КЛЮЧ СЮДИ !!!
             // !!! ЦЕ НЕБЕЗПЕЧНО ДЛЯ PRODACTION. Використовуй лише для тимчасового тесту.
-            const apiKey = "YOUR_API_KEY_GOES_HERE"; // <--- ЗАМІНИ ЦЕ НА СВІЙ КЛЮЧ
+            const apiKey = "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; // <--- Твій ключ
             
-            const apiUrl = `https://generativethinking.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            // --- ВИПРАВЛЕНО: 'generativethinking' -> 'generativelanguage' ---
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
             // Конфігурація WayForPay (з dev.html)
             // !! ВАЖЛИВО: Заміни це на реальний URL своєї опублікованої функції !!
