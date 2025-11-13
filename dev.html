@@ -266,13 +266,15 @@
 
             <!-- Форма збору дати -->
             <form id="birth-form" class="w-full space-y-4">
-                <div>
+                <!-- === ОНОВЛЕНО: Додано w-3/4 та mx-auto для центрування === -->
+                <div class="w-3/4 mx-auto">
                     <label for="birth-date" class="sr-only">Ваша дата народження:</label>
                     <input type="date" id="birth-date" name="birth-date" class="input-field text-center" required>
                     <p id="error-message" class="text-red-400 text-sm text-left mt-2" style="display: none;">
                         Будь ласка, оберіть вашу дату народження.
                     </p>
                 </div>
+                <!-- === Кінець оновлення === -->
                 
                 <button type="submit" class="btn btn-primary !text-lg !py-4">
                     Дізнатися негайно
@@ -338,14 +340,18 @@
             </p>
             
             <div id="premium-form-container" class="w-full space-y-4">
-                <div>
-                    <label for="birth-time" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Точний час народження (опціонально):</label>
-                    <input type="time" id="birth-time" name="birth-time" class="input-field text-center">
+                <!-- === ОНОВЛЕНО: Додано grid-контейнер === -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="birth-time" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Точний час (опц.):</label>
+                        <input type="time" id="birth-time" name="birth-time" class="input-field text-center">
+                    </div>
+                     <div>
+                        <label for="birth-city" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Місто (опц.):</label>
+                        <input type="text" id="birth-city" name="birth-city" placeholder="Напр., Київ" class="input-field text-center">
+                    </div>
                 </div>
-                 <div>
-                    <label for="birth-city" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Місто народження (опціонально):</label>
-                    <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ" class="input-field text-center">
-                </div>
+                <!-- === Кінець оновлення === -->
 
                 <div class="pt-4 space-y-3">
                     <button type="button" id="continue-to-paywall-button" class="btn btn-primary !text-lg !py-4">
