@@ -265,7 +265,7 @@
                 </h2>
                 <p class="text-lg" style="color: var(--secondary-text-color);">
                     Обери дату народження, щоб дізнатися, на скільки ти ахуєнна 😇
-                </p>
+                </spt>
             </div>
 
             <!-- Форма збору дати -->
@@ -306,7 +306,7 @@
             
             <div class="p-5 rounded-lg space-y-3" style="background-color: var(--card-bg-color); border: 1px solid var(--border-color);">
                 <h3 class="text-xl font-bold" style="color: var(--accent-color);">
-                    ✅ Твоє Ядро Особистості
+                    ✅ Твоє Сонце (1/3 "Золотої Трійки")
                 </h3>
                 <!-- Сюди вставляється текст з Gemini -->
                 <div id="free-report-text" class="text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
@@ -332,11 +332,11 @@
         <!-- ====================================================== -->
         <section id="premium-data-step" class="funnel-step space-y-6 text-center">
              <h2 class="text-3xl font-bold text-white tracking-tight">
-                Розкрий повний потенціал
+                Розблокуй "Золоту Трійку"
             </h2>
 
             <p class="text-lg" style="color: var(--secondary-text-color);">
-                Для розрахунку <strong>Асценденту</strong> та <strong>Домів</strong> нам потрібен точний час та місце.
+                Твій аналіз Сонця - це лише 1/3 твого ядра. Введи час та місто, щоб розкрити свій <strong>Асцендент</strong> (твоя маска) та <strong>Місяць</strong> (твої емоції).
             </p>
             
             <div id="premium-form-container" class="w-full space-y-4">
@@ -397,7 +397,7 @@
             <!-- Логіка оплати (з dev.html) -->
             <div class="space-y-4 pt-4">
                 <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
-                    Розблокувати зараз за €2.49
+                    Розблокувати зараз за 149 грн
                 </button>
                 <p class="text-xs text-center" style="color: var(--secondary-text-color);">
                     🔒 Безпечна одноразова оплата.
@@ -825,8 +825,8 @@
                 try {
                     // 1. Готуємо дані
                     const orderReference = `destinycode-${Date.now()}`;
-                    const amount = '2.49';
-                    const currency = 'EUR';
+                    const amount = '149'; // Змінено на гривні
+                    const currency = 'UAH'; // Змінено на гривні
                     const productName = 'Повний ШІ-Портрет Destiny Code';
 
                     // 2. Звертаємось до БЕКЕНДУ за підписом
@@ -895,7 +895,7 @@
                 } catch (error) {
                     console.error('WayForPay process error:', error);
                     showModal("Системна Помилка", error.message || "Сталася непередбачена помилка при ініціалізації оплати.");
-                    finalCheckoutButton.innerText = "Розблокувати зараз за €2.49";
+                    finalCheckoutButton.innerText = "Розблокувати зараз за 149 грн";
                     finalCheckoutButton.disabled = false;
                 }
                 
