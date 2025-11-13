@@ -94,39 +94,8 @@
         }
 
         /* === HACK: Виправлення плейсхолдера дати для iOS === */
-        input[type="date"] {
-            position: relative;
-            text-align: center; /* Центруємо обрану дату */
-        }
-
-        /* * === ЗМІНА 1 (CSS): Замінили :not([value]) на .date-input-empty ===
-         * Приховуємо "битий" текст "дд/мм/рррр"
-         */
-        input[type="date"].date-input-empty:not(:focus)::-webkit-datetime-edit {
-            color: transparent;
-        }
-        
-        /* Позиціонуємо іконку календаря */
-        input[type="date"]::-webkit-calendar-picker-indicator {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            opacity: 0.7;
-        }
-        
-        /* * === ЗМІНА 2 (CSS): Замінили :not([value]) на .date-input-empty ===
-         * Створюємо наш плейсхолдер 
-         */
-        input[type="date"].date-input-empty:not(:focus)::before {
-            content: attr(placeholder);
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            color: var(--secondary-text-color);
-            pointer-events: none; /* Дозволяє клікати крізь нього */
-        }
+        /* === ЗМІНА 1 (CSS): Видаляємо ВСІ старі CSS-хаки для input[type="date"] === */
+        /* (Цей блок CSS було повністю видалено, оскільки він більше не потрібен) */
         /* === Кінець HACK === */
 
 
@@ -303,15 +272,23 @@
 
             <!-- Форма збору дати -->
             <form id="birth-form" class="w-full space-y-4">
-                <!-- === ОНОВЛЕНО: Виправлено для iOS === -->
-                <div class="relative">
-                    <label for="birth-date" class="sr-only">Ваша дата народження:</label>
-                    <!-- Інпут не змінився, магія в CSS та JS -->
-                    <input type="date" id="birth-date" name="birth-date" class="input-field text-center h-14" required placeholder="Оберіть дату">
-                    <p id="error-message" class="text-red-400 text-sm text-left mt-2" style="display: none;">
-                        Будь ласка, оберіть вашу дату народження.
-                    </p>
-                </div>
+                <!-- === ОНОВЛЕНО: Повністю перероблено для стабільності та іконки === -->
+                <label for="birth-date" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
+                    <!-- Іконка календаря -->
+                    <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    
+                    <!-- Текст плейсхолдера (буде замінений JS) -->
+                    <span id="date-placeholder" style="color: var(--secondary-text-color);">Оберіть дату</span>
+                    
+                    <!-- Справжній інпут, повністю прихований, але функціональний -->
+                    <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required 
+                           style="opacity: 0.001;"> <!-- Використовуємо opacity 0.001 для кращої сумісності -->
+                </label>
+                <p id="error-message" class="text-red-400 text-sm text-left mt-2" style="display: none;">
+                    Будь ласка, оберіть вашу дату народження.
+                </p>
                 <!-- === Кінець оновлення === -->
                 
                 <button type="submit" class="btn btn-primary !text-lg h-14">
@@ -555,6 +532,7 @@
             const birthForm = document.getElementById('birth-form');
             const birthDateInput = document.getElementById('birth-date');
             const errorMessage = document.getElementById('error-message');
+            const datePlaceholder = document.getElementById('date-placeholder'); // <-- ДОДАНО
             
             // Елементи Кроку 2 (Завантаження)
             const loadingTextEl = document.getElementById('loading-text');
@@ -1099,14 +1077,20 @@
 
             // --- 6. ІНІЦІАЛІЗАЦІЯ ---
             
-            // === ЗМІНА 3 (JS): ПОКРАЩЕНА ЛОГІКА ПЛЕЙСХОЛДЕРА ДАТИ ===
-            birthDateInput.setAttribute('placeholder', 'Оберіть дату');
-
+            // === ЗМІНА 3 (JS): ЛОГІКА ДЛЯ КАСТОМНОГО ПЛЕЙСХОЛДЕРА ДАТИ ===
+            // (Попередній блок updateDatePlaceholder було повністю замінено)
             function updateDatePlaceholder() {
                 if (birthDateInput.value === '') {
-                    birthDateInput.classList.add('date-input-empty');
+                    datePlaceholder.innerText = 'Оберіть дату';
+                    datePlaceholder.style.color = 'var(--secondary-text-color)';
                 } else {
-                    birthDateInput.classList.remove('date-input-empty');
+                    // Форматуємо YYYY-MM-DD у DD.MM.YYYY
+                    // (Використовуємо split для надійності, оскільки toLocaleDateString може враховувати часові пояси)
+                    const parts = birthDateInput.value.split('-');
+                    const formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+                    
+                    datePlaceholder.innerText = formattedDate;
+                    datePlaceholder.style.color = 'var(--primary-text-color)'; // Робимо обрану дату яскравою
                 }
             }
             
