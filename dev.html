@@ -104,6 +104,11 @@
             color: transparent;
         }
         
+        /* === НОВИЙ ФІКС: Центрування ОБРАНОЇ дати === */
+        input[type="date"]::-webkit-datetime-edit {
+             text-align: center;
+        }
+        
         /* Позиціонуємо іконку календаря */
         input[type="date"]::-webkit-calendar-picker-indicator {
             position: absolute;
