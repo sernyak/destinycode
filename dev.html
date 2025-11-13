@@ -359,7 +359,20 @@
             <div id="premium-form-container" class="w-full space-y-4">
                 <div>
                     <label for="birth-time" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Точний час народження (опціонально):</label>
-                    <input type="time" id="birth-time" name="birth-time" class="input-field text-center">
+                    <!-- === ОНОВЛЕНО: Застосовано той самий "трюк", що й для дати === -->
+                    <label for="birth-time" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
+                        <!-- Іконка годинника -->
+                        <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        
+                        <!-- Текст плейсхолдера (буде замінений JS) -->
+                        <span id="time-placeholder" style="color: var(--secondary-text-color);">Оберіть час</span>
+                        
+                        <!-- Справжній інпут, повністю прихований, але функціональний -->
+                        <input type="time" id="birth-time" name="birth-time" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" style="opacity: 0.001;">
+                    </label>
+                    <!-- === Кінець оновлення === -->
                 </div>
                  <div>
                     <label for="birth-city" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Місто народження (опціонально):</label>
@@ -546,6 +559,7 @@
 
             // Елементи Кроку 4 (Преміум Дані)
             const birthTimeInput = document.getElementById('birth-time');
+            const timePlaceholder = document.getElementById('time-placeholder'); // <-- ДОДАНО
             const birthCityInput = document.getElementById('birth-city');
             const continueToPaywallButton = document.getElementById('continue-to-paywall-button');
             const skipButton = document.getElementById('skip-button');
@@ -1101,6 +1115,26 @@
             // Встановлюємо початковий стан при завантаженні
             updateDatePlaceholder();
             // === КІНЕЦЬ ЛОГІКИ ПЛЕЙСХОЛДЕРА ===
+            
+            // === ДОДАНО: ЛОГІКА ДЛЯ КАСТОМНОГО ПЛЕЙСХОЛДЕРА ЧАСУ ===
+            function updateTimePlaceholder() {
+                if (birthTimeInput.value === '') {
+                    timePlaceholder.innerText = 'Оберіть час';
+                    timePlaceholder.style.color = 'var(--secondary-text-color)';
+                } else {
+                    // Час вже у форматі HH:MM
+                    timePlaceholder.innerText = birthTimeInput.value;
+                    timePlaceholder.style.color = 'var(--primary-text-color)'; // Робимо обраний час яскравим
+                }
+            }
+            
+            // Додаємо слухачів для миттєвої реакції
+            birthTimeInput.addEventListener('input', updateTimePlaceholder);
+            birthTimeInput.addEventListener('change', updateTimePlaceholder);
+            
+            // Встановлюємо початковий стан при завантаженні
+            updateTimePlaceholder();
+            // === КІНЕЦЬ ЛОГІКИ ЧАСУ ===
             
             // Перевіряємо, чи ми не повернулися з WayForPay
             handlePaymentReturn();
