@@ -70,6 +70,15 @@
             font-size: 1rem;
             font-family: 'Montserrat', sans-serif;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            
+            /* === ОНОВЛЕНО: Жорсткий фікс висоти для iOS === */
+            /* Кнопка має padding: 1rem (16px*2=32px) + line-height: 1.75rem (28px) = 60px.
+                Ми жорстко задаємо інпуту ту саму висоту.
+            */
+            height: 3.75rem; /* 60px */
+            -webkit-appearance: none; /* Скидаємо дефолтний вигляд iOS */
+            appearance: none;
+            /* === Кінець оновлення === */
         }
         
         .input-field:focus {
@@ -266,17 +275,18 @@
 
             <!-- Форма збору дати -->
             <form id="birth-form" class="w-full space-y-4">
-                <!-- === ОНОВЛЕНО: Прибрано w-3/4 div, додано !text-lg === -->
+                <!-- === ОНОВЛЕНО: Прибрано !text-lg, додано h-14 === -->
                 <div>
                     <label for="birth-date" class="sr-only">Ваша дата народження:</label>
-                    <input type="date" id="birth-date" name="birth-date" class="input-field text-center !text-lg" required>
+                    <input type="date" id="birth-date" name="birth-date" class="input-field text-center h-14" required>
                     <p id="error-message" class="text-red-400 text-sm text-left mt-2" style="display: none;">
                         Будь ласка, оберіть вашу дату народження.
                     </p>
                 </div>
                 <!-- === Кінець оновлення === -->
                 
-                <button type="submit" class="btn btn-primary !text-lg !py-4">
+                <!-- === ОНОВЛЕНО: Прибрано !py-4, додано h-14 === -->
+                <button type="submit" class="btn btn-primary !text-lg h-14">
                     Дізнатися негайно
                 </button>
             </form>
