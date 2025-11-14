@@ -1064,7 +1064,7 @@
                         // Передаємо наші дані, щоб отримати їх у вебхуку
                         merchantTransactionSecureType: 'AUTO',
                         customParam_date: userBirthData.date, // <--- Зберігаємо
-                        customParam_time: userBirthData.time, // <--- Зберігаємо
+                        customParam_time: userBirthData.time, // <--- Зберіга...
                         customParam_city: userBirthData.city, // <--- Зберігаємо
                         // Передаємо валідовані гео-дані
                         customParam_lat: userBirthData.geo ? userBirthData.geo.latitude : '',
@@ -1095,7 +1095,7 @@
 
                 } catch (error) {
                     console.error('WayForPay process error:', error);
-                    showModal("Системна Помилка", error.message || "Сталася непередбачена помилка при ініціалілізації оплати.");
+                    showModal("Системна Помилка", error.message || "Сталася непередбачена помилка при ініціаЛ...ліоплати.");
                     setButtonLoading(finalCheckoutButton, false);
                 }
                 
@@ -1294,7 +1294,11 @@
             }
             birthDateInput.addEventListener('input', updateDatePlaceholder);
             birthDateInput.addEventListener('change', updateDatePlaceholder);
-            updateDatePlaceholder();
+            
+            // === ОНОВЛЕНИЙ РЯДОК: Встановлюємо розумний рік за замовчуванням ===
+            birthDateInput.value = '1998-01-01'; 
+            
+            updateDatePlaceholder(); // Одразу оновлюємо плейсхолдер, щоб показати "01.01.1998"
             
             // Логіка Плейсхолдера Часу
             function updateTimePlaceholder() {
