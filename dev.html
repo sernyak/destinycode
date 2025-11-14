@@ -312,13 +312,13 @@
                     <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <span id="date-placeholder" style="color: var(--secondary-text-color);">Оберіть дату</span>
+                    <span id="date-placeholder" style="color: var(--secondary-text-color);">Обери дату</span>
                     <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required 
                            style="opacity: 0.001;"> 
                 </label>
                 <!-- === ОНОВЛЕНО: Тепер це .error-text === -->
                 <p id="error-message" class="error-text">
-                    Будь ласка, оберіть вашу дату народження.
+                    Будь ласка, обери дату народження.
                 </p>
                 
                 <button type="submit" class="btn btn-primary !text-lg h-14">
@@ -387,7 +387,7 @@
                         <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span id="time-placeholder" style="color: var(--secondary-text-color);">Оберіть час</span>
+                        <span id="time-placeholder" style="color: var(--secondary-text-color);">Обери час</span>
                         <input type="time" id="birth-time" name="birth-time" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" style="opacity: 0.001;">
                     </label>
                 </div>
@@ -867,7 +867,11 @@
                 e.preventDefault();
                 const selectedDate = birthDateInput.value;
                 
-                if (selectedDate === '') {
+                // === ЗМІНА: Перевіряємо, чи дата не є "за замовчуванням" 1998-01-01 ===
+                if (selectedDate === '' || selectedDate === '1998-01-01') { 
+                    // Тепер ми перевіряємо і порожнє значення (на старті) і 1998-01-01
+                    // (якщо користувач просто закрив календар)
+                    errorMessage.innerText = "Будь ласка, обери справжню дату народження.";
                     errorMessage.style.display = 'block';
                 } else {
                     errorMessage.style.display = 'none';
@@ -1064,7 +1068,7 @@
                         // Передаємо наші дані, щоб отримати їх у вебхуку
                         merchantTransactionSecureType: 'AUTO',
                         customParam_date: userBirthData.date, // <--- Зберігаємо
-                        customParam_time: userBirthData.time, // <--- Зберіга...
+                        customParam_time: userBirthData.time, // <--- Зберігаємо
                         customParam_city: userBirthData.city, // <--- Зберігаємо
                         // Передаємо валідовані гео-дані
                         customParam_lat: userBirthData.geo ? userBirthData.geo.latitude : '',
@@ -1095,7 +1099,7 @@
 
                 } catch (error) {
                     console.error('WayForPay process error:', error);
-                    showModal("Системна Помилка", error.message || "Сталася непередбачена помилка при ініціаЛ...ліоплати.");
+                    showModal("Системна Помилка", error.message || "Сталася непередбачена помилка при ініціалілізації оплати.");
                     setButtonLoading(finalCheckoutButton, false);
                 }
                 
@@ -1278,27 +1282,57 @@
 
             // --- 6. ІНІЦІАЛІЗАЦІЯ ---
             
-            // Логіка Плейсхолдера Дати
+            // === ОНОВЛЕНА ЛОГІКА ПЛЕЙСХОЛДЕРА ДАТИ (ГІБРИДНИЙ ПІДХІД) ===
             function updateDatePlaceholder() {
                 if (birthDateInput.value === '') {
-                    datePlaceholder.innerText = 'Оберіть дату';
+                    datePlaceholder.innerText = 'Обери дату';
                     datePlaceholder.style.color = 'var(--secondary-text-color)';
                 } else {
                     // Форматуємо YYYY-MM-DD у DD.MM.YYYY
                     const parts = birthDateInput.value.split('-');
-                    const formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
-                    
-                    datePlaceholder.innerText = formattedDate;
-                    datePlaceholder.style.color = 'var(--primary-text-color)';
+                    if (parts.length === 3) { // Перевірка, чи це валідна дата
+                        const formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+                        datePlaceholder.innerText = formattedDate;
+                        datePlaceholder.style.color = 'var(--primary-text-color)';
+                    } else {
+                        // Якщо щось пішло не так
+                        datePlaceholder.innerText = 'Обери дату';
+                        datePlaceholder.style.color = 'var(--secondary-text-color)';
+                    }
                 }
             }
-            birthDateInput.addEventListener('input', updateDatePlaceholder);
-            birthDateInput.addEventListener('change', updateDatePlaceholder);
+
+            // 1. Слухач, який реагує на ЗМІНУ дати (коли користувач обрав)
+            birthDateInput.addEventListener('change', () => {
+                updateDatePlaceholder();
+            });
+            // 2. Слухач, який реагує на ВВЕДЕННЯ (для деяких мобільних)
+            birthDateInput.addEventListener('input', () => {
+                updateDatePlaceholder();
+            });
+
+            // 3. Функція, що спрацьовує при першому фокусі/кліку
+            function setDefaultDateOnFirstFocus() {
+                if (birthDateInput.value === '') { // Тільки якщо дата ще не обрана
+                    birthDateInput.value = '1998-01-01';
+                }
+                // Видаляємо слухач, щоб він не спрацьовував знову
+                birthDateInput.removeEventListener('focus', setDefaultDateOnFirstFocus);
+                birthDateInput.removeEventListener('click', setDefaultDateOnFirstFocus);
+            }
             
-            // === ОНОВЛЕНИЙ РЯДОК: Встановлюємо розумний рік за замовчуванням ===
-            birthDateInput.value = '1998-01-01'; 
-            
-            updateDatePlaceholder(); // Одразу оновлюємо плейсхолдер, щоб показати "01.01.1998"
+            birthDateInput.addEventListener('focus', setDefaultDateOnFirstFocus);
+            birthDateInput.addEventListener('click', setDefaultDateOnFirstFocus); // Для надійності на iOS
+
+            // 4. Слухач, який спрацьовує, коли користувач закрив календар (тапнув вбік)
+            // Це потрібно, якщо він відкрив (значення стало '1998-01-01'), але нічого
+            // не змінив і просто закрив. 'change' не спрацює, а 'blur' - спрацює.
+            birthDateInput.addEventListener('blur', () => {
+                updateDatePlaceholder();
+            });
+
+            // 5. Початкове встановлення
+            updateDatePlaceholder(); // Одразу оновлюємо плейсхолдер (покаже "Обери дату", бо value = '')
             
             // Логіка Плейсхолдера Часу
             function updateTimePlaceholder() {
