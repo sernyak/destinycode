@@ -11,6 +11,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- Астро-бібліотека -->
+    <script src="https://cdn.jsdelivr.net/npm/circular-natal-horoscope-js/dist/circular-natal-horoscope-js.browser.min.js"></script>
+    
     <style>
         /* --- Базові Змінні --- */
         :root {
@@ -20,17 +23,16 @@
             --accent-color: #cda45e; /* Золотий акцент */
             --card-bg-color: #1a1a1a;
             --border-color: #333333;
+            --error-color: #ef4444; /* red-500 */
         }
         
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: var(--bg-color);
             color: var(--primary-text-color);
-            /* Заборона виділення тексту для "преміум" відчуття */
             -webkit-user-select: none; /* Safari */
             -ms-user-select: none; /* IE 10+ */
             user-select: none; /* Standard */
-            /* Заборона "tap highlight" на мобільних */
             -webkit-tap-highlight-color: transparent; 
         }
 
@@ -78,10 +80,23 @@
             border-color: var(--accent-color);
         }
         
-        /* Колір іконки календаря (змінено) */
+        /* === НОВИЙ СТИЛЬ: Поле з помилкою === */
+        .input-field.input-error {
+            border-color: var(--error-color);
+            box-shadow: 0 0 0 2px var(--error-color);
+        }
+
+        /* === НОВИЙ СТИЛЬ: Текст помилки === */
+        .error-text {
+            color: var(--error-color);
+            font-size: 0.875rem; /* text-sm */
+            text-align: left;
+            display: none; /* Сховано за замовчуванням */
+            margin-top: 0.5rem; /* mt-2 */
+        }
+
         input[type="date"]::-webkit-calendar-picker-indicator,
         input[type="time"]::-webkit-calendar-picker-indicator {
-            /* Новий фільтр для золотого кольору */
             filter: invert(80%) sepia(30%) saturate(5000%) hue-rotate(350deg) brightness(1.1);
             cursor: pointer;
             opacity: 0.9;
@@ -93,11 +108,6 @@
             opacity: 1;
         }
 
-        /* === HACK: Виправлення плейсхолдера дати для iOS === */
-        /* === ЗМІНА 1 (CSS): Видаляємо ВСІ старі CSS-хаки для input[type="date"] === */
-        /* (Цей блок CSS було повністю видалено, оскільки він більше не потрібен) */
-        /* === Кінець HACK === */
-
 
         /* --- Стилі Кнопок --- */
         .btn {
@@ -108,12 +118,41 @@
             font-size: 1rem;
             transition: all 0.3s ease;
             cursor: pointer;
+            /* Для спіннера */
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
+        
+        /* === НОВИЙ СТИЛЬ: Спіннер для кнопки === */
+        .btn-spinner {
+            display: none; /* Сховано */
+            width: 1.25rem; /* w-5 */
+            height: 1.25rem; /* h-5 */
+            border-width: 2px;
+            border-style: solid;
+            border-radius: 9999px;
+            animation: spin 1s linear infinite;
+            /* Колір (прозорий/білий) */
+            border-color: transparent;
+            border-top-color: currentColor; 
+        }
+
+        /* Коли кнопка в стані 'loading' */
+        .btn.loading .btn-text {
+            opacity: 0.5; /* Приглушуємо текст */
+        }
+        .btn.loading .btn-spinner {
+            display: block;
+            position: absolute;
+        }
+
 
         .btn-primary {
             background-color: var(--accent-color);
@@ -237,7 +276,6 @@
             border-radius: 0.5rem;
             padding: 1rem;
             margin-top: 1.5rem;
-            /* Ефект 'premium-glow' з прикладу, але з нашим золотим кольором */
             box-shadow: 0 0 25px rgba(205, 164, 94, 0.1), 0 4px 10px rgba(0,0,0,0.2);
         }
     </style>
@@ -252,7 +290,6 @@
         <!-- ====================================================== -->
         <section id="landing-step" class="funnel-step active space-y-8 text-center">
             
-            <!-- Логотип (з dev.html) -->
             <div>
                 <svg class="w-16 h-16 mx-auto" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-color);">
                     <circle cx="32" cy="32" r="2.5" fill="currentColor"/>
@@ -270,29 +307,24 @@
                 </p>
             </div>
 
-            <!-- Форма збору дати -->
             <form id="birth-form" class="w-full space-y-4">
-                <!-- === ОНОВЛЕНО: Повністю перероблено для стабільності та іконки === -->
                 <label for="birth-date" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
-                    <!-- Іконка календаря (ВИПРАВЛЕНО: 'top-1-2' на 'top-1/2') -->
                     <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    
-                    <!-- Текст плейсхолдера (буде замінений JS) -->
                     <span id="date-placeholder" style="color: var(--secondary-text-color);">Оберіть дату</span>
-                    
-                    <!-- Справжній інпут, повністю прихований, але функціональний -->
                     <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required 
-                           style="opacity: 0.001;"> <!-- Використовуємо opacity 0.001 для кращої сумісності -->
+                           style="opacity: 0.001;"> 
                 </label>
-                <p id="error-message" class="text-red-400 text-sm text-left mt-2" style="display: none;">
+                <!-- === ОНОВЛЕНО: Тепер це .error-text === -->
+                <p id="error-message" class="error-text">
                     Будь ласка, оберіть вашу дату народження.
                 </p>
-                <!-- === Кінець оновлення === -->
                 
                 <button type="submit" class="btn btn-primary !text-lg h-14">
-                    Дізнатися негайно
+                    <!-- === ОНОВЛЕНО: Додано span для тексту та спіннер === -->
+                    <span class="btn-text">Дізнатися негайно</span>
+                    <span class="btn-spinner"></span>
                 </button>
             </form>
         </section>
@@ -301,10 +333,7 @@
         <!-- КРОК 2: ЕКРАН ЗАВАНТАЖЕННЯ (Анімація набору тексту) -->
         <!-- ====================================================== -->
         <section id="loading-step" class="funnel-step text-center space-y-6">
-            <!-- Повернений спіннер -->
             <div class="spinner"></div>
-            
-            <!-- Анімація друкування (з dev.html) -->
             <div class="typing-container">
                 <span id="loading-text"></span>
                 <span class="typing-cursor"></span>
@@ -315,31 +344,26 @@
         <!-- КРОК 3: РЕЗУЛЬТАТ (Безкоштовний аналіз "Ядро") -->
         <!-- ====================================================== -->
         <section id="result-step" class="funnel-step space-y-6">
-            <!-- === ОНОВЛЕНО: Заголовок === -->
             <h2 class="text-2xl font-bold text-center text-white" id="result-title">Аналіз твоєї особистості</h2>
             
             <div class="p-5 rounded-lg space-y-3" style="background-color: var(--card-bg-color); border: 1px solid var(--border-color);">
-                <!-- === ОНОВЛЕНО: ID для заголовку === -->
                 <h3 class="text-xl font-bold" style="color: var(--accent-color);" id="free-report-title">
                     ✅ Твоє Сонце (1/3 "Золотої Трійки")
                 </h3>
                 
-                <!-- Сюди вставляється текст з Gemini -->
                 <div id="free-report-text" class="text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
                     <i>(Тут з'явиться твій персональний аналіз...)</i>
                 </div>
             </div>
 
-            <!-- === ОНОВЛЕНО МОТИВАЦІЙНИЙ БЛОК (Маркетинг) === -->
-            <!-- === ОНОВЛЕНО: ID для гачка === -->
             <p class="text-center px-4" style="color: var(--secondary-text-color); margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 0.95rem; line-height: 1.6;" id="free-report-hook">
                 Це лише <strong style="color: var(--primary-text-color);">5%</strong> від твого повного звіту 🤫. Головна магія — твій Асцендент, Місяць та кармічні уроки 🔮 — чекає на тебе у повному аналізі. Розблокуй все... 😈
             </p>
-            <!-- === КІНЕЦЬ НОВОГО БЛОКУ === -->
             
             <div class="pt-4">
                 <button id="upgrade-button" class="btn btn-primary !text-lg !py-4">
-                    Отримати повний аналіз
+                    <span class="btn-text">Отримати повний аналіз</span>
+                    <span class="btn-spinner"></span>
                 </button>
             </div>
         </section>
@@ -359,29 +383,28 @@
             <div id="premium-form-container" class="w-full space-y-4">
                 <div>
                     <label for="birth-time" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Точний час народження (опціонально):</label>
-                    <!-- === ОНОВЛЕНО: Застосовано той самий "трюк", що й для дати === -->
                     <label for="birth-time" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
-                        <!-- Іконка годинника -->
                         <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        
-                        <!-- Текст плейсхолдера (буде замінений JS) -->
                         <span id="time-placeholder" style="color: var(--secondary-text-color);">Оберіть час</span>
-                        
-                        <!-- Справжній інпут, повністю прихований, але функціональний -->
                         <input type="time" id="birth-time" name="birth-time" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" style="opacity: 0.001;">
                     </label>
-                    <!-- === Кінець оновлення === -->
                 </div>
                  <div>
                     <label for="birth-city" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Місто народження (опціонально):</label>
                     <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ" class="input-field text-center">
+                    
+                    <!-- === НОВИЙ ЕЛЕМЕНТ: Помилка для Міста === -->
+                    <p id="city-error-message" class="error-text">
+                        Текст помилки...
+                    </p>
                 </div>
 
                 <div class="pt-4 space-y-3">
                     <button type="button" id="continue-to-paywall-button" class="btn btn-primary !text-lg !py-4">
-                        Отримати детальний аналіз
+                        <span class="btn-text">Отримати детальний аналіз</span>
+                        <span class="btn-spinner"></span>
                     </button>
                     
                     <button type="button" id="skip-button" class="btn btn-skip">
@@ -400,7 +423,6 @@
                 Розблокуй <strong>повну карту</strong>, щоб побачити свій справжній потенціал.
             </p>
             
-            <!-- Заблоковані розділи -->
             <div class="space-y-3 pt-2">
                 <div class="paywall-item">
                     <span class="paywall-icon">🔒</span>
@@ -424,10 +446,10 @@
                 </div>
             </div>
 
-            <!-- Логіка оплати (з dev.html) -->
             <div class="space-y-4 pt-4">
                 <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
-                    Розблокувати зараз за 149 грн
+                    <span class="btn-text">Розблокувати зараз за 149 грн</span>
+                    <span class="btn-spinner"></span>
                 </button>
                 <p class="text-xs text-center" style="color: var(--secondary-text-color);">
                     🔒 Безпечна одноразова оплата.
@@ -437,7 +459,6 @@
 
         <!-- ====================================================== -->
         <!-- КРОК 6: СТОРІНКА УСПІХУ (ПІСЛЯ /success.html) -->
-        <!-- (Цей крок буде показано, якщо ми повернемося з URL /success.html) -->
         <!-- ====================================================== -->
         <section id="payment-success-return-step" class="funnel-step text-center space-y-6">
             <h2 class="text-2xl font-bold" style="color: var(--accent-color);">
@@ -446,18 +467,15 @@
             <p style="color: var(--secondary-text-color);">
                 Зачекайте, ми підтверджуємо ваш платіж...
             </p>
-            <!-- Спіннер -->
             <div class="spinner"></div>
         </section>
         
         <!-- ====================================================== -->
-        <!-- КРОК 7: УСПІХ + LTV АПСЕЛ (НОВИЙ, з сумісністьПреміумПлюс.html) -->
+        <!-- КРОК 7: УСПІХ + LTV АПСЕЛ (НОВИЙ) -->
         <!-- ====================================================== -->
         <section id="success-step" class="funnel-step space-y-6">
             
-            <!-- Цей блок показується СПОЧАТКУ (Email + LTV) -->
             <div id="email-capture-box" class="text-center">
-                <!-- Іконка "успіх" з прикладу -->
                 <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 
                 <h2 class="text-2xl font-bold text-center text-white">
@@ -467,28 +485,27 @@
                     Ваш персональний гайд готується. Вкажіть ваш email, щоб миттєво отримати звіт:
                 </p>
                 
-                <!-- Форма збору Email (з прикладу) -->
                 <form id="email-form" class="space-y-4 mb-8">
                     <label for="user-email" class="sr-only">Ваш Email</label>
                     <input type="email" id="user-email" name="user-email" placeholder="your.email@gmail.com" class="input-field text-center" required>
                     <button type="submit" class="btn btn-primary !text-lg !py-4">
-                        Надіслати мені звіт
+                        <span class="btn-text">Надіслати мені звіт</span>
+                        <span class="btn-spinner"></span>
                     </button>
                 </form>
                 
-                <!-- LTV Upsell (з прикладу, адаптований стиль) -->
                 <div id="ltv-upsell-box" class="ltv-upsell-box text-left">
                     <h3 class="font-bold" style="color: var(--accent-color);">P.S. Поки твій звіт генерується...</h3>
                     <p class="text-sm mt-2 mb-4" style="color: var(--secondary-text-color);">
                         Хочеш додати <strong>"Повний AI-Прогноз на 2026 рік"</strong> зі знижкою 50%? Всього за <strong>€4.99</strong> замість €9.99.
                     </p>
                     <button id="ltv-upsell-btn" class="btn btn-primary w-full opacity-90 hover:opacity-100">
-                        Так, додати до замовлення!
+                        <span class="btn-text">Так, додати до замовлення!</span>
+                        <span class="btn-spinner"></span>
                     </button>
                 </div>
             </div>
 
-            <!-- Цей контейнер будемо ПОКАЗУВАТИ ПІСЛЯ Email (для генерації звіту) -->
             <div id="report-loading-indicator" class="text-center" style="display: none;">
                 <h2 class="text-2xl font-bold text-center text-white">
                     <span style="color: var(--accent-color);">Дякуємо!</span>
@@ -496,11 +513,9 @@
                 <p style="color: var(--secondary-text-color);">
                     Твій повний звіт генерується... Зазвичай це займає близько 30 секунд.
                 </p>
-                <!-- Повернений спіннер -->
                 <div class="spinner"></div>
             </div>
 
-            <!-- Сюди буде вставлено ПОВНИЙ звіт -->
             <div id="full-report-content" class="text-left p-5 rounded-lg space-y-4" style="background-color: var(--card-bg-color); display: none;">
                 <!-- Контент генерується... -->
             </div>
@@ -518,7 +533,10 @@
             <p id="modal-message" style="color: var(--secondary-text-color);" class="mb-6">
                 Текст повідомлення...
             </p>
-            <button id="modal-close-btn" class="btn modal-btn-close">Закрити</button>
+            <button id="modal-close-btn" class="btn modal-btn-close">
+                <span class="btn-text">Закрити</span>
+                <span class="btn-spinner"></span>
+            </button>
         </div>
     </div>
 
@@ -526,6 +544,16 @@
     <!-- JAVASCRIPT ЛОГІКА -->
     <!-- ====================================================== -->
     <script>
+        // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
+        const { Origin, Horoscope } = window.CircularNatalHoroscope || {};
+
+        if (!Horoscope) {
+            console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD !!!");
+        } else {
+            console.log("Astro Library (CircularNatalHoroscopeJS) loaded successfully.");
+        }
+        // ===============================================
+
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- 1. ОТРИМАННЯ ЕЛЕМЕНТІВ ---
@@ -545,22 +573,24 @@
             const birthForm = document.getElementById('birth-form');
             const birthDateInput = document.getElementById('birth-date');
             const errorMessage = document.getElementById('error-message');
-            const datePlaceholder = document.getElementById('date-placeholder'); // <-- ДОДАНО
+            const datePlaceholder = document.getElementById('date-placeholder');
+            const landingSubmitButton = birthForm.querySelector('button[type="submit"]'); // Кнопка Кроку 1
             
             // Елементи Кроку 2 (Завантаження)
             const loadingTextEl = document.getElementById('loading-text');
 
             // Елементи Кроку 3 (Результат)
-            const resultTitleEl = document.getElementById('result-title'); // Новий
-            const freeReportTitleEl = document.getElementById('free-report-title'); // Новий
+            const resultTitleEl = document.getElementById('result-title');
+            const freeReportTitleEl = document.getElementById('free-report-title');
             const freeReportTextEl = document.getElementById('free-report-text');
-            const freeReportHookEl = document.getElementById('free-report-hook'); // Новий
+            const freeReportHookEl = document.getElementById('free-report-hook');
             const upgradeButton = document.getElementById('upgrade-button');
 
             // Елементи Кроку 4 (Преміум Дані)
             const birthTimeInput = document.getElementById('birth-time');
-            const timePlaceholder = document.getElementById('time-placeholder'); // <-- ДОДАНО
+            const timePlaceholder = document.getElementById('time-placeholder');
             const birthCityInput = document.getElementById('birth-city');
+            const cityErrorMessage = document.getElementById('city-error-message'); // Новий
             const continueToPaywallButton = document.getElementById('continue-to-paywall-button');
             const skipButton = document.getElementById('skip-button');
 
@@ -575,7 +605,7 @@
             const userEmailInput = document.getElementById('user-email');
             const ltvUpsellBtn = document.getElementById('ltv-upsell-btn');
 
-            // Елементи з dev.html (WayForPay, Modal)
+            // Елементи (WayForPay, Modal)
             const wfpFormContainer = document.getElementById('wfp-form-container');
             const modal = document.getElementById('modal');
             const modalTitle = document.getElementById('modal-title');
@@ -584,51 +614,38 @@
 
             // --- 2. ГЛОБАЛЬНІ ЗМІННІ ---
             
-            // --- Динамічний API-ключ для Canvas (тут) та Вебу ---
-            // Перевіряємо, чи ми в середовищі Canvas (де визначена глобальна змінна __app_id)
             const isCanvas = typeof __app_id !== 'undefined';
-            
-            // Якщо ми в Canvas ("тут"), ключ буде порожнім (Canvas його підставить)
-            // Якщо ми у вебі ("у вебі"), використовуємо твій ключ
-            const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; 
-            
-            // Лог для перевірки
+            const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; // ВАЖЛИВО: Замініть на свій ключ для вебу
             console.log(isCanvas ? "Running in Canvas mode (local test)." : "Running in Production mode (web).");
-            
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-            // Конфігурація WayForPay (з dev.html)
-            // !! ВАЖЛИВО: Заміни це на реальний URL своєї опублікованої функції !!
-            const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; 
-            // !! ВАЖЛИВО: Заміни це на свій реальний merchantLogin !!
-            const MERCHANT_LOGIN = 'destinycode_online';
-            // URL, куди WayForPay поверне клієнта
-            const RETURN_URL = window.location.origin + window.location.pathname + '?payment=success'; // Повертаємось на цю ж сторінку з параметром
+            // Конфігурація WayForPay (ЗАМІНИТИ НА РЕАЛЬНІ ДАНІ)
+            const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; // !! ЗАМІНИТИ !!
+            const MERCHANT_LOGIN = 'destinycode_online'; // !! ЗАМІНИТИ !!
+            const RETURN_URL = window.location.origin + window.location.pathname + '?payment=success'; 
 
             // Глобальний об'єкт для зберігання даних користувача
             let userBirthData = {
                 date: '',
                 time: '',
-                city: ''
+                city: '',
+                geo: null // Сюди будемо зберігати { latitude, longitude, timezone }
             };
 
             // --- 3. СИСТЕМНІ ПРОМПТИ ДЛЯ ШІ ---
             
-            // === ОНОВЛЕНО: Промпт для БЕЗКОШТОВНОГО звіту (Крок 3) з JSON ===
+            // Промпт для БЕЗКОШТОВНОГО звіту (Крок 3)
             const freeSystemPrompt = `
                 Ти — 'Майстер-Астролог' Destiny Code. Твій тон — емпатичний, авторитетний і з елементами флірту (як у брифі: "...наскільки ти ахуєнна 😇"). Ти спілкуєшся з клієнткою українською.
                 Твоя Місія: Дати миттєвий, вражаючий "гачок" — аналіз її Сонячного знаку.
-                
                 ЗАВДАННЯ: 
                 Тобі дадуть дату народження. Визнач знак Сонця.
                 Згенеруй ТІЛЬКИ JSON-об'єкт (і нічого більше!) з такою структурою:
-                
                 {
                   "title": "✅ Твоє Ядро: [Знак Сонця]",
                   "psychological_analysis": "[Тут згенеруй яскравий, преміально оформлений HTML-текст (3-4 абзаци) про її Сонячний знак. Використовуй <p>, </p>, та <strong style='color: #FFFFFF;'></strong> для білих акцентів. Говори про її суперсили, її 'темну' сторону (як перевагу) та унікальність. Використовуй багато (5-7) релевантних смайлів (напр. 😈, ✨, 🔮, 🔥, 👑).]",
                   "premium_hook": "Це лише <strong style='color: #FFFFFF;'>5%</strong> від твого повного звіту 🤫.\nГоловна магія — твій Асцендент, Місяць та кармічні уроки 🔮 — чекає на тебе у повному аналізі. Розблокуй все... 😈"
                 }
-                
                 ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. Жодного тексту до чи після.
             `;
             
@@ -639,9 +656,9 @@
                 Твій Тон: Глибокий, емпатичний, авторитетний, підтримуючий. Говори українською.
                 
                 ЗАВДАННЯ: 
-                Тобі дадуть дату, (можливо) час і (можливо) місто.
-                1. Якщо час і місто НЕ надані: Згенеруй звіт на основі "Космічної Карти" (без Асценденту та Домів). Це все одно має бути глибоко.
-                2. Якщо час і місто НАДАНІ: Згенеруй звіт, використовуючи Асцендент та систему Домів. Обов'язково вкажи це ("Оскільки ти надала точні дані...").
+                Тобі дадуть дату та (можливо) астрологічні дані.
+                1. Якщо надані 'Технічні Астрологічні Дані' (з Асцендентом): Згенеруй звіт, базуючись на них. Це преміум-звіт.
+                2. Якщо дані НЕ надані (тільки дата): Згенеруй звіт на основі "Космічної Карти" (без Асценденту та Домів).
                 
                 Згенеруй детальний звіт, що включає такі розділи (використовуй == Назва Розділу == для форматування):
                 
@@ -658,9 +675,25 @@
                 (Аналіз Північного/Південного Вузлів. Твій шлях душі, завдання на це життя, від чого треба відійти і до чого прийти.)
                 
                 == Майбутні можливості та виклики ==
-                (Короткий огляд 1-2 ключових транзитів на найближчі місяці (БЕЗ прив'язки до "6 місяців"). На що звернути увагу.)
+                (Короткий огляд 1-2 ключових транзитів на найближчі місяці. На що звернути увагу.)
                 
                 ВИМОГИ: Відповідай ТІЛЬКИ згенерованим текстом звіту. Кожен розділ має бути детальним (3-4 абзаци). Використовуй **жирний** для акцентів.
+            `;
+            
+            // === ОНОВЛЕНИЙ Промпт для Геокодування (Крок 4) ===
+            const geoSystemPrompt = `
+                Ти — високоточний географічний API. Твоя єдина мета — повернути JSON-об'єкт, що містить географічні координати (lat, lon) та часовий пояс (timezone) для вказаного міста.
+                ПРАВИЛА:
+                1. Відповідь має бути ЛИШЕ в форматі JSON. Жодних пояснень чи додаткового тексту.
+                2. Використовуй формат десятихвилинних значень (наприклад, 49.8397).
+                3. Часовий пояс має бути у форматі IANA (наприклад, Europe/Kyiv).
+                4. Якщо у назві міста є очевидна одрук (напр., "Ужгрод", "Львіф", "Harkiv"), **автоматично виправ її** і поверни коректні дані для правильного міста.
+                5. Якщо місто неможливо знайти (напр., 'asdfg') -> {"error": "not_found"}
+                6. Якщо місто неоднозначне (напр., 'Париж' без країни) -> {"error": "ambiguous"}
+                
+                Приклад (Успіх): {"lat": 49.8397, "lon": 24.0297, "timezone": "Europe/Kyiv"}
+                Приклад (Помилка): {"error": "not_found"}
+                Приклад (Неоднозначно): {"error": "ambiguous"}
             `;
 
             // --- 4. ОСНОВНІ ФУНКЦІЇ ---
@@ -677,24 +710,35 @@
                 }
             }
 
-            // Функція: Показати модальне вікно (з dev.html)
+            // Функція: Показати модальне вікно
             function showModal(title, message) {
                 modalTitle.innerText = title;
-                modalMessage.innerHTML = message; // Дозволяємо HTML для форматування
+                modalMessage.innerHTML = message;
                 modal.style.display = 'flex';
             }
 
-            // Функція: Закрити модальне вікно (з dev.html)
+            // Функція: Закрити модальне вікно
             function closeModal() {
                 modal.style.display = 'none';
             }
             modalCloseBtn.addEventListener('click', closeModal);
 
-            // Функція: Анімація друкування (з dev.html)
+            // === НОВІ Функції: Управління станом завантаження кнопки ===
+            function setButtonLoading(button, isLoading) {
+                if (isLoading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+
+            // Функція: Анімація друкування
             function typeWriter(element, text, speed, onComplete) {
                 return new Promise(resolve => {
                     let i = 0;
-                    element.innerHTML = ''; // Очищуємо перед початком
+                    element.innerHTML = '';
                     
                     function type() {
                         if (i < text.length) {
@@ -702,23 +746,21 @@
                             i++;
                             setTimeout(type, speed);
                         } else {
-                            // Курсор залишається блимати
-                            if (onComplete) setTimeout(onComplete, 300); // Невелика затримка перед onComplete
-                            resolve(); // Вирішуємо Promise
+                            if (onComplete) setTimeout(onComplete, 300);
+                            resolve();
                         }
                     }
                     type();
                 });
             }
             
-            // === ОНОВЛЕНО: Функція виклику API Gemini з JSON ===
+            // Функція виклику API Gemini
             async function callGeminiAPI(systemPrompt, userQuery, isJson = false) {
                 const payload = {
                     contents: [{ parts: [{ text: userQuery }] }],
                     systemInstruction: { parts: [{ text: systemPrompt }] },
                 };
                 
-                // Якщо потрібен JSON, додаємо конфігурацію
                 if (isJson) {
                     payload.generationConfig = {
                         responseMimeType: "application/json",
@@ -742,10 +784,9 @@
                             } else {
                                 // Обробка "safety settings"
                                 console.warn("Gemini API Error (Safety):", result);
-                                return "На жаль, аналіз не вдалося завершити через обмеження безпеки. Будь ласка, спробуйте іншу дату або пізніше.";
+                                return isJson ? '{"error": "safety_block"}' : "На жаль, аналіз не вдалося завершити через обмеження безпеки.";
                             }
                         }
-
                         if (response.status === 429) { // Throttling
                             console.warn("Gemini API Error: 429 Throttled. Retrying...");
                             await new Promise(resolve => setTimeout(resolve, delay));
@@ -753,7 +794,6 @@
                             continue; // Наступна спроба
                         }
                         
-                        // Інші помилки сервера
                         const errorData = await response.json();
                         console.error("Gemini API Error (Server):", errorData);
                         await new Promise(resolve => setTimeout(resolve, delay));
@@ -762,17 +802,54 @@
                     } catch (error) { // Помилки мережі
                         console.error("Gemini API Error (Client):", error);
                         if (i === 2) { // Остання спроба
-                             return "На жаль, сервіс тимчасово недоступний через проблему з підключенням. Будь ласка, спробуйте пізніше.";
+                             return isJson ? '{"error": "network_failure"}' : "На жаль, сервіс тимчасово недоступний через проблему з підключенням.";
                         }
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
                     }
                 }
                 // Якщо всі 3 спроби невдалі
-                return "На жаль, сервіс тимчасово перенавантажений. Будь ласка, спробуйте пізніше.";
+                return isJson ? '{"error": "timeout"}' : "На жаль, сервіс тимчасово перенавантажений.";
+            }
+            
+            // === ОНОВЛЕНА Функція: Геокодування (з обробкою помилок) ===
+            async function getCoordinatesFromGemini(cityName) {
+                const userQuery = `Надай координати для міста: ${cityName}`; 
+                try {
+                    const rawJsonText = await callGeminiAPI(geoSystemPrompt, userQuery, true); 
+                    // Чистимо текст від можливих ```json ... ``` обгорток
+                    const cleanedJsonText = rawJsonText.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
+                    const coords = JSON.parse(cleanedJsonText);
+                    
+                    // Перевіряємо на успіх
+                    if (coords && typeof coords.lat === 'number' && typeof coords.lon === 'number' && typeof coords.timezone === 'string') {
+                        console.log(`Geocoding success for ${cityName}:`, coords);
+                        return { 
+                            latitude: coords.lat, 
+                            longitude: coords.lon, 
+                            timezone: coords.timezone,
+                            error: null
+                        };
+                    }
+                    // Перевіряємо на помилку, яку повернув Gemini
+                    if (coords && coords.error) {
+                         console.warn(`Geocoding failed for ${cityName}:`, coords.error);
+                         return { error: coords.error }; // 'not_found' or 'ambiguous'
+                    }
+                    
+                    // Якщо JSON дивний
+                    console.error(`Geocoding JSON parsing error for ${cityName}:`, coords);
+                    return { error: "parse_error" };
+
+                } catch (error) {
+                    // Якщо JSON.parse впав
+                    console.error(`Geocoding API call failed for ${cityName}:`, error);
+                    return { error: "network_failure" };
+                }
             }
 
-            // === ОНОВЛЕНО: Форматування (додано \n -> <br>) ===
+
+            // Функція: Форматування звіту
             function formatReport(text) {
                 return text
                     .replace(/== (.*?) ==/g, '<h2 style="font-size: 1.5rem; font-weight: 700; color: var(--accent-color); margin-top: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">$1</h2>')
@@ -785,7 +862,7 @@
 
             // --- 5. ОБРОБНИКИ ПОДІЙ ---
 
-            // === ОНОВЛЕНО: КРОК 1 -> КРОК 2 (Лендінг -> Завантаження) ===
+            // === КРОК 1 -> КРОК 2 (Лендінг -> Завантаження) ===
             birthForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const selectedDate = birthDateInput.value;
@@ -796,10 +873,10 @@
                     errorMessage.style.display = 'none';
                     userBirthData.date = selectedDate; 
                     
+                    setButtonLoading(landingSubmitButton, true); // Починаємо завантаження кнопки
                     showStep('loading'); 
                     
                     // Запускаємо генерацію звіту У ФОНІ
-                    // === ОНОВЛЕНО: true для isJson ===
                     const reportPromise = callGeminiAPI(freeSystemPrompt, `Моя дата народження: ${selectedDate}`, true);
                     
                     // Поки звіт генерується, показуємо анімацію
@@ -815,28 +892,29 @@
                     await new Promise(resolve => setTimeout(resolve, 500));
                     await typeWriter(loadingTextEl, loadingSteps[2], 70);
 
-                    // Чекаємо на реальний звіт (який тепер JSON)
+                    // Чекаємо на реальний звіт
                     const rawJsonText = await reportPromise;
+                    setButtonLoading(landingSubmitButton, false); // Зупиняємо завантаження кнопки (про всяк випадок)
                     
-                    // === ОНОВЛЕНО: Парсимо JSON ===
                     try {
-                        // Чистимо текст від можливих ```json ... ``` обгорток
                         const cleanedJsonText = rawJsonText.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
-                        
                         const reportData = JSON.parse(cleanedJsonText);
                         
-                        // Вставляємо дані у відповідні елементи
-                        resultTitleEl.innerText = "Аналіз твоєї особистості"; // Встановлюємо загальний заголовок
-                        freeReportTitleEl.innerHTML = reportData.title; // Заголовок з JSON
-                        freeReportTextEl.innerHTML = reportData.psychological_analysis; // HTML-аналіз з JSON
-                        freeReportHookEl.innerHTML = formatReport(reportData.premium_hook); // Гачок з JSON (з форматуванням \n)
+                        // Перевірка, чи це не JSON-помилка
+                        if (reportData.error) {
+                            throw new Error(reportData.error);
+                        }
+
+                        resultTitleEl.innerText = "Аналіз твоєї особистості";
+                        freeReportTitleEl.innerHTML = reportData.title;
+                        freeReportTextEl.innerHTML = reportData.psychological_analysis;
+                        freeReportHookEl.innerHTML = formatReport(reportData.premium_hook);
                         
                         // КРОК 2 -> КРОК 3 (Завантаження -> Результат)
                         showStep('result'); 
 
                     } catch (error) {
-                        console.error("Failed to parse JSON response:", error, "Raw text:", rawJsonText);
-                        // Показуємо помилку, якщо JSON "битий" або це текст помилки
+                        console.error("Failed to parse JSON response (Step 3):", error, "Raw text:", rawJsonText);
                         resultTitleEl.innerText = "Ой, сталася помилка";
                         freeReportTitleEl.innerHTML = "❌ Помилка Аналізу";
                         freeReportTextEl.innerHTML = `<p>На жаль, сталася помилка під час обробки відповіді від ШІ. Це могло статися через перенавантаження.</p><p><i>Деталі: ${rawJsonText}</i></p>`;
@@ -852,48 +930,90 @@
                 showStep('premiumData');
             });
             
-            // КРОК 4 -> КРОК 5 (Преміум Дані -> Paywall)
-            function goToPaywall() {
-                // Зберігаємо опціональні дані
-                userBirthData.time = birthTimeInput.value || '';
-                userBirthData.city = birthCityInput.value || '';
-                console.log("User data captured:", userBirthData);
-                showStep('paywall');
+            // === ОНОВЛЕНО: КРОК 4 -> КРОК 5 (Преміум Дані -> Paywall) ===
+            // Ця функція тепер `async` і виконує валідацію
+            async function validateAndGoToPaywall() {
+                const time = birthTimeInput.value;
+                const city = birthCityInput.value.trim();
+
+                // 1. Скидаємо старі помилки
+                cityErrorMessage.style.display = 'none';
+                birthCityInput.classList.remove('input-error');
+                
+                // 2. Зберігаємо час (він завжди опціональний)
+                userBirthData.time = time || '';
+
+                // 3. Якщо місто порожнє - це ОК, просто йдемо далі (це як "skip")
+                if (city === '') {
+                    userBirthData.city = '';
+                    userBirthData.geo = null; // Скидаємо гео-дані
+                    console.log("City field empty, skipping validation.");
+                    showStep('paywall');
+                    return;
+                }
+                
+                // 4. Якщо місто НЕ порожнє - вмикаємо валідацію
+                setButtonLoading(continueToPaywallButton, true);
+                const coords = await getCoordinatesFromGemini(city);
+                
+                // 5. Обробка результату
+                if (coords && coords.latitude) {
+                    // УСПІХ!
+                    userBirthData.city = city;
+                    userBirthData.geo = { // Зберігаємо валідовані дані
+                        latitude: coords.latitude,
+                        longitude: coords.longitude,
+                        timezone: coords.timezone
+                    };
+                    console.log("City validated and saved:", userBirthData.geo);
+                    showStep('paywall');
+
+                } else if (coords && coords.error === 'ambiguous') {
+                    // ПОМИЛКА: Неоднозначно
+                    cityErrorMessage.innerText = `Місто "${city}" неоднозначне. Будь ласка, уточніть (напр., 'Париж, Франція').`;
+                    cityErrorMessage.style.display = 'block';
+                    birthCityInput.classList.add('input-error');
+
+                } else {
+                    // ПОМИЛКА: Не знайдено або інша
+                    cityErrorMessage.innerText = `Не можемо знайти місто "${city}". Перевірте, будь ласка, назву.`;
+                    cityErrorMessage.style.display = 'block';
+                    birthCityInput.classList.add('input-error');
+                }
+                
+                setButtonLoading(continueToPaywallButton, false);
             }
             
-            continueToPaywallButton.addEventListener('click', goToPaywall);
-            skipButton.addEventListener('click', goToPaywall);
+            continueToPaywallButton.addEventListener('click', validateAndGoToPaywall);
+            
+            // Кнопка "Пропустити"
+            skipButton.addEventListener('click', () => {
+                // Скидаємо будь-які введені дані, щоб не було плутанини
+                userBirthData.time = '';
+                userBirthData.city = '';
+                userBirthData.geo = null;
+                console.log("User skipped premium data.");
+                showStep('paywall');
+            });
             
 
-            // КРОК 5 -> (Симуляція WayForPay) -> КРОК 7
+            // КРОК 5 -> (Симуляція/Реальність WayForPay)
             finalCheckoutButton.addEventListener('click', async () => {
                 
-                finalCheckoutButton.innerText = "Обробка платежу...";
-                finalCheckoutButton.disabled = true;
+                setButtonLoading(finalCheckoutButton, true);
 
-                // --- ІМІТАЦІЯ ОПЛАТИ (для вебу) ---
-                // Ми імітуємо, що користувач пішов на WayForPay і повернувся успішно.
-                
-                // Зберігаємо дані в sessionStorage, щоб "пережити" перезавантаження
+                // --- ІМІТАЦІЯ ОПЛАТИ (для Canvas/Web) ---
                 try {
+                    // Зберігаємо дані в sessionStorage, щоб "пережити" перезавантаження
                     sessionStorage.setItem('destinyCodeData', JSON.stringify(userBirthData));
                 } catch (e) {
                     console.error("SessionStorage is unavailable:", e);
                 }
-
-                console.log("Simulating payment processing...");
-                
-                // Імітуємо затримку платіжної системи
+                console.log("Simulating payment processing... Data saved:", userBirthData);
                 await new Promise(resolve => setTimeout(resolve, 2500));
-                
                 console.log("Payment simulation successful.");
-
-                // КРОК 7: ПОКАЗУЄМО ЗБІР EMAIL + LTV АПСЕЛ
-                showStep('success');
-                
-                // Ми НЕ запускаємо генерацію звіту одразу.
-                // Ми чекаємо, поки користувач введе email.
-                
+                setButtonLoading(finalCheckoutButton, false);
+                showStep('success'); // Перехід на Крок 7
                 // --- КІНЕЦЬ СИМУЛЯЦІЇ ---
 
 
@@ -943,9 +1063,13 @@
                         returnUrl: RETURN_URL,
                         // Передаємо наші дані, щоб отримати їх у вебхуку
                         merchantTransactionSecureType: 'AUTO',
-                        customParam_date: userBirthData.date,
-                        customParam_time: userBirthData.time,
-                        customParam_city: userBirthData.city,
+                        customParam_date: userBirthData.date, // <--- Зберігаємо
+                        customParam_time: userBirthData.time, // <--- Зберігаємо
+                        customParam_city: userBirthData.city, // <--- Зберігаємо
+                        // Передаємо валідовані гео-дані
+                        customParam_lat: userBirthData.geo ? userBirthData.geo.latitude : '',
+                        customParam_lon: userBirthData.geo ? userBirthData.geo.longitude : '',
+                        customParam_tz: userBirthData.geo ? userBirthData.geo.timezone : '',
                     };
                     
                     for (const key in fields) {
@@ -964,7 +1088,7 @@
 
                     wfpFormContainer.appendChild(form);
                     
-                    // Зберігаємо дані в sessionStorage, щоб "пережити" редирект
+                    // Зберігаємо дані в sessionStorage, ЯК ЗАПАСНИЙ ВАРІАНТ
                     sessionStorage.setItem('destinyCodeData', JSON.stringify(userBirthData));
 
                     form.submit(); // Відправляємо користувача на WayForPay
@@ -972,8 +1096,7 @@
                 } catch (error) {
                     console.error('WayForPay process error:', error);
                     showModal("Системна Помилка", error.message || "Сталася непередбачена помилка при ініціалілізації оплати.");
-                    finalCheckoutButton.innerText = "Розблокувати зараз за 149 грн";
-                    finalCheckoutButton.disabled = false;
+                    setButtonLoading(finalCheckoutButton, false);
                 }
                 
                 // --- КІНЕЦЬ РЕАЛЬНОЇ ЛОГІКИ ---
@@ -981,7 +1104,7 @@
             });
             
             
-            // --- НОВА ЛОГІКА КРОКУ 7: ЗБІР EMAIL ТА ЗАПУСК ГЕНЕРАЦІЇ ---
+            // --- КРОК 7: ЗБІР EMAIL ТА ЗАПУСК ГЕНЕРАЦІЇ ---
             emailForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = userEmailInput.value;
@@ -997,11 +1120,7 @@
                     reportLoadingIndicator.style.display = 'block';
                     
                     // 3. ТЕПЕР запускаємо генерацію ПОВНОГО звіту
-                    await fetchFullAnalysis(userBirthData);
-
-                } else {
-                    // Про всяк випадок, хоча 'required' має спрацювати
-                    showModal("Помилка", "Будь ласка, введіть ваш email.");
+                    await fetchFullAnalysis(userBirthData, email);
                 }
             });
             
@@ -1016,14 +1135,12 @@
                 );
                 
                 // Блокуємо кнопку
-                ltvUpsellBtn.innerText = "Додано! ✅";
+                ltvUpsellBtn.querySelector('.btn-text').innerText = "Додано! ✅";
                 ltvUpsellBtn.disabled = true;
             });
             
 
-            // --- ЛОГІКА ДЛЯ /success.html ---
-            // У реальному житті, ця логіка була б на сторінці RETURN_URL
-            // Ми перевіряємо, чи є параметр ?payment=success
+            // --- ОБРОБКА ПОВЕРНЕННЯ З WAYFORPAY ---
             async function handlePaymentReturn() {
                 const urlParams = new URLSearchParams(window.location.search);
                 
@@ -1034,8 +1151,11 @@
                     
                     // Показуємо спіннер, поки відновлюємо дані
                     showStep('paymentSuccessReturn');
+
+                    // (У реальному житті ми б НЕ використовували sessionStorage,
+                    // а отримали б дані з customParam_... з нашого бекенд-сервера
+                    // після перевірки статусу транзакції)
                     
-                    // Дістаємо дані зі сховища
                     let savedData;
                     try {
                         savedData = JSON.parse(sessionStorage.getItem('destinyCodeData'));
@@ -1065,13 +1185,75 @@
                 }
             }
             
-            // Функція: Запуск генерації ПОВНОГО звіту (Крок 7)
-            async function fetchFullAnalysis(data) {
+            // === ОНОВЛЕНО: Функція генерації ПОВНОГО звіту (Крок 7) ===
+            // (Тепер вона НЕ викликає getCoordinatesFromGemini)
+            async function fetchFullAnalysis(data, email) {
                 let userQuery = `Дата народження: ${data.date}.`;
                 if (data.time) userQuery += ` Час: ${data.time}.`;
                 if (data.city) userQuery += ` Місто: ${data.city}.`;
 
-                const rawReport = await callGeminiAPI(fullSystemPrompt, userQuery, false); // false - не JSON
+                let astroDataString = ""; 
+                
+                // Перевіряємо, чи є у нас валідовані ГЕО-дані
+                if (Horoscope && data.date && data.geo) {
+                     try {
+                        const dateParts = data.date.split('-'); // YYYY-MM-DD
+                        const year = parseInt(dateParts[0]);
+                        const month = parseInt(dateParts[1]) - 1; // JS місяці 0-11
+                        const date = parseInt(dateParts[2]);
+                        
+                        let hour = 12, minute = 0; // За замовчуванням опівдні, якщо час не вказано
+                        if (data.time) {
+                            const timeParts = data.time.split(':');
+                            hour = parseInt(timeParts[0]);
+                            minute = parseInt(timeParts[1]);
+                        }
+                        
+                        // Використовуємо ЗБЕРЕЖЕНІ, ВАЛІДОВАНІ дані
+                        const origin = new Origin({
+                            year: year, month: month, date: date,
+                            hour: hour, minute: minute,
+                            latitude: data.geo.latitude, 
+                            longitude: data.geo.longitude,
+                            timezone: data.geo.timezone // Ключовий елемент!
+                        });
+                        
+                        const horoscope = new Horoscope({
+                            origin: origin, houseSystem: "placidus", zodiac: "tropical"
+                        });
+                        
+                        // Формуємо рядок з ключовими даними для Gemini
+                        astroDataString = `
+                        
+                        == Технічні Астрологічні Дані (для аналізу) ==
+                        * Сонце: ${horoscope.CelestialBodies.sun.Sign.label} (у ${horoscope.CelestialBodies.sun.House.label} Домі)
+                        * Місяць: ${horoscope.CelestialBodies.moon.Sign.label} (у ${horoscope.CelestialBodies.moon.House.label} Домі)
+                        * Асцендент (ASC): ${horoscope.Ascendant.Sign.label}
+                        * Середина Неба (MC): ${horoscope.Midheaven.Sign.label}
+                        * Венера: ${horoscope.CelestialBodies.venus.Sign.label} (у ${horoscope.CelestialBodies.venus.House.label} Домі)
+                        * Марс: ${horoscope.CelestialBodies.mars.Sign.label} (у ${horoscope.CelestialBodies.mars.House.label} Домі)
+                        * Північний Вузол: ${horoscope.CelestialBodies.northnode.Sign.label} (у ${horoscope.CelestialBodies.northnode.House.label} Домі)
+                        == Кінець Технічних Даних ==
+                        `;
+                        
+                        console.log("Astro data successfully generated for Gemini:", astroDataString);
+                        
+                     } catch (err) {
+                        console.error("Failed to calculate full horoscope (Step 7):", err);
+                        // Якщо бібліотека впаде (малоймовірно), ми просто
+                        // не додамо astroDataString, і Gemini відпрацює
+                        // в базовому режимі.
+                     }
+                } else {
+                     console.log("Calculating report without GEO data (user skipped or validation failed).");
+                     // astroDataString залишиться порожнім, і Gemini працюватиме
+                     // в режимі "без Асценденту"
+                }
+
+                // Додаємо астро-дані (якщо вони є) до запиту
+                const finalUserQuery = userQuery + astroDataString;
+
+                const rawReport = await callGeminiAPI(fullSystemPrompt, finalUserQuery, false); // false - не JSON
                 const formattedReport = formatReport(rawReport);
                 
                 // Ховаємо спіннер
@@ -1084,59 +1266,57 @@
                 }
                 
                 // (Тут в реальному житті ми б відправили `formattedReport`
-                // на бекенд для відправки на email, який ми зібрали)
-                console.log("Email to send:", userEmailInput.value);
+                // на бекенд для відправки на email)
+                console.log("SENDING REPORT TO BACKEND (Simulation):");
+                console.log("Email:", email);
                 console.log("Report HTML:", formattedReport);
+                // fetch('URL_ДЛЯ_EMAIL_ФУНКЦІЇ', {
+                //    method: 'POST',
+                //    body: JSON.stringify({ email: email, reportHtml: formattedReport })
+                // });
             }
 
             // --- 6. ІНІЦІАЛІЗАЦІЯ ---
             
-            // === ЗМІНА 3 (JS): ЛОГІКА ДЛЯ КАСТОМНОГО ПЛЕЙСХОЛДЕРА ДАТИ ===
-            // (Попередній блок updateDatePlaceholder було повністю замінено)
+            // Логіка Плейсхолдера Дати
             function updateDatePlaceholder() {
                 if (birthDateInput.value === '') {
                     datePlaceholder.innerText = 'Оберіть дату';
                     datePlaceholder.style.color = 'var(--secondary-text-color)';
                 } else {
                     // Форматуємо YYYY-MM-DD у DD.MM.YYYY
-                    // (Використовуємо split для надійності, оскільки toLocaleDateString може враховувати часові пояси)
                     const parts = birthDateInput.value.split('-');
                     const formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
                     
                     datePlaceholder.innerText = formattedDate;
-                    datePlaceholder.style.color = 'var(--primary-text-color)'; // Робимо обрану дату яскравою
+                    datePlaceholder.style.color = 'var(--primary-text-color)';
                 }
             }
-            
-            // Додаємо слухачів для миттєвої реакції
             birthDateInput.addEventListener('input', updateDatePlaceholder);
             birthDateInput.addEventListener('change', updateDatePlaceholder);
-            
-            // Встановлюємо початковий стан при завантаженні
             updateDatePlaceholder();
-            // === КІНЕЦЬ ЛОГІКИ ПЛЕЙСХОЛДЕРА ===
             
-            // === ДОДАНО: ЛОГІКА ДЛЯ КАСТОМНОГО ПЛЕЙСХОЛДЕРА ЧАСУ ===
+            // Логіка Плейсхолдера Часу
             function updateTimePlaceholder() {
                 if (birthTimeInput.value === '') {
                     timePlaceholder.innerText = 'Оберіть час';
                     timePlaceholder.style.color = 'var(--secondary-text-color)';
                 } else {
-                    // Час вже у форматі HH:MM
                     timePlaceholder.innerText = birthTimeInput.value;
-                    timePlaceholder.style.color = 'var(--primary-text-color)'; // Робимо обраний час яскравим
+                    timePlaceholder.style.color = 'var(--primary-text-color)';
                 }
             }
-            
-            // Додаємо слухачів для миттєвої реакції
             birthTimeInput.addEventListener('input', updateTimePlaceholder);
             birthTimeInput.addEventListener('change', updateTimePlaceholder);
-            
-            // Встановлюємо початковий стан при завантаженні
             updateTimePlaceholder();
-            // === КІНЕЦЬ ЛОГІКИ ЧАСУ ===
             
-            // Перевіряємо, чи ми не повернулися з WayForPay
+            // Скидання помилки міста при введені
+            birthCityInput.addEventListener('input', () => {
+                 cityErrorMessage.style.display = 'none';
+                 birthCityInput.classList.remove('input-error');
+            });
+
+            // Перевірка повернення з WayForPay
             handlePaymentReturn();
 
         });
