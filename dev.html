@@ -199,7 +199,7 @@
             50% { opacity: 0; }
         }
         
-        /* Спіннер (повернений варіант) */
+        /* === ОНОВЛЕНО: Спіннер (з 3 "рисочками") === */
         .spinner {
             width: 4rem; /* 64px */
             height: 4rem; /* 64px */
@@ -208,8 +208,8 @@
             border-radius: 9999px; /* rounded-full */
             animation: spin 1.5s linear infinite;
             margin: 2rem auto;
-            /* Колір: золотий та прозорий */
-            border-color: var(--accent-color) transparent var(--accent-color) transparent;
+            /* Колір: 3 сторони кольорові, 1 прозора */
+            border-color: var(--accent-color) var(--accent-color) var(--accent-color) transparent;
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -312,7 +312,8 @@
                     <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <span id="date-placeholder" style="color: var(--secondary-text-color);">Обери дату</span>
+                    <!-- === ОНОВЛЕНО: Текст "Обрати дату" === -->
+                    <span id="date-placeholder" style="color: var(--secondary-text-color);">Обрати дату</span>
                     <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required 
                            style="opacity: 0.001;"> 
                 </label>
@@ -448,7 +449,10 @@
 
             <div class="space-y-4 pt-4">
                 <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
-                    <span class="btn-text">Розблокувати зараз за 149 грн</span>
+                    <!-- === ОНОВЛЕНО: Додано Price Anchoring === -->
+                    <span class="btn-text">
+                        Розблокувати за 149 грн (замість <span style="text-decoration: line-through; opacity: 0.8;">399 грн</span>)
+                    </span>
                     <span class="btn-spinner"></span>
                 </button>
                 <p class="text-xs text-center" style="color: var(--secondary-text-color);">
@@ -496,8 +500,10 @@
                 
                 <div id="ltv-upsell-box" class="ltv-upsell-box text-left">
                     <h3 class="font-bold" style="color: var(--accent-color);">P.S. Поки твій звіт генерується...</h3>
+                    <!-- === ОНОВЛЕНО: Ціна LTV-апселу (UAH) === -->
                     <p class="text-sm mt-2 mb-4" style="color: var(--secondary-text-color);">
-                        Хочеш додати <strong>"Повний AI-Прогноз на 2026 рік"</strong> зі знижкою 50%? Всього за <strong>€4.99</strong> замість €9.99.
+                        Хочеш додати <strong>"Повний AI-Прогноз на 2026 рік"</strong> зі знижкою?
+                        Всього за <strong>247 грн</strong> замість <span style="text-decoration: line-through; opacity: 0.7;">699 грн</span>. (Твоя знижка -65%)
                     </p>
                     <button id="ltv-upsell-btn" class="btn btn-primary w-full opacity-90 hover:opacity-100">
                         <span class="btn-text">Так, додати до замовлення!</span>
@@ -972,8 +978,8 @@
                     showStep('paywall');
 
                 } else if (coords && coords.error === 'ambiguous') {
-                    // ПОМИЛКА: Неоднозначно
-                    cityErrorMessage.innerText = `Місто "${city}" неоднозначне. Будь ласка, уточніть (напр., 'Париж, Франція').`;
+                    // === ОНОВЛЕНО: Текст помилки про неоднозначність ===
+                    cityErrorMessage.innerText = `Місто "${city}" знайдено в кількох місцях. Будь ласка, уточни, додавши країну (напр., 'Париж, Франція').`;
                     cityErrorMessage.style.display = 'block';
                     birthCityInput.classList.add('input-error');
 
@@ -1284,7 +1290,8 @@
             // Логіка Плейсхолдера Дати
             function updateDatePlaceholder() {
                 if (birthDateInput.value === '') {
-                    datePlaceholder.innerText = 'Обери дату';
+                    // === ОНОВЛЕНО: Текст "Обрати дату" ===
+                    datePlaceholder.innerText = 'Обрати дату';
                     datePlaceholder.style.color = 'var(--secondary-text-color)';
                 } else {
                     // Форматуємо YYYY-MM-DD у DD.MM.YYYY
@@ -1295,7 +1302,8 @@
                         datePlaceholder.style.color = 'var(--primary-text-color)';
                     } else {
                         // Якщо щось пішло не так
-                        datePlaceholder.innerText = 'Обери дату';
+                        // === ОНОВЛЕНО: Текст "Обрати дату" ===
+                        datePlaceholder.innerText = 'Обрати дату';
                         datePlaceholder.style.color = 'var(--secondary-text-color)';
                     }
                 }
@@ -1313,7 +1321,8 @@
             // 3. Функція, що спрацьовує при першому фокусі/кліку
             function setDefaultDateOnFirstFocus() {
                 if (birthDateInput.value === '') { // Тільки якщо дата ще не обрана
-                    birthDateInput.value = '1995-01-01'; // Змінено на 1995-01-01
+                    // === ЗАПИТ 2: Встановлюємо 1995-01-01 за замовчуванням ===
+                    birthDateInput.value = '1995-01-01'; 
                 }
                 // Видаляємо слухач, щоб він не спрацьовував знову
                 birthDateInput.removeEventListener('focus', setDefaultDateOnFirstFocus);
@@ -1331,7 +1340,7 @@
             });
 
             // 5. Початкове встановлення
-            updateDatePlaceholder(); // Одразу оновлюємо плейсхолдер (покаже "Обери дату", бо value = '')
+            updateDatePlaceholder(); // Одразу оновлюємо плейсхолдер (покаже "Обрати дату", бо value = '')
             
             // Логіка Плейсхолдера Часу
             function updateTimePlaceholder() {
