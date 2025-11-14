@@ -868,9 +868,8 @@
                 const selectedDate = birthDateInput.value;
                 
                 // === ЗМІНА: Перевіряємо, чи дата не є "за замовчуванням" 1998-01-01 ===
-                if (selectedDate === '' || selectedDate === '1998-01-01') { 
-                    // Тепер ми перевіряємо і порожнє значення (на старті) і 1998-01-01
-                    // (якщо користувач просто закрив календар)
+                if (selectedDate === '' || selectedDate === '1995-01-01') { 
+                    // Тепер ми перевіряємо і порожнє значення (на старті) і 1995-01-01 (якщо користувач просто закрив календар)
                     errorMessage.innerText = "Будь ласка, обери справжню дату народження.";
                     errorMessage.style.display = 'block';
                 } else {
@@ -1282,7 +1281,7 @@
 
             // --- 6. ІНІЦІАЛІЗАЦІЯ ---
             
-            // === ОНОВЛЕНА ЛОГІКА ПЛЕЙСХОЛДЕРА ДАТИ (ГІБРИДНИЙ ПІДХІД) ===
+            // Логіка Плейсхолдера Дати
             function updateDatePlaceholder() {
                 if (birthDateInput.value === '') {
                     datePlaceholder.innerText = 'Обери дату';
@@ -1314,7 +1313,7 @@
             // 3. Функція, що спрацьовує при першому фокусі/кліку
             function setDefaultDateOnFirstFocus() {
                 if (birthDateInput.value === '') { // Тільки якщо дата ще не обрана
-                    birthDateInput.value = '1998-01-01';
+                    birthDateInput.value = '1995-01-01'; // Змінено на 1995-01-01
                 }
                 // Видаляємо слухач, щоб він не спрацьовував знову
                 birthDateInput.removeEventListener('focus', setDefaultDateOnFirstFocus);
@@ -1325,7 +1324,7 @@
             birthDateInput.addEventListener('click', setDefaultDateOnFirstFocus); // Для надійності на iOS
 
             // 4. Слухач, який спрацьовує, коли користувач закрив календар (тапнув вбік)
-            // Це потрібно, якщо він відкрив (значення стало '1998-01-01'), але нічого
+            // Це потрібно, якщо він відкрив (значення стало '1995-01-01'), але нічого
             // не змінив і просто закрив. 'change' не спрацює, а 'blur' - спрацює.
             birthDateInput.addEventListener('blur', () => {
                 updateDatePlaceholder();
@@ -1337,7 +1336,7 @@
             // Логіка Плейсхолдера Часу
             function updateTimePlaceholder() {
                 if (birthTimeInput.value === '') {
-                    timePlaceholder.innerText = 'Оберіть час';
+                    timePlaceholder.innerText = 'Обери час'; // Змінено на "Обери час"
                     timePlaceholder.style.color = 'var(--secondary-text-color)';
                 } else {
                     timePlaceholder.innerText = birthTimeInput.value;
