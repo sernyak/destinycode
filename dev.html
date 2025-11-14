@@ -615,13 +615,13 @@
             // --- 2. ГЛОБАЛЬНІ ЗМІННІ ---
             
             const isCanvas = typeof __app_id !== 'undefined';
-            const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; 
+            const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; // ВАЖЛИВО: Замініть на свій ключ для вебу
             console.log(isCanvas ? "Running in Canvas mode (local test)." : "Running in Production mode (web).");
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
 
-            // Конфігурація WayForPay
-            const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; 
-            const MERCHANT_LOGIN = 'destinycode_online';
+            // Конфігурація WayForPay (ЗАМІНИТИ НА РЕАЛЬНІ ДАНІ)
+            const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; // !! ЗАМІНИТИ !!
+            const MERCHANT_LOGIN = 'destinycode_online'; // !! ЗАМІНИТИ !!
             const RETURN_URL = window.location.origin + window.location.pathname + '?payment=success'; 
 
             // Глобальний об'єкт для зберігання даних користувача
@@ -687,8 +687,9 @@
                 1. Відповідь має бути ЛИШЕ в форматі JSON. Жодних пояснень чи додаткового тексту.
                 2. Використовуй формат десятихвилинних значень (наприклад, 49.8397).
                 3. Часовий пояс має бути у форматі IANA (наприклад, Europe/Kyiv).
-                4. Якщо місто неможливо знайти (напр., 'asdfg') -> {"error": "not_found"}
-                5. Якщо місто неоднозначне (напр., 'Париж' без країни) -> {"error": "ambiguous"}
+                4. Якщо у назві міста є очевидна одрук (напр., "Ужгрод", "Львіф", "Harkiv"), **автоматично виправ її** і поверни коректні дані для правильного міста.
+                5. Якщо місто неможливо знайти (напр., 'asdfg') -> {"error": "not_found"}
+                6. Якщо місто неоднозначне (напр., 'Париж' без країни) -> {"error": "ambiguous"}
                 
                 Приклад (Успіх): {"lat": 49.8397, "lon": 24.0297, "timezone": "Europe/Kyiv"}
                 Приклад (Помилка): {"error": "not_found"}
@@ -767,7 +768,7 @@
                 }
 
                 let delay = 1000;
-                for (let i = 0; i < 3; i++) {
+                for (let i = 0; i < 3; i++) { // 3 спроби
                     try {
                         const response = await fetch(apiUrl, {
                             method: 'POST',
@@ -781,15 +782,16 @@
                             if (candidate && candidate.content?.parts?.[0]?.text) {
                                 return candidate.content.parts[0].text;
                             } else {
+                                // Обробка "safety settings"
                                 console.warn("Gemini API Error (Safety):", result);
                                 return isJson ? '{"error": "safety_block"}' : "На жаль, аналіз не вдалося завершити через обмеження безпеки.";
                             }
                         }
-                        if (response.status === 429) {
+                        if (response.status === 429) { // Throttling
                             console.warn("Gemini API Error: 429 Throttled. Retrying...");
                             await new Promise(resolve => setTimeout(resolve, delay));
                             delay *= 2;
-                            continue;
+                            continue; // Наступна спроба
                         }
                         
                         const errorData = await response.json();
@@ -797,15 +799,16 @@
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
 
-                    } catch (error) {
+                    } catch (error) { // Помилки мережі
                         console.error("Gemini API Error (Client):", error);
-                        if (i === 2) {
+                        if (i === 2) { // Остання спроба
                              return isJson ? '{"error": "network_failure"}' : "На жаль, сервіс тимчасово недоступний через проблему з підключенням.";
                         }
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
                     }
                 }
+                // Якщо всі 3 спроби невдалі
                 return isJson ? '{"error": "timeout"}' : "На жаль, сервіс тимчасово перенавантажений.";
             }
             
@@ -814,6 +817,7 @@
                 const userQuery = `Надай координати для міста: ${cityName}`; 
                 try {
                     const rawJsonText = await callGeminiAPI(geoSystemPrompt, userQuery, true); 
+                    // Чистимо текст від можливих ```json ... ``` обгорток
                     const cleanedJsonText = rawJsonText.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
                     const coords = JSON.parse(cleanedJsonText);
                     
@@ -838,6 +842,7 @@
                     return { error: "parse_error" };
 
                 } catch (error) {
+                    // Якщо JSON.parse впав
                     console.error(`Geocoding API call failed for ${cityName}:`, error);
                     return { error: "network_failure" };
                 }
@@ -849,9 +854,9 @@
                 return text
                     .replace(/== (.*?) ==/g, '<h2 style="font-size: 1.5rem; font-weight: 700; color: var(--accent-color); margin-top: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">$1</h2>')
                     .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-text-color);">$1</strong>')
-                    .replace(/\n\n/g, '<br><br>')
-                    .replace(/\n/g, '<br>')
-                    .replace(/<br><br><br>/g, '<br><br>');
+                    .replace(/\n\n/g, '<br><br>') // Подвійний абзац
+                    .replace(/\n/g, '<br>') // Одинарний новий рядок
+                    .replace(/<br><br><br>/g, '<br><br>'); // Чистка зайвих розривів
             }
 
 
@@ -871,8 +876,10 @@
                     setButtonLoading(landingSubmitButton, true); // Починаємо завантаження кнопки
                     showStep('loading'); 
                     
+                    // Запускаємо генерацію звіту У ФОНІ
                     const reportPromise = callGeminiAPI(freeSystemPrompt, `Моя дата народження: ${selectedDate}`, true);
                     
+                    // Поки звіт генерується, показуємо анімацію
                     const loadingSteps = [
                         'Аналізую положення планет', 
                         'Будую твою натальну карту', 
@@ -885,6 +892,7 @@
                     await new Promise(resolve => setTimeout(resolve, 500));
                     await typeWriter(loadingTextEl, loadingSteps[2], 70);
 
+                    // Чекаємо на реальний звіт
                     const rawJsonText = await reportPromise;
                     setButtonLoading(landingSubmitButton, false); // Зупиняємо завантаження кнопки (про всяк випадок)
                     
@@ -902,6 +910,7 @@
                         freeReportTextEl.innerHTML = reportData.psychological_analysis;
                         freeReportHookEl.innerHTML = formatReport(reportData.premium_hook);
                         
+                        // КРОК 2 -> КРОК 3 (Завантаження -> Результат)
                         showStep('result'); 
 
                     } catch (error) {
@@ -995,6 +1004,7 @@
 
                 // --- ІМІТАЦІЯ ОПЛАТИ (для Canvas/Web) ---
                 try {
+                    // Зберігаємо дані в sessionStorage, щоб "пережити" перезавантаження
                     sessionStorage.setItem('destinyCodeData', JSON.stringify(userBirthData));
                 } catch (e) {
                     console.error("SessionStorage is unavailable:", e);
@@ -1010,11 +1020,13 @@
                 /* // --- РЕАЛЬНА ЛОГІКА WAYFORPAY (для production) ---
                 
                 try {
+                    // 1. Готуємо дані
                     const orderReference = `destinycode-${Date.now()}`;
-                    const amount = '149';
-                    const currency = 'UAH';
+                    const amount = '149'; // Змінено на гривні
+                    const currency = 'UAH'; // Змінено на гривні
                     const productName = 'Повний ШІ-Портрет Destiny Code';
 
+                    // 2. Звертаємось до БЕКЕНДУ за підписом
                     const response = await fetch(BACKEND_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -1029,6 +1041,7 @@
                     const data = await response.json();
                     if (!response.ok) throw new Error(data.error || "Помилка сервера при отриманні підпису.");
 
+                    // 3. Динамічно створюємо і відправляємо форму на WayForPay
                     wfpFormContainer.innerHTML = ''; 
                     const form = document.createElement('form');
                     form.method = 'POST';
@@ -1036,12 +1049,12 @@
                     form.acceptCharset = 'utf-8';
 
                     const fields = {
-                        merchantAccount: data.merchantLogin,
+                        merchantAccount: data.merchantLogin, // Має прийти з бекенду
                         merchantAuthType: 'SimpleSignature',
-                        merchantDomainName: 'destinycode.online',
-                        merchantSignature: data.merchantSignature,
+                        merchantDomainName: 'destinycode.online', // Замініть на ваш домен
+                        merchantSignature: data.merchantSignature, // Має прийти з бекенду
                         orderReference: data.orderReference,
-                        orderDate: data.orderDate,
+                        orderDate: data.orderDate, // Має прийти з бекенду
                         amount: data.amount,
                         currency: data.currency,
                         productName: [data.productName],
@@ -1060,7 +1073,17 @@
                     };
                     
                     for (const key in fields) {
-                        // ... (код створення полів) ...
+                        if (Array.isArray(fields[key])) {
+                            fields[key].forEach(value => {
+                                const input = document.createElement('input');
+                                input.type = 'hidden'; input.name = `${key}[]`; input.value = value;
+                                form.appendChild(input);
+                            });
+                        } else {
+                            const input = document.createElement('input');
+                            input.type = 'hidden'; input.name = key; input.value = fields[key];
+                            form.appendChild(input);
+                        }
                     }
 
                     wfpFormContainer.appendChild(form);
@@ -1088,21 +1111,30 @@
                 
                 if (email) {
                     console.log("Email captured:", email);
+                    // (Тут в реальному додатку ви б зберегли email в базу даних)
                     
+                    // 1. Ховаємо форму email та LTV апсел
                     emailCaptureBox.style.display = 'none';
+                    
+                    // 2. Показуємо індикатор завантаження звіту
                     reportLoadingIndicator.style.display = 'block';
                     
-                    // ЗАПУСК ГЕНЕРАЦІЇ ПОВНОГО ЗВІТУ
+                    // 3. ТЕПЕР запускаємо генерацію ПОВНОГО звіту
                     await fetchFullAnalysis(userBirthData, email);
                 }
             });
             
+            // Обробник для LTV апселу
             ltvUpsellBtn.addEventListener('click', () => {
                 console.log("User clicked LTV upsell button!");
+                
+                // Показуємо модальне вікно (змінено)
                 showModal(
                     "Чудовий вибір!", 
                     "<strong>'Повний AI-Прогноз на 2026 рік'</strong> додано до вашого замовлення.<br><br>(У реальній версії тут би відкрився другий екран оплати.)"
                 );
+                
+                // Блокуємо кнопку
                 ltvUpsellBtn.querySelector('.btn-text').innerText = "Додано! ✅";
                 ltvUpsellBtn.disabled = true;
             });
@@ -1114,32 +1146,41 @@
                 
                 if (urlParams.has('payment') && urlParams.get('payment') === 'success') {
                     
-                    showStep('paymentSuccessReturn');
+                    // (Тут в реальному житті ми б відправили запит на наш бекенд
+                    // для перевірки статусу транзакції на WayForPay, перш ніж показувати успіх)
                     
-                    // (Тут має бути логіка перевірки статусу на бекенді)
+                    // Показуємо спіннер, поки відновлюємо дані
+                    showStep('paymentSuccessReturn');
+
+                    // (У реальному житті ми б НЕ використовували sessionStorage,
+                    // а отримали б дані з customParam_... з нашого бекенд-сервера
+                    // після перевірки статусу транзакції)
                     
                     let savedData;
                     try {
                         savedData = JSON.parse(sessionStorage.getItem('destinyCodeData'));
-                        sessionStorage.removeItem('destinyCodeData'); 
+                        sessionStorage.removeItem('destinyCodeData'); // Чистимо
                     } catch (e) {
                         console.error("Could not retrieve data from sessionStorage:", e);
                     }
 
                     if (savedData && savedData.date) {
-                        userBirthData = savedData; 
+                        userBirthData = savedData; // Відновлюємо дані
                         console.log("Restored user data:", userBirthData);
                         
+                        // Імітуємо затримку перевірки
                         await new Promise(resolve => setTimeout(resolve, 1500));
-                        showStep('success'); // Перехід на Крок 7
+                        
+                        // Переходимо на Крок 7 (Збір Email)
+                        showStep('success');
                     } else {
-                        // (Якщо дані не відновились з sessionStorage - в реальному
-                        // житті ми б взяли їх з customParam_... з бекенду)
+                        // Якщо даних немає, це дивна помилка
                         console.error("Payment success, but no data found in storage.");
                         showModal("Помилка сесії", "Платіж пройшов, але ми не змогли знайти ваші дані. Будь ласка, почніть спочатку. Кошти не були списані.");
                         showStep('landing');
                     }
                     
+                    // Очищуємо URL
                     window.history.replaceState({}, document.title, window.location.pathname);
                 }
             }
@@ -1156,12 +1197,12 @@
                 // Перевіряємо, чи є у нас валідовані ГЕО-дані
                 if (Horoscope && data.date && data.geo) {
                      try {
-                        const dateParts = data.date.split('-');
+                        const dateParts = data.date.split('-'); // YYYY-MM-DD
                         const year = parseInt(dateParts[0]);
-                        const month = parseInt(dateParts[1]) - 1; 
+                        const month = parseInt(dateParts[1]) - 1; // JS місяці 0-11
                         const date = parseInt(dateParts[2]);
                         
-                        let hour = 12, minute = 0;
+                        let hour = 12, minute = 0; // За замовчуванням опівдні, якщо час не вказано
                         if (data.time) {
                             const timeParts = data.time.split(':');
                             hour = parseInt(timeParts[0]);
@@ -1174,7 +1215,7 @@
                             hour: hour, minute: minute,
                             latitude: data.geo.latitude, 
                             longitude: data.geo.longitude,
-                            timezone: data.geo.timezone 
+                            timezone: data.geo.timezone // Ключовий елемент!
                         });
                         
                         const horoscope = new Horoscope({
@@ -1199,6 +1240,9 @@
                         
                      } catch (err) {
                         console.error("Failed to calculate full horoscope (Step 7):", err);
+                        // Якщо бібліотека впаде (малоймовірно), ми просто
+                        // не додамо astroDataString, і Gemini відпрацює
+                        // в базовому режимі.
                      }
                 } else {
                      console.log("Calculating report without GEO data (user skipped or validation failed).");
@@ -1206,13 +1250,16 @@
                      // в режимі "без Асценденту"
                 }
 
+                // Додаємо астро-дані (якщо вони є) до запиту
                 const finalUserQuery = userQuery + astroDataString;
 
-                const rawReport = await callGeminiAPI(fullSystemPrompt, finalUserQuery, false);
+                const rawReport = await callGeminiAPI(fullSystemPrompt, finalUserQuery, false); // false - не JSON
                 const formattedReport = formatReport(rawReport);
                 
+                // Ховаємо спіннер
                 if (reportLoadingIndicator) reportLoadingIndicator.style.display = 'none';
                 
+                // Показуємо звіт
                 if (fullReportContentEl) {
                     fullReportContentEl.innerHTML = formattedReport;
                     fullReportContentEl.style.display = 'block';
@@ -1223,6 +1270,10 @@
                 console.log("SENDING REPORT TO BACKEND (Simulation):");
                 console.log("Email:", email);
                 console.log("Report HTML:", formattedReport);
+                // fetch('URL_ДЛЯ_EMAIL_ФУНКЦІЇ', {
+                //    method: 'POST',
+                //    body: JSON.stringify({ email: email, reportHtml: formattedReport })
+                // });
             }
 
             // --- 6. ІНІЦІАЛІЗАЦІЯ ---
@@ -1233,8 +1284,10 @@
                     datePlaceholder.innerText = 'Оберіть дату';
                     datePlaceholder.style.color = 'var(--secondary-text-color)';
                 } else {
+                    // Форматуємо YYYY-MM-DD у DD.MM.YYYY
                     const parts = birthDateInput.value.split('-');
                     const formattedDate = `${parts[2]}.${parts[1]}.${parts[0]}`;
+                    
                     datePlaceholder.innerText = formattedDate;
                     datePlaceholder.style.color = 'var(--primary-text-color)';
                 }
