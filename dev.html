@@ -1269,13 +1269,15 @@
             // === ІНТЕГРОВАНО: Логіка 1995-01-01 ===
             function setDefaultDateOnFirstFocus() {
                 if (birthDateInput.value === '') { 
+                    console.log("Setting default date to 1995-01-01"); // Debug log
                     birthDateInput.value = '1995-01-01'; 
                 }
-                birthDateInput.removeEventListener('focus', setDefaultDateOnFirstFocus);
-                birthDateInput.removeEventListener('click', setDefaultDateOnFirstFocus);
+                // Ми не викликаємо updateDatePlaceholder() тут,
+                // щоб текст "Обрати дату" залишався, доки юзер не обере дату або не вийде з поля
             }
             birthDateInput.addEventListener('focus', setDefaultDateOnFirstFocus);
             birthDateInput.addEventListener('click', setDefaultDateOnFirstFocus);
+            birthDateInput.addEventListener('touchstart', setDefaultDateOnFirstFocus); // ДОДАНО: Для кращої роботи на мобільних
             birthDateInput.addEventListener('blur', updateDatePlaceholder);
             
             updateDatePlaceholder(); // Початковий виклик
