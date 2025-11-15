@@ -59,7 +59,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Стилі Елементів (з dev.html) --- */
+        /* --- Стилі Елементів --- */
         .input-field {
             position: relative;
             color: var(--primary-text-color);
@@ -91,7 +91,6 @@
             margin-top: 0.5rem; /* mt-2 */
         }
         
-        /* === ОНОВЛЕНО v2.10: Інфо-повідомлення (для міста) === */
         .info-text {
             color: var(--accent-color);
             font-size: 0.875rem; /* text-sm */
@@ -122,7 +121,6 @@
             font-size: 1rem;
             transition: all 0.3s ease;
             cursor: pointer;
-            /* Для спіннера */
             position: relative;
             display: flex;
             align-items: center;
@@ -135,19 +133,18 @@
         }
         
         .btn-spinner {
-            display: none; /* Сховано */
-            width: 1.25rem; /* w-5 */
-            height: 1.25rem; /* h-5 */
+            display: none; 
+            width: 1.25rem; 
+            height: 1.25rem;
             border-width: 2px;
             border-style: solid;
             border-radius: 9999px;
             animation: spin 1s linear infinite;
-            /* Колір (прозорий/білий) */
             border-color: transparent;
             border-top-color: currentColor; 
         }
         .btn.loading .btn-text {
-            opacity: 0.5; /* Приглушуємо текст */
+            opacity: 0.5; 
         }
         .btn.loading .btn-spinner {
             display: block;
@@ -157,7 +154,7 @@
         .btn-primary {
             background-color: var(--accent-color);
             color: var(--bg-color);
-            box-shadow: 0 4px 15px -5px rgba(205, 164, 94, 0.4); /* Тінь */
+            box-shadow: 0 4px 15px -5px rgba(205, 164, 94, 0.4); 
         }
         
         .btn-primary:not(:disabled):hover {
@@ -178,7 +175,6 @@
             color: var(--primary-text-color);
         }
 
-        /* === v2.13: Нові стилі для кнопок PDF/Share === */
         .btn-secondary {
             background-color: var(--card-bg-color);
             color: var(--accent-color);
@@ -187,17 +183,16 @@
         }
         .btn-secondary:not(:disabled):hover {
             opacity: 1;
-            background-color: rgba(205, 164, 94, 0.05); /* Легкий hover-ефект */
+            background-color: rgba(205, 164, 94, 0.05); 
         }
 
 
-        /* --- Стилі Завантаження (з dev.html + наш спіннер) --- */
+        /* --- Стилі Завантаження (Крок 2) --- */
         .typing-container {
-            font-size: 1.25rem; /* Трохи менший, щоб пасував спіннеру */
+            font-size: 1.25rem; 
             color: var(--secondary-text-color);
             margin-top: 1rem;
-            min-height: 2.5rem; /* Резервуємо місце, щоб екран не стрибав */
-            /* === v2.11: Додано для коректного "зависання" === */
+            min-height: 2.5rem; 
             display: flex;
             align-items: center;
             justify-content: center;
@@ -216,12 +211,12 @@
             50% { opacity: 0; }
         }
         
-        .spinner {
-            width: 4rem; /* 64px */
-            height: 4rem; /* 64px */
+        .spinner { /* Використовується на Кроці 2 та 6 */
+            width: 4rem; 
+            height: 4rem;
             border-width: 4px;
             border-style: dashed; 
-            border-radius: 9999px; /* rounded-full */
+            border-radius: 9999px; 
             animation: spin 1.5s linear infinite;
             margin: 2rem auto;
             border-color: var(--accent-color) transparent var(--accent-color) transparent;
@@ -230,7 +225,27 @@
             to { transform: rotate(360deg); }
         }
 
-        /* === НОВИЙ СТИЛЬ v2.11: Анімовані крапки === */
+        /* === v2.14: НОВІ СТИЛІ для Таймбару (Крок 7) === */
+        .timebar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 2rem auto 1rem auto; /* Позиціонування */
+        }
+        
+        .timebar-progress {
+            width: 0%; /* Починається з 0 */
+            height: 100%;
+            background-color: var(--accent-color);
+            border-radius: 4px;
+            /* Анімація заповнення керується JS */
+            transition: width 1.0s ease-out; 
+        }
+        /* ============================================= */
+
+        /* === v2.14: Повернені стилі v2.11 для "Очікування" === */
         .waiting-dots {
             display: inline-block;
             position: relative;
@@ -242,7 +257,7 @@
         }
         .waiting-dots::after {
             content: '.';
-            font-size: 1.5rem; /* Збільшено для видимості */
+            font-size: 1.5rem; 
             font-weight: 700;
             animation: dots-blink 1.4s infinite;
             position: absolute;
@@ -254,50 +269,14 @@
             40% { content: '..'; }
             60%, 100% { content: '...'; }
         }
-
-        /* === v2.13: Нові стилі для анімації Append === */
-        #report-lines-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem; /* space-y-2 */
-            width: 100%;
-            text-align: left;
-            margin-bottom: 1rem; /* mb-4 */
-            padding: 0.75rem; /* p-3 */
-            background-color: var(--card-bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
+        /* Стан "Очікування": ховаємо курсор, показуємо крапки */
+        .typing-container.waiting .typing-cursor {
+            display: none;
         }
-        .completed-line {
-            font-size: 1rem; /* text-base */
-            color: var(--primary-text-color);
-            opacity: 0.9;
-            animation: fadeIn 0.5s ease-out;
-        }
-        /* Контейнер для *поточного* рядка, що друкується */
-        #report-current-line-container {
-            font-size: 1rem; 
-            color: var(--secondary-text-color);
-            min-height: 2.5rem; 
-            display: flex;
-            align-items: center;
-            justify-content: flex-start; /* Вирівнювання по лівому краю */
-            width: 100%;
-            padding: 0.75rem; /* p-3 */
-        }
-        /* Контейнер для стану "Очікування" (крапки) */
-        #report-waiting-indicator {
-            display: none; /* Сховано за замовчуванням */
-            color: var(--accent-color);
-            font-weight: 500;
-            font-size: 1rem;
-            min-height: 2.5rem; 
-            align-items: center;
-            justify-content: center;
-            padding: 0.75rem; /* p-3 */
+        .typing-container.waiting .report-waiting-dots {
+            display: inline-block;
         }
         /* ============================================= */
-
 
         /* --- Стилі Paywall --- */
         .paywall-item {
@@ -307,7 +286,7 @@
             border: 1px solid var(--border-color);
             border-radius: 0.5rem;
             padding: 1rem;
-            opacity: 0.7; /* Заблоковані */
+            opacity: 0.7; 
         }
         
         .paywall-icon {
@@ -316,7 +295,7 @@
             margin-right: 0.75rem;
         }
 
-        /* --- Модальне вікно (з dev.html) --- */
+        /* --- Модальне вікно --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -324,7 +303,7 @@
             width: 100%;
             height: 100%;
             background-color: rgba(0, 0, 0, 0.8);
-            display: none; /* Сховано */
+            display: none; 
             justify-content: center;
             align-items: center;
             z-index: 100;
@@ -344,16 +323,16 @@
         
         .modal-btn-close {
             margin-top: 1.5rem;
-            background-color: #4b5563; /* gray-600 */
+            background-color: #4b5563; 
             color: white;
             border: 1px solid #4b5563;
         }
         .modal-btn-close:hover {
-            background-color: #6b7280; /* gray-500 */
+            background-color: #6b7280; 
             border-color: #6b7280;
         }
 
-        /* --- Нові стилі для LTV апселу (Крок 7) --- */
+        /* --- LTV Апсел (Крок 7) --- */
         .ltv-upsell-box {
             background-color: var(--card-bg-color);
             border: 1px solid var(--accent-color);
@@ -363,28 +342,26 @@
             box-shadow: 0 0 25px rgba(205, 164, 94, 0.1), 0 4px 10px rgba(0,0,0,0.2);
         }
         
-        /* --- НОВІ СТИЛІ: Динамічний Звіт (Крок 7) --- */
+        /* --- Динамічний Звіт (Крок 7) --- */
         .report-section { 
-             /* Стилі для кожного блоку звіту */
         }
         .report-advice {
-            background-color: var(--bg-color); /* Трохи темніший фон */
+            background-color: var(--bg-color); 
             border: 1px solid var(--border-color);
-            border-left: 3px solid var(--accent-color); /* Акцент зліва */
+            border-left: 3px solid var(--accent-color); 
             margin-top: 1rem;
             padding: 1rem;
             border-radius: 0.25rem 0.5rem 0.5rem 0.25rem;
         }
         
-        /* === v2.13: Новий контейнер для кнопок дій === */
+        /* --- Контейнер для кнопок PDF/Share (Крок 7) --- */
         #report-actions-container {
-            display: none; /* Сховано за замовчуванням */
             margin-top: 2rem;
             padding-top: 1.5rem;
             border-top: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
-            gap: 0.75rem; /* space-y-3 */
+            gap: 0.75rem; 
         }
         
     </style>
@@ -506,7 +483,6 @@
                     <p id="city-error-message" class="error-text">
                         Текст помилки...
                     </p>
-                    <!-- === НОВИЙ ЕЛЕМЕНТ v2.10: Інфо-повідомлення === -->
                     <p id="city-info-message" class="info-text">
                         <!-- Сюди буде вставлено текст "Ми уточнили: Ужгород" -->
                     </p>
@@ -599,7 +575,6 @@
                     Ваш персональний гайд готується. Вкажіть ваш email, щоб миттєво отримати звіт:
                 </p>
                 
-                <!-- === ОНОВЛЕНО v2.13: Текст кнопки === -->
                 <form id="email-form" class="space-y-4 mb-8">
                     <label for="user-email" class="sr-only">Ваш Email</label>
                     <input type="email" id="user-email" name="user-email" placeholder="your.email@gmail.com" class="input-field text-center" required>
@@ -622,29 +597,22 @@
                 </div>
             </div>
 
-            <!-- === ОНОВЛЕНО v2.13: Повністю нова структура анімації === -->
+            <!-- === ОНОВЛЕНО v2.14: Повернення до v2.11 + Timebar === -->
             <div id="report-loading-indicator" class="text-center" style="display: none;">
                 <h2 class="text-2xl font-bold text-center text-white mb-6">
                     <span style="color: var(--accent-color);">Дякую!</span>
                 </h2>
-                <div class="spinner"></div>
                 
-                <!-- Контейнер для *завершених* рядків -->
-                <div id="report-lines-container">
-                    <!-- JS буде додавати <p> сюди -->
+                <!-- Новий Таймбар -->
+                <div class="timebar-container">
+                    <div id="timebar-progress" class="timebar-progress"></div>
                 </div>
                 
-                <!-- Контейнер для *поточного* рядка, що друкується -->
-                <div id="report-current-line-container" class="typing-container">
+                <!-- Повернений контейнер анімації з v2.11 -->
+                <div class="typing-container" id="report-typing-container">
                     <span id="report-loading-text"></span>
                     <span class="typing-cursor"></span>
-                </div>
-
-                <!-- Контейнер для анімованих крапок (стан очікування) -->
-                <div id="report-waiting-indicator" class
-="typing-container">
-                    <span id="report-waiting-text"></span>
-                    <span class="waiting-dots"></span>
+                    <span id="report-waiting-dots" class="waiting-dots" style="display: none;"></span>
                 </div>
             </div>
             <!-- ============================================== -->
@@ -653,7 +621,7 @@
                 <!-- Контент генерується... -->
             </div>
 
-            <!-- === v2.13: Новий блок для кнопок дій === -->
+            <!-- Контейнер для кнопок дій (з v2.13) -->
             <div id="report-actions-container" style="display: none;">
                 <button id="download-pdf-btn" class="btn btn-secondary">
                     <span class="btn-text">Завантажити PDF</span>
@@ -669,10 +637,10 @@
 
     </main>
 
-    <!-- Прихований контейнер для динамічної форми WayForPay (з dev.html) -->
+    <!-- Прихований контейнер для динамічної форми WayForPay -->
     <div id="wfp-form-container" style="display: none;"></div>
     
-    <!-- Модальне вікно для Помилок/Повідомлень (з dev.html) -->
+    <!-- Модальне вікно для Помилок/Повідомлень -->
     <div id="modal" class="modal-overlay">
         <div class="modal-content">
             <h3 id="modal-title" class="text-2xl font-bold text-white mb-4">Повідомлення</h3>
@@ -687,7 +655,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.13 (з Анімацією Append) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.14 (з Timebar) -->
     <!-- ====================================================== -->
     <script>
         // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
@@ -738,21 +706,17 @@
             const finalCheckoutButton = document.getElementById('final-checkout-button');
 
             const reportLoadingIndicator = document.getElementById('report-loading-indicator');
-            // === v2.13: Нові елементи анімації ===
-            const reportLinesContainer = document.getElementById('report-lines-container');
-            const reportCurrentLineContainer = document.getElementById('report-current-line-container');
+            // === v2.14: Нові/повернені елементи анімації ===
+            const timebarProgress = document.getElementById('timebar-progress');
+            const reportTypingContainer = document.getElementById('report-typing-container');
             const reportLoadingTextEl = document.getElementById('report-loading-text');
-            const reportWaitingIndicator = document.getElementById('report-waiting-indicator');
-            const reportWaitingTextEl = document.getElementById('report-waiting-text');
             // ===================================
 
             const fullReportContentEl = document.getElementById('full-report-content');
             
-            // === v2.13: Нові елементи кнопок дій ===
             const reportActionsContainer = document.getElementById('report-actions-container');
             const downloadPdfBtn = document.getElementById('download-pdf-btn');
             const shareReportBtn = document.getElementById('share-report-btn');
-            // =======================================
 
             const emailCaptureBox = document.getElementById('email-capture-box');
             const emailForm = document.getElementById('email-form');
@@ -786,12 +750,10 @@
                 geo: null 
             };
             
-            // === v2.11: Нові прапори для синхронізації ===
             let isAnimationComplete = false;
             let isReportReady = false;
-            let generatedReportData = null; // Тут зберігатиметься готовий HTML звіту
-            // ===========================================
-
+            let generatedReportData = null; 
+            
             // ======================================================
             // --- 3. СИСТЕМНІ ПРОМПТИ ---
             // ======================================================
@@ -868,7 +830,6 @@
             \`\`\`
             ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. 'analysis_text' має бути деталізованим (3-4 абзаци), з **жирними** акцентами.`;
 
-            // === ОНОВЛЕНО v2.10: Посилений geoSystemPrompt ===
             const geoSystemPrompt = `
                 Ти — високоточний географічний API. Твоя єдина мета — повернути JSON-об'єкт, що містить географічні координати (lat, lon), часовий пояс (timezone) та **виправлену назву міста (corrected_name)**.
                 ПРАВИЛА:
@@ -938,38 +899,33 @@
                 });
             }
             
-            // === v2.13: ОНОВЛЕНА ЛОГІКА СИНХРОНІЗАЦІЇ ===
+            // === v2.14: ОНОВЛЕНА ЛОГІКА СИНХРОНІЗАЦІЇ ===
             
-            /**
-             * Функція, що перевіряє, чи готові ОБИДВІ частини (анімація і звіт),
-             * і якщо так - показує звіт.
-             */
             function showReportIfReady() {
-                // Ця функція спрацює, лише якщо ОБИДВА прапори true
                 if (isAnimationComplete && isReportReady && generatedReportData) {
                     console.log("Sync: Animation and Report are BOTH ready. Showing report.");
 
-                    // 1. Приховати індикатор завантаження
                     reportLoadingIndicator.style.display = 'none';
-                    // 2. Скинути стан очікування (крапки)
-                    reportWaitingIndicator.style.display = 'none';
+                    reportTypingContainer.classList.remove('waiting');
                     
-                    // 3. Показати контент звіту
                     fullReportContentEl.innerHTML = generatedReportData;
                     fullReportContentEl.style.display = 'block';
 
-                    // 4. v2.13: Показати кнопки дій
                     reportActionsContainer.style.display = 'flex';
-                } else {
-                    // console.log(`Sync check: AnimationReady=${isAnimationComplete}, ReportReady=${isReportReady}`);
                 }
             }
 
             /**
-             * v2.13: ОНОВЛЕНА Анімація завантаження звіту (з Append)
+             * v2.14: ОНОВЛЕНА Анімація завантаження звіту (з Timebar)
              */
             async function startReportLoadingAnimation() {
-                // Новий, затверджений список кроків
+                // Скидаємо/починаємо анімацію таймбару
+                timebarProgress.style.transition = 'none';
+                timebarProgress.style.width = '0%';
+                // Примусовий reflow, щоб скидання анімації спрацювало
+                timebarProgress.offsetHeight; 
+                timebarProgress.style.transition = 'width 1.0s ease-out';
+                
                 const loadingSteps = [
                     "Звіт надійде на email за 30 секунд...",
                     "Аналізую Ядро твоєї Особистості ✨",
@@ -979,32 +935,29 @@
                     "Завантажую твій персональний звіт ⚡️"
                 ];
 
-                // Готуємо UI до анімації
-                reportLinesContainer.innerHTML = ''; // Очищуємо старі рядки
-                reportCurrentLineContainer.style.display = 'flex'; // Показываем поточний
-                reportWaitingIndicator.style.display = 'none'; // Ховаємо крапки
-                reportLoadingTextEl.innerHTML = '';
-
                 let lastStepText = '';
 
                 // Проходимо по кроках ОДИН РАЗ
-                for (const step of loadingSteps) {
+                for (let i = 0; i < loadingSteps.length; i++) {
+                    const step = loadingSteps[i];
+                    lastStepText = step;
+                    
                     // "Друкуємо" поточний крок
                     await typeWriter(reportLoadingTextEl, step, 70);
-                    // Пауза 1 сек
-                    await new Promise(resolve => setTimeout(resolve, 1000)); 
-                    // Додаємо його у "завершені" з галочкою
-                    reportLinesContainer.innerHTML += `<p class="completed-line">✅ ${step}</p>`;
-                    // Зберігаємо текст останнього кроку
-                    lastStepText = step;
+                    
+                    // Оновлюємо таймбар
+                    const progress = ((i + 1) / loadingSteps.length) * 100;
+                    timebarProgress.style.width = `${progress}%`;
+
+                    // Пауза (але не на останньому кроці)
+                    if (i < loadingSteps.length - 1) {
+                         await new Promise(resolve => setTimeout(resolve, 1000)); 
+                    }
                 }
 
                 // Анімація завершена!
                 console.log("Sync: Animation FINISHED.");
                 isAnimationComplete = true;
-                
-                // Ховаємо контейнер "друкування"
-                reportCurrentLineContainer.style.display = 'none';
 
                 // Перевірка:
                 if (isReportReady) {
@@ -1013,9 +966,9 @@
                 } else {
                     // Якщо звіт ЩЕ НЕ готовий, "зависаємо" з крапками
                     console.log("Sync: Animation finished, but report is NOT ready. Showing waiting dots...");
-                    // Показуємо останній крок + крапки
-                    reportWaitingTextEl.innerText = lastStepText;
-                    reportWaitingIndicator.style.display = 'flex';
+                    // Залишаємо останній текст і вмикаємо крапки
+                    reportLoadingTextEl.innerText = lastStepText;
+                    reportTypingContainer.classList.add('waiting');
                 }
             }
             
@@ -1080,7 +1033,6 @@
                 return '{"error": "timeout", "message": "На жаль, сервіс тимчасово перенавантажений."}';
             }
 
-            // === ОНОВЛЕНО v2.10: Геокодування повертає "corrected_name" ===
             async function getCoordinatesFromGemini(cityName) {
                 const userQuery = `Місто: ${cityName}`; 
                 try {
@@ -1088,14 +1040,13 @@
                     const cleanedJsonText = rawJsonText.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
                     const coords = JSON.parse(cleanedJsonText);
                     
-                    // Перевіряємо нове обов'язкове поле "corrected_name"
                     if (coords && typeof coords.lat === 'number' && typeof coords.lon === 'number' && typeof coords.timezone === 'string' && typeof coords.corrected_name === 'string') {
                         console.log(`Geocoding success for ${cityName}:`, coords);
                         return { 
                             latitude: coords.lat, 
                             longitude: coords.lon, 
                             timezone: coords.timezone,
-                            corrected_name: coords.corrected_name, // Повертаємо виправлену назву
+                            corrected_name: coords.corrected_name,
                             error: null
                         };
                     }
@@ -1122,8 +1073,9 @@
                 e.preventDefault();
                 const selectedDate = birthDateInput.value;
                 
-                if (selectedDate === '' || selectedDate === '1995-01-01') {
-                    errorMessage.innerText = "Будь ласка, обери справжню дату народження.";
+                // === v2.14: ВИДАЛЕНО ПЕРЕВІРКУ '1995-01-01' ===
+                if (selectedDate === '') {
+                    errorMessage.innerText = "Будь ласка, обери свою дату народження.";
                     errorMessage.style.display = 'block';
                 } else {
                     errorMessage.style.display = 'none';
@@ -1185,19 +1137,17 @@
                 showStep('premiumData');
             });
 
-            // === ОНОВЛЕНО v2.10: Логіка валідації міста ===
+            // === Логіка валідації міста ===
             async function validateAndGoToPaywall() {
                 const time = birthTimeInput.value;
                 const city = birthCityInput.value.trim();
 
-                // Скидаємо всі повідомлення
                 cityErrorMessage.style.display = 'none';
                 cityInfoMessage.style.display = 'none';
                 birthCityInput.classList.remove('input-error');
                 
                 userBirthData.time = time || '';
 
-                // Якщо місто порожнє, це як "Skip"
                 if (city === '') {
                     userBirthData.city = '';
                     userBirthData.geo = null;
@@ -1206,25 +1156,20 @@
                     return;
                 }
                 
-                // Якщо місто НЕ порожнє, вмикаємо валідацію
                 setButtonLoading(continueToPaywallButton, true);
                 const coords = await getCoordinatesFromGemini(city);
                 
                 let infoText = null;
                 
                 if (coords && coords.latitude) {
-                    // УСПІХ
                     userBirthData.geo = { 
                         latitude: coords.latitude, 
                         longitude: coords.longitude, 
                         timezone: coords.timezone
                     };
-                    // Зберігаємо ВИПРАВЛЕНУ назву
                     userBirthData.city = coords.corrected_name;
-                    
                     console.log("City validated and saved:", userBirthData.geo);
 
-                    // Перевіряємо, чи була одрук
                     if (city.toLowerCase() !== coords.corrected_name.toLowerCase()) {
                         infoText = `Ми уточнили: ${coords.corrected_name} 😉`;
                     }
@@ -1236,19 +1181,16 @@
                     
                     setButtonLoading(continueToPaywallButton, false);
 
-                    // Чекаємо 1.2 сек, ТІЛЬКИ якщо показали повідомлення
                     setTimeout(() => {
                         showStep('paywall');
                     }, infoText ? 1200 : 0);
 
                 } else if (coords && coords.error === 'ambiguous') {
-                    // ПОМИЛКА: Неоднозначно
                     cityErrorMessage.innerText = `Місто "${city}" знайдено в кількох місцях. Будь ласка, уточни, додавши країну (напр., 'Париж, Франція').`;
                     cityErrorMessage.style.display = 'block';
                     birthCityInput.classList.add('input-error');
                     setButtonLoading(continueToPaywallButton, false);
                 } else {
-                    // ПОМИЛКА: Не знайдено або інша
                     cityErrorMessage.innerText = `Не можемо знайти місто "${city}". Перевірте, будь ласка, назву.`;
                     cityErrorMessage.style.display = 'block';
                     birthCityInput.classList.add('input-error');
@@ -1283,7 +1225,7 @@
                 showStep('success'); 
             });
             
-            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.13) ---
+            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.14) ---
             emailForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = userEmailInput.value;
@@ -1294,18 +1236,15 @@
                     // 1. Скидаємо прапори синхронізації
                     isAnimationComplete = false;
                     isReportReady = false;
-                    generatedReportData = null; // Очищуємо старий звіт
+                    generatedReportData = null; 
 
                     // 2. Готуємо UI до завантаження
                     emailCaptureBox.style.display = 'none';
                     reportLoadingIndicator.style.display = 'block';
-                    // v2.13: Скидаємо всі елементи анімації
-                    reportLinesContainer.innerHTML = '';
-                    reportCurrentLineContainer.style.display = 'none';
-                    reportWaitingIndicator.style.display = 'none';
-
+                    reportTypingContainer.classList.remove('waiting'); 
+                    reportLoadingTextEl.innerHTML = ''; // Очищуємо текст
+                    
                     // 3. Запускаємо ОБИДВА процеси паралельно
-                    // (вони самі викличуть showReportIfReady(), коли будуть готові)
                     startReportLoadingAnimation();
                     fetchFullAnalysis(userBirthData, email);
                 }
@@ -1322,7 +1261,7 @@
                 ltvUpsellBtn.disabled = true;
             });
 
-            // === v2.13: Обробники для кнопок PDF/Share ===
+            // Обробники для кнопок PDF/Share
             downloadPdfBtn.addEventListener('click', () => {
                 showModal("PDF Генерується...", "Ваш персональний PDF-звіт готується і буде надісланий вам на пошту.<br><br>(Це симуляція; реальна логіка буде на сервері.)");
             });
@@ -1362,13 +1301,12 @@
             
             
             /**
-             * v2.13: ОНОВЛЕНА Функція генерації ПОВНОГО звіту
-             * (Тепер вона не показує звіт, а зберігає його і викликає синхронізацію)
+             * v2.14: ОНОВЛЕНА Функція генерації ПОВНОГО звіту
              */
             async function fetchFullAnalysis(data, email) {
                 let userQuery = `Дата народження: ${data.date}.`;
                 if (data.time) userQuery += ` Час: ${data.time}.`;
-                if (data.city) userQuery += ` Місто: ${data.city}.`; // Надсилаємо вже виправлене місто
+                if (data.city) userQuery += ` Місто: ${data.city}.`;
 
                 let astroDataString = "";
                  
@@ -1467,18 +1405,13 @@
                     formattedReportHTML = `<p>На жаль, сталася помилка при обробці JSON-відповіді. Текст помилки: ${rawJsonString}</p>`;
                 }
                 
-                // === v2.11: Нова логіка синхронізації ===
+                // === v2.14: Нова логіка синхронізації ===
                 
-                // 1. Зберегти згенерований HTML
                 generatedReportData = formattedReportHTML;
-                
-                // 2. Встановити прапор, що звіт готовий
                 console.log("Sync: Report FINISHED.");
                 isReportReady = true;
                 
-                // 3. Викликати перевірку
-                // (Якщо анімація ВЖЕ закінчилась, звіт покажеться. 
-                // Якщо ні - нічого не станеться, showReportIfReady() буде викликано анімацією пізніше)
+                // Викликаємо перевірку
                 showReportIfReady();
                 
                 // =======================================
@@ -1510,9 +1443,12 @@
             birthDateInput.addEventListener('input', updateDatePlaceholder);
             birthDateInput.addEventListener('change', updateDatePlaceholder);
             
+            // === v2.14: Змінена логіка, щоб не блокувати '1995-01-01' ===
             function setDefaultDateOnFirstFocus() {
+                // Встановлюємо '1995-01-01' ТІЛЬКИ ЯКЩО поле порожнє
+                // Це для зручності, щоб користувач не скролив з 2025 року
                 if (birthDateInput.value === '') { 
-                    console.log("Setting default date to 1995-01-01");
+                    console.log("Setting default date to 1995-01-01 for convenience.");
                     birthDateInput.value = '1995-01-01';
                 }
             }
@@ -1537,7 +1473,6 @@
             birthTimeInput.addEventListener('change', updateTimePlaceholder);
             updateTimePlaceholder(); 
             
-            // === ОНОВЛЕНО v2.10: Скидання обох повідомлень ===
             birthCityInput.addEventListener('input', () => { 
                 cityErrorMessage.style.display = 'none'; 
                 cityInfoMessage.style.display = 'none'; 
