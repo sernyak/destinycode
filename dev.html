@@ -187,18 +187,17 @@
         }
 
 
-        /* --- Стилі Завантаження (Крок 2) --- */
-        .typing-container {
+        /* --- v2.15: ОНОВЛЕНІ Стилі Завантаження (Крок 2) --- */
+        #loading-typing-container {
             font-size: 1.25rem; 
             color: var(--secondary-text-color);
             margin-top: 1rem;
             min-height: 2.5rem; 
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            /* Головний фікс: прибрано flex, додано text-align */
+            text-align: center;
         }
         .typing-cursor {
-            display: inline-block;
+            display: inline-block; /* Був inline-block */
             width: 10px;
             height: 1.25rem;
             background-color: var(--accent-color);
@@ -225,7 +224,7 @@
             to { transform: rotate(360deg); }
         }
 
-        /* === v2.14: НОВІ СТИЛІ для Таймбару (Крок 7) === */
+        /* === v2.14: Стилі Таймбару (Крок 7) === */
         .timebar-container {
             width: 100%;
             height: 8px;
@@ -240,42 +239,21 @@
             height: 100%;
             background-color: var(--accent-color);
             border-radius: 4px;
-            /* Анімація заповнення керується JS */
             transition: width 1.0s ease-out; 
         }
         /* ============================================= */
 
-        /* === v2.14: Повернені стилі v2.11 для "Очікування" === */
-        .waiting-dots {
-            display: inline-block;
-            position: relative;
-            width: 1.25rem; 
-            height: 1.25rem;
-            vertical-align: middle;
-            margin-left: 5px;
-            color: var(--accent-color);
+        /* === v2.15: ОНОВЛЕНІ Стилі Завантаження (Крок 7) === */
+        #report-typing-container {
+            font-size: 1.25rem; 
+            color: var(--secondary-text-color);
+            margin-top: 1rem;
+            min-height: 2.5rem; 
+            /* Головний фікс: прибрано flex, додано text-align */
+            text-align: center;
         }
-        .waiting-dots::after {
-            content: '.';
-            font-size: 1.5rem; 
-            font-weight: 700;
-            animation: dots-blink 1.4s infinite;
-            position: absolute;
-            bottom: 0;
-            left: 0;
-        }
-        @keyframes dots-blink {
-            0%, 20% { content: '.'; }
-            40% { content: '..'; }
-            60%, 100% { content: '...'; }
-        }
-        /* Стан "Очікування": ховаємо курсор, показуємо крапки */
-        .typing-container.waiting .typing-cursor {
-            display: none;
-        }
-        .typing-container.waiting .report-waiting-dots {
-            display: inline-block;
-        }
+        
+        /* v2.15: Прибрано стилі для .waiting-dots, оскільки вони видалені */
         /* ============================================= */
 
         /* --- Стилі Paywall --- */
@@ -419,9 +397,9 @@
         <!-- ====================================================== -->
         <section id="loading-step" class="funnel-step text-center space-y-6">
             <div class="spinner"></div>
-            <div class="typing-container">
-                <span id="loading-text"></span>
-                <span class="typing-cursor"></span>
+            <!-- v2.15: ОНОВЛЕНО HTML/CSS для коректного курсору -->
+            <div id="loading-typing-container" class="typing-container">
+                <span id="loading-text"></span><span id="loading-cursor" class="typing-cursor" style="display: none;"></span>
             </div>
         </section>
 
@@ -597,22 +575,20 @@
                 </div>
             </div>
 
-            <!-- === ОНОВЛЕНО v2.14: Повернення до v2.11 + Timebar === -->
+            <!-- === ОНОВЛЕНО v2.15 === -->
             <div id="report-loading-indicator" class="text-center" style="display: none;">
                 <h2 class="text-2xl font-bold text-center text-white mb-6">
                     <span style="color: var(--accent-color);">Дякую!</span>
                 </h2>
                 
-                <!-- Новий Таймбар -->
+                <!-- Таймбар (з v2.14) -->
                 <div class="timebar-container">
                     <div id="timebar-progress" class="timebar-progress"></div>
                 </div>
                 
-                <!-- Повернений контейнер анімації з v2.11 -->
-                <div class="typing-container" id="report-typing-container">
-                    <span id="report-loading-text"></span>
-                    <span class="typing-cursor"></span>
-                    <span id="report-waiting-dots" class="waiting-dots" style="display: none;"></span>
+                <!-- Оновлений контейнер анімації (як на Кроці 2) -->
+                <div id="report-typing-container" class="typing-container">
+                    <span id="report-loading-text"></span><span id="report-cursor" class="typing-cursor" style="display: none;"></span>
                 </div>
             </div>
             <!-- ============================================== -->
@@ -655,7 +631,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.14 (з Timebar) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.15 (з фіксами анімацій) -->
     <!-- ====================================================== -->
     <script>
         // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
@@ -687,7 +663,10 @@
             const datePlaceholder = document.getElementById('date-placeholder');
             const landingSubmitButton = birthForm.querySelector('button[type="submit"]');
 
+            // v2.15: Нові елементи для Кроку 2
+            const loadingTypingContainer = document.getElementById('loading-typing-container');
             const loadingTextEl = document.getElementById('loading-text');
+            const loadingCursorEl = document.getElementById('loading-cursor');
 
             const resultTitleEl = document.getElementById('result-title');
             const freeReportTitleEl = document.getElementById('free-report-title');
@@ -706,11 +685,11 @@
             const finalCheckoutButton = document.getElementById('final-checkout-button');
 
             const reportLoadingIndicator = document.getElementById('report-loading-indicator');
-            // === v2.14: Нові/повернені елементи анімації ===
+            // v2.15: Нові/оновлені елементи для Кроку 7
             const timebarProgress = document.getElementById('timebar-progress');
             const reportTypingContainer = document.getElementById('report-typing-container');
             const reportLoadingTextEl = document.getElementById('report-loading-text');
-            // ===================================
+            const reportCursorEl = document.getElementById('report-cursor');
 
             const fullReportContentEl = document.getElementById('full-report-content');
             
@@ -880,9 +859,19 @@
                 }
             }
 
-            function typeWriter(element, text, speed, onComplete) {
+            /**
+             * v2.15: Нова, розумніша функція typeWriter
+             * @param {HTMLElement} element - Елемент SPAN для тексту
+             * @param {HTMLElement} cursorElement - Елемент SPAN для курсору
+             * @param {string} text - Текст для друкування
+             * @param {number} speed - Швидкість друкування (мс)
+             * @param {number} pauseAfter - Пауза ПІСЛЯ завершення (мс)
+             * @param {boolean} keepCursorBlinking - Чи залишати курсор блимати в кінці
+             */
+            function typeWriter(element, cursorElement, text, speed, pauseAfter = 0, keepCursorBlinking = false) {
                 return new Promise(resolve => {
                     let i = 0;
+                    cursorElement.style.display = 'inline-block'; // Завжди показуємо курсор на старті
                     element.innerHTML = ''; 
                     
                     function type() {
@@ -891,22 +880,28 @@
                             i++;
                             setTimeout(type, speed);
                         } else {
-                            if (onComplete) setTimeout(onComplete, 300);
-                            resolve();
+                            // Текст додруковано
+                            // Чекаємо 'pauseAfter'
+                            setTimeout(() => {
+                                if (!keepCursorBlinking) {
+                                    cursorElement.style.display = 'none'; // Ховаємо курсор
+                                }
+                                resolve(); // Вирішуємо проміс
+                            }, pauseAfter);
                         }
                     }
                     type();
                 });
             }
             
-            // === v2.14: ОНОВЛЕНА ЛОГІКА СИНХРОНІЗАЦІЇ ===
+            // === v2.15: ОНОВЛЕНА ЛОГІКА СИНХРОНІЗАЦІЇ ===
             
             function showReportIfReady() {
                 if (isAnimationComplete && isReportReady && generatedReportData) {
                     console.log("Sync: Animation and Report are BOTH ready. Showing report.");
 
+                    reportCursorEl.style.display = 'none'; // Ховаємо курсор Кроку 7
                     reportLoadingIndicator.style.display = 'none';
-                    reportTypingContainer.classList.remove('waiting');
                     
                     fullReportContentEl.innerHTML = generatedReportData;
                     fullReportContentEl.style.display = 'block';
@@ -916,14 +911,13 @@
             }
 
             /**
-             * v2.14: ОНОВЛЕНА Анімація завантаження звіту (з Timebar)
+             * v2.15: ОНОВЛЕНА Анімація завантаження звіту (Крок 7)
              */
             async function startReportLoadingAnimation() {
                 // Скидаємо/починаємо анімацію таймбару
                 timebarProgress.style.transition = 'none';
                 timebarProgress.style.width = '0%';
-                // Примусовий reflow, щоб скидання анімації спрацювало
-                timebarProgress.offsetHeight; 
+                timebarProgress.offsetHeight; // Примусовий reflow
                 timebarProgress.style.transition = 'width 1.0s ease-out';
                 
                 const loadingSteps = [
@@ -935,24 +929,18 @@
                     "Завантажую твій персональний звіт ⚡️"
                 ];
 
-                let lastStepText = '';
-
                 // Проходимо по кроках ОДИН РАЗ
                 for (let i = 0; i < loadingSteps.length; i++) {
                     const step = loadingSteps[i];
-                    lastStepText = step;
+                    const isLastStep = (i === loadingSteps.length - 1);
                     
-                    // "Друкуємо" поточний крок
-                    await typeWriter(reportLoadingTextEl, step, 70);
+                    // "Друкуємо", чекаємо 1.0 сек
+                    // Якщо це останній крок, ми 'keepCursorBlinking' = true
+                    await typeWriter(reportLoadingTextEl, reportCursorEl, step, 70, 1000, isLastStep);
                     
                     // Оновлюємо таймбар
                     const progress = ((i + 1) / loadingSteps.length) * 100;
                     timebarProgress.style.width = `${progress}%`;
-
-                    // Пауза (але не на останньому кроці)
-                    if (i < loadingSteps.length - 1) {
-                         await new Promise(resolve => setTimeout(resolve, 1000)); 
-                    }
                 }
 
                 // Анімація завершена!
@@ -962,13 +950,12 @@
                 // Перевірка:
                 if (isReportReady) {
                     // Якщо звіт ВЖЕ готовий, показуємо його
+                    reportCursorEl.style.display = 'none'; // Ховаємо курсор
                     showReportIfReady();
                 } else {
-                    // Якщо звіт ЩЕ НЕ готовий, "зависаємо" з крапками
-                    console.log("Sync: Animation finished, but report is NOT ready. Showing waiting dots...");
-                    // Залишаємо останній текст і вмикаємо крапки
-                    reportLoadingTextEl.innerText = lastStepText;
-                    reportTypingContainer.classList.add('waiting');
+                    // Якщо звіт ЩЕ НЕ готовий, нічого не робимо.
+                    // 'typeWriter' вже залишив курсор блимати (keepCursorBlinking = true)
+                    console.log("Sync: Animation finished, but report is NOT ready. Keeping cursor blinking...");
                 }
             }
             
@@ -1092,13 +1079,16 @@
                         'Приготуйся дізнатись, наскільки ти ахуєнна'
                     ];
 
-                    await typeWriter(loadingTextEl, loadingSteps[0], 70);
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    await typeWriter(loadingTextEl, loadingSteps[1], 70);
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    await typeWriter(loadingTextEl, loadingSteps[2], 70);
+                    // === v2.15: Оновлені виклики typeWriter ===
+                    await typeWriter(loadingTextEl, loadingCursorEl, loadingSteps[0], 70, 500); // 500ms pause
+                    await typeWriter(loadingTextEl, loadingCursorEl, loadingSteps[1], 70, 500); // 500ms pause
+                    // 1.5s pause, і НЕ ховати курсор, бо ми чекаємо API
+                    await typeWriter(loadingTextEl, loadingCursorEl, loadingSteps[2], 70, 1500, true); 
 
                     const rawJsonString = await reportPromise;
+                    
+                    // v2.15: Тепер ховаємо курсор, коли API готовий
+                    loadingCursorEl.style.display = 'none'; 
                     setButtonLoading(landingSubmitButton, false);
                     
                     try {
@@ -1225,7 +1215,7 @@
                 showStep('success'); 
             });
             
-            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.14) ---
+            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.15) ---
             emailForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = userEmailInput.value;
@@ -1241,8 +1231,8 @@
                     // 2. Готуємо UI до завантаження
                     emailCaptureBox.style.display = 'none';
                     reportLoadingIndicator.style.display = 'block';
-                    reportTypingContainer.classList.remove('waiting'); 
                     reportLoadingTextEl.innerHTML = ''; // Очищуємо текст
+                    reportCursorEl.style.display = 'none'; // Ховаємо курсор
                     
                     // 3. Запускаємо ОБИДВА процеси паралельно
                     startReportLoadingAnimation();
@@ -1301,7 +1291,7 @@
             
             
             /**
-             * v2.14: ОНОВЛЕНА Функція генерації ПОВНОГО звіту
+             * v2.15: Функція генерації ПОВНОГО звіту
              */
             async function fetchFullAnalysis(data, email) {
                 let userQuery = `Дата народження: ${data.date}.`;
@@ -1405,7 +1395,7 @@
                     formattedReportHTML = `<p>На жаль, сталася помилка при обробці JSON-відповіді. Текст помилки: ${rawJsonString}</p>`;
                 }
                 
-                // === v2.14: Нова логіка синхронізації ===
+                // === v2.15: Нова логіка синхронізації ===
                 
                 generatedReportData = formattedReportHTML;
                 console.log("Sync: Report FINISHED.");
@@ -1443,10 +1433,7 @@
             birthDateInput.addEventListener('input', updateDatePlaceholder);
             birthDateInput.addEventListener('change', updateDatePlaceholder);
             
-            // === v2.14: Змінена логіка, щоб не блокувати '1995-01-01' ===
             function setDefaultDateOnFirstFocus() {
-                // Встановлюємо '1995-01-01' ТІЛЬКИ ЯКЩО поле порожнє
-                // Це для зручності, щоб користувач не скролив з 2025 року
                 if (birthDateInput.value === '') { 
                     console.log("Setting default date to 1995-01-01 for convenience.");
                     birthDateInput.value = '1995-01-01';
