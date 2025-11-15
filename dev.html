@@ -193,11 +193,10 @@
             color: var(--secondary-text-color);
             margin-top: 1rem;
             min-height: 2.5rem; 
-            /* Головний фікс: прибрано flex, додано text-align */
             text-align: center;
         }
         .typing-cursor {
-            display: inline-block; /* Був inline-block */
+            display: inline-block; 
             width: 10px;
             height: 1.25rem;
             background-color: var(--accent-color);
@@ -224,22 +223,23 @@
             to { transform: rotate(360deg); }
         }
 
-        /* === v2.14: Стилі Таймбару (Крок 7) === */
+        /* === v2.16: ОНОВЛЕНІ Стилі Таймбару (Крок 7) === */
         .timebar-container {
             width: 100%;
             height: 8px;
             background-color: var(--border-color);
             border-radius: 4px;
             overflow: hidden;
-            margin: 2rem auto 1rem auto; /* Позиціонування */
+            margin: 2rem auto 1rem auto; 
         }
         
         .timebar-progress {
-            width: 0%; /* Починається з 0 */
+            width: 0%; 
             height: 100%;
             background-color: var(--accent-color);
             border-radius: 4px;
-            transition: width 1.0s ease-out; 
+            /* Анімація тепер керується JS через 'transition-duration' */
+            transition: width 1.0s linear; /* 'linear' для плавності */
         }
         /* ============================================= */
 
@@ -249,11 +249,8 @@
             color: var(--secondary-text-color);
             margin-top: 1rem;
             min-height: 2.5rem; 
-            /* Головний фікс: прибрано flex, додано text-align */
             text-align: center;
         }
-        
-        /* v2.15: Прибрано стилі для .waiting-dots, оскільки вони видалені */
         /* ============================================= */
 
         /* --- Стилі Paywall --- */
@@ -411,7 +408,7 @@
             
             <div class="p-5 rounded-lg space-y-3" style="background-color: var(--card-bg-color); border: 1px solid var(--border-color);">
                 <h3 class="text-xl font-bold" style="color: var(--accent-color);" id="free-report-title">
-                    ✅ Твоє Ядро (1/3)
+                    <!-- Заголовок тепер генерується з промпту v2.16 -->
                 </h3>
                 
                 <div id="free-report-text" class="text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
@@ -420,7 +417,7 @@
             </div>
 
             <p class="text-center px-4" style="color: var(--secondary-text-color); margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 0.95rem; line-height: 1.6;" id="free-report-hook">
-                Це лише 5% від твого звіту...
+                <!-- Хук тепер генерується з промпту v2.16 -->
             </p>
             
             <div class="pt-4">
@@ -575,7 +572,7 @@
                 </div>
             </div>
 
-            <!-- === ОНОВЛЕНО v2.15 === -->
+            <!-- === ОНОВЛЕНО v2.16 === -->
             <div id="report-loading-indicator" class="text-center" style="display: none;">
                 <h2 class="text-2xl font-bold text-center text-white mb-6">
                     <span style="color: var(--accent-color);">Дякую!</span>
@@ -631,7 +628,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.15 (з фіксами анімацій) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.16 (з фіксами анімацій та новим промптом) -->
     <!-- ====================================================== -->
     <script>
         // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
@@ -663,7 +660,6 @@
             const datePlaceholder = document.getElementById('date-placeholder');
             const landingSubmitButton = birthForm.querySelector('button[type="submit"]');
 
-            // v2.15: Нові елементи для Кроку 2
             const loadingTypingContainer = document.getElementById('loading-typing-container');
             const loadingTextEl = document.getElementById('loading-text');
             const loadingCursorEl = document.getElementById('loading-cursor');
@@ -685,7 +681,6 @@
             const finalCheckoutButton = document.getElementById('final-checkout-button');
 
             const reportLoadingIndicator = document.getElementById('report-loading-indicator');
-            // v2.15: Нові/оновлені елементи для Кроку 7
             const timebarProgress = document.getElementById('timebar-progress');
             const reportTypingContainer = document.getElementById('report-typing-container');
             const reportLoadingTextEl = document.getElementById('report-loading-text');
@@ -752,17 +747,22 @@
             8. Смайли: Використовуй релевантні смайли (😈, ✨, 🔮, 🔥, 👑).
             9. ЗАБОРОНЕНО: Медичні терміни. Складні астро-терміни без пояснень. "Смерть".`;
 
-            const freeTaskPrompt = `Місія: 'Безкоштовний Гачок'. 
+            // === v2.16: ОНОВЛЕНИЙ ПРОМПТ "КЛІФГЕНГЕР" ===
+            const freeTaskPrompt = `Місія: 'Безкоштовний Гачок' + 'Психологічний Кліфгенгер'.
             ЗАВДАННЯ:
-            1. Визнач знак Сонця за датою. Використовуй ** emojis** у тексті.
-            2. Напиши 'гачок' - яскравий опис **сильних сторін** (і 'темної' сторони як переваги), який вразить її.
-            3. Підкресли, що це лише 1/3 її ядра. 
+            1. Визнач знак Сонця за датою.
+            2. Напиши 'гачок' у 2-3 абзаци. **Ти ПОВИНЕН дотримуватись цієї 3-крокової структури 'Кліфгенгера':**
+                * **Крок 1 (Валідація):** Почни з яскравого компліменту про її головну суперсилу, базуючись на знаку Сонця. (Напр. "Ти [Знак], і твоя сила в... 👑")
+                * **Крок 2 (Конфлікт/Пастка):** Негайно покажи 'сліпу зону' або 'пастку' цієї сили. (Напр. "АЛЕ... саме через це ти, скоріш за все, постійно [робиш X] і не розумієш, чому [стається Y]...")
+                * **Крок 3 (Відкрита Петля):** Дражни. Натякни, що відповідь *не* в Сонці, а в чомусь іншому (Місяць/ASC). (Напр. "Секрет у тому, що твій [Знак Сонця] конфліктує з... Ой, а ось тут починається найцікавіше... 😈")
+            3. Заповни 'premium_hook' так, щоб він логічно *продовжував* цю драму.
+
             Формат: ТІЛЬКИ JSON.
             \`\`\`json
             {
-              "title": "✅ Твоє Ядро: [Знак Сонця] 🔥",
-              "psychological_analysis": "[Тут згенеруй яскравий, преміально оформлений HTML-текст (3-4 абзаци). Говори про її суперсили, її 'темну' сторону (як перевагу) та унікальність. Використовуй **жирний** для акцентів. Використовуй багато (5-7) релевантних смайлів (напр. 😈, ✨, 🔮, 🔥, 👑).]",
-              "premium_hook": "Це лише **5%** від твого повного звіту 🤫.\\nГоловна магія — твій Асцендент, Місяць та кармічні уроки 🔮 — чекає на тебе у повному аналізі. Розблокуй все... 😈"
+              "title": "🔥 Твоя Головна Суперсила (і Пастка)",
+              "psychological_analysis": "[Тут згенеруй 2-3 абзаци 'Кліфгенгера'. Абзац 1: Валідація/Сила 👑. Абзац 2: Конфлікт/Пастка 🌪️. Абзац 3: Натяк на причину, але БЕЗ відповіді... 🤫]",
+              "premium_hook": "Ти відчула? 😉\\nЦей 'внутрішній конфлікт' — це **ключ** до тебе. І він лежить у твоїй 'Золотій Трійці'.\\nРозблокуй повний аналіз, щоб побачити, як твій **Асцендент** (маска) та **Місяць** (емоції) створюють цей унікальний патерн... 🔮"
             }
             \`\`\`
             ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. Жодного тексту до чи після.`;
@@ -861,17 +861,11 @@
 
             /**
              * v2.15: Нова, розумніша функція typeWriter
-             * @param {HTMLElement} element - Елемент SPAN для тексту
-             * @param {HTMLElement} cursorElement - Елемент SPAN для курсору
-             * @param {string} text - Текст для друкування
-             * @param {number} speed - Швидкість друкування (мс)
-             * @param {number} pauseAfter - Пауза ПІСЛЯ завершення (мс)
-             * @param {boolean} keepCursorBlinking - Чи залишати курсор блимати в кінці
              */
             function typeWriter(element, cursorElement, text, speed, pauseAfter = 0, keepCursorBlinking = false) {
                 return new Promise(resolve => {
                     let i = 0;
-                    cursorElement.style.display = 'inline-block'; // Завжди показуємо курсор на старті
+                    cursorElement.style.display = 'inline-block'; 
                     element.innerHTML = ''; 
                     
                     function type() {
@@ -880,13 +874,11 @@
                             i++;
                             setTimeout(type, speed);
                         } else {
-                            // Текст додруковано
-                            // Чекаємо 'pauseAfter'
                             setTimeout(() => {
                                 if (!keepCursorBlinking) {
-                                    cursorElement.style.display = 'none'; // Ховаємо курсор
+                                    cursorElement.style.display = 'none'; 
                                 }
-                                resolve(); // Вирішуємо проміс
+                                resolve(); 
                             }, pauseAfter);
                         }
                     }
@@ -894,13 +886,13 @@
                 });
             }
             
-            // === v2.15: ОНОВЛЕНА ЛОГІКА СИНХРОНІЗАЦІЇ ===
+            // === v2.16: ОНОВЛЕНА ЛОГІКА СИНХРОНІЗАЦІЇ ===
             
             function showReportIfReady() {
                 if (isAnimationComplete && isReportReady && generatedReportData) {
                     console.log("Sync: Animation and Report are BOTH ready. Showing report.");
 
-                    reportCursorEl.style.display = 'none'; // Ховаємо курсор Кроку 7
+                    reportCursorEl.style.display = 'none'; 
                     reportLoadingIndicator.style.display = 'none';
                     
                     fullReportContentEl.innerHTML = generatedReportData;
@@ -911,43 +903,53 @@
             }
 
             /**
-             * v2.15: ОНОВЛЕНА Анімація завантаження звіту (Крок 7)
+             * v2.16: ОНОВЛЕНА Анімація завантаження звіту (з Плавним Timebar)
              */
             async function startReportLoadingAnimation() {
-                // Скидаємо/починаємо анімацію таймбару
-                timebarProgress.style.transition = 'none';
-                timebarProgress.style.width = '0%';
-                timebarProgress.offsetHeight; // Примусовий reflow
-                timebarProgress.style.transition = 'width 1.0s ease-out';
                 
-                const loadingSteps = [
-                    "Звіт надійде на email за 30 секунд...",
-                    "Аналізую Ядро твоєї Особистості ✨",
-                    "Розшифровую твої сценарії Кохання ❤️‍🔥",
-                    "Шукаю, де приховані твої Гроші 👑",
-                    "Вивчаю твої Кармічні Уроки 🔮",
-                    "Завантажую твій персональний звіт ⚡️"
+                const typeSpeedMs = 70; // Швидкість друкування
+                const loadingStepsConfig = [
+                    { text: "Звіт надійде на email за 30 секунд...", pause: 1000 },
+                    { text: "Аналізую Ядро твоєї Особистості ✨", pause: 1000 },
+                    { text: "Розшифровую твої сценарії Кохання ❤️‍🔥", pause: 1000 },
+                    { text: "Шукаю, де приховані твої Гроші 👑", pause: 1000 },
+                    { text: "Вивчаю твої Кармічні Уроки 🔮", pause: 1000 },
+                    { text: "Завантажую твій персональний звіт ⚡️", pause: 0 } // Без паузи в кінці
                 ];
 
-                // Проходимо по кроках ОДИН РАЗ
-                for (let i = 0; i < loadingSteps.length; i++) {
-                    const step = loadingSteps[i];
-                    const isLastStep = (i === loadingSteps.length - 1);
+                // 1. Розраховуємо загальний час
+                let totalDuration = 0;
+                for (const step of loadingStepsConfig) {
+                    totalDuration += (step.text.length * typeSpeedMs) + step.pause;
+                }
+                console.log(`Calculated total animation duration: ${totalDuration}ms`);
+
+                // 2. Скидаємо/починаємо анімацію таймбару
+                timebarProgress.style.transition = 'none'; // Скинути анімацію
+                timebarProgress.style.width = '0%';       // Поставити на 0%
+                timebarProgress.offsetHeight;             // Примусовий reflow
+                
+                // 3. Встановити нову, розраховану, плавну анімацію
+                timebarProgress.style.transition = `width ${totalDuration}ms linear`; 
+                
+                // 4. Запустити CSS-анімацію таймбару!
+                timebarProgress.style.width = '100%';
+
+                // 5. ТЕПЕР запускаємо текстову анімацію, яка триватиме стільки ж
+                for (let i = 0; i < loadingStepsConfig.length; i++) {
+                    const step = loadingStepsConfig[i];
+                    const isLastStep = (i === loadingStepsConfig.length - 1);
                     
-                    // "Друкуємо", чекаємо 1.0 сек
-                    // Якщо це останній крок, ми 'keepCursorBlinking' = true
-                    await typeWriter(reportLoadingTextEl, reportCursorEl, step, 70, 1000, isLastStep);
+                    await typeWriter(reportLoadingTextEl, reportCursorEl, step.text, typeSpeedMs, step.pause, isLastStep);
                     
-                    // Оновлюємо таймбар
-                    const progress = ((i + 1) / loadingSteps.length) * 100;
-                    timebarProgress.style.width = `${progress}%`;
+                    // Покрокове оновлення таймбару ВИДАЛЕНО
                 }
 
                 // Анімація завершена!
                 console.log("Sync: Animation FINISHED.");
                 isAnimationComplete = true;
 
-                // Перевірка:
+                // 6. Перевірка:
                 if (isReportReady) {
                     // Якщо звіт ВЖЕ готовий, показуємо його
                     reportCursorEl.style.display = 'none'; // Ховаємо курсор
@@ -1060,7 +1062,6 @@
                 e.preventDefault();
                 const selectedDate = birthDateInput.value;
                 
-                // === v2.14: ВИДАЛЕНО ПЕРЕВІРКУ '1995-01-01' ===
                 if (selectedDate === '') {
                     errorMessage.innerText = "Будь ласка, обери свою дату народження.";
                     errorMessage.style.display = 'block';
@@ -1071,6 +1072,7 @@
                     setButtonLoading(landingSubmitButton, true);
                     showStep('loading');
                     
+                    // === v2.16: Викликаємо новий промпт ===
                     const reportPromise = callGeminiAPI(apiFlashUrl, freeTaskPrompt, `Дата народження: ${selectedDate}`);
                     
                     const loadingSteps = [
@@ -1082,12 +1084,10 @@
                     // === v2.15: Оновлені виклики typeWriter ===
                     await typeWriter(loadingTextEl, loadingCursorEl, loadingSteps[0], 70, 500); // 500ms pause
                     await typeWriter(loadingTextEl, loadingCursorEl, loadingSteps[1], 70, 500); // 500ms pause
-                    // 1.5s pause, і НЕ ховати курсор, бо ми чекаємо API
                     await typeWriter(loadingTextEl, loadingCursorEl, loadingSteps[2], 70, 1500, true); 
 
                     const rawJsonString = await reportPromise;
                     
-                    // v2.15: Тепер ховаємо курсор, коли API готовий
                     loadingCursorEl.style.display = 'none'; 
                     setButtonLoading(landingSubmitButton, false);
                     
@@ -1104,8 +1104,11 @@
                             .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-text-color);">$1</strong>')
                             .replace(/\\n/g, '<br>');
 
-                        resultTitleEl.innerText = "Аналіз твоєї особистості";
-                        freeReportTitleEl.innerHTML = reportData.title;
+                        // === v2.16: Встановлюємо новий заголовок з промпту ===
+                        resultTitleEl.innerText = "Твій аналіз"; // Загальний
+                        freeReportTitleEl.innerHTML = reportData.title; // 🔥 Твоя Головна Суперсила (і Пастка)
+                        // ===============================================
+                        
                         freeReportTextEl.innerHTML = formattedText;
                         freeReportHookEl.innerHTML = formattedHook;
                         
@@ -1114,7 +1117,7 @@
                         console.error("Failed to parse JSON response (Step 3):", error, "Raw text:", rawJsonString);
                         resultTitleEl.innerText = "Ой, сталася помилка";
                         freeReportTitleEl.innerHTML = "❌ Помилка Аналізу";
-                        freeReportTextEl.innerHTML = `<p>На жаль, сталася помилка під час обробки відповіді від ШІ. Це могло статися через перенавантаження.</p>`;
+                        freeReportTextEl.innerHTML = `<p>На жаль, сталася помилка під час обробки відповіді від ШІ. Це могло статися через перенавантаження.</p><p><i>${rawJsonString}</i></p>`;
                         freeReportHookEl.innerHTML = "Будь ласка, спробуйте оновити сторінку та почати спочатку.";
                         
                         showStep('result');
@@ -1215,7 +1218,7 @@
                 showStep('success'); 
             });
             
-            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.15) ---
+            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.16) ---
             emailForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = userEmailInput.value;
@@ -1291,7 +1294,7 @@
             
             
             /**
-             * v2.15: Функція генерації ПОВНОГО звіту
+             * v2.16: Функція генерації ПОВНОГО звіту
              */
             async function fetchFullAnalysis(data, email) {
                 let userQuery = `Дата народження: ${data.date}.`;
@@ -1395,7 +1398,7 @@
                     formattedReportHTML = `<p>На жаль, сталася помилка при обробці JSON-відповіді. Текст помилки: ${rawJsonString}</p>`;
                 }
                 
-                // === v2.15: Нова логіка синхронізації ===
+                // === v2.16: Нова логіка синхронізації ===
                 
                 generatedReportData = formattedReportHTML;
                 console.log("Sync: Report FINISHED.");
