@@ -637,7 +637,13 @@
             const isCanvas = typeof __app_id !== 'undefined';
             const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; // ВАЖЛИВО: Замініть на свій ключ для вебу
             console.log(isCanvas ? "Running in Canvas mode (local test)." : "Running in Production mode (web).");
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            // === ОНОВЛЕНО v2.4: Гібридні моделі ===
+            // Використовуємо Flash для швидких, безкоштовних запитів (Крок 3, Геокодинг)
+            const apiFlashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            // Використовуємо Pro для глибокого, платного звіту (Крок 7)
+            const apiProUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
+            // =======================================
 
             // === ВИПРАВЛЕНО: Забрано markdown з URL ===
             const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; // !! ЗАМІНИТИ !!
@@ -808,8 +814,9 @@
             /**
              * Нова функція callGeminiAPI
              * (поєднує "персону" та "завдання")
+             * === ОНОВЛЕНО v2.4: Приймає modelUrl ===
              */
-            async function callGeminiAPI(taskPrompt, userQuery) {
+            async function callGeminiAPI(modelUrl, taskPrompt, userQuery) {
                 
                 // Створюємо комбінований запит для користувача
                 const combinedUserRequest = `${taskPrompt}\n\nВхідні дані:\n${userQuery}`;
@@ -823,7 +830,8 @@
                 let delay = 1000;
                 for (let i = 0; i < 3; i++) {
                     try {
-                        const response = await fetch(apiUrl, {
+                        // === ОНОВЛЕНО v2.4: Використовує динамічний modelUrl ===
+                        const response = await fetch(modelUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(payload)
@@ -881,8 +889,8 @@
             async function getCoordinatesFromGemini(cityName) {
                 const userQuery = `Місто: ${cityName}`; 
                 try {
-                    // Передаємо geoSystemPrompt як ЗАВДАННЯ
-                    const rawJsonText = await callGeminiAPI(geoSystemPrompt, userQuery); 
+                    // === ОНОВЛЕНО v2.4: Використовуємо швидкий Flash для геокодингу ===
+                    const rawJsonText = await callGeminiAPI(apiFlashUrl, geoSystemPrompt, userQuery); 
                     // === ВИПРАВЛЕНО: `\\\`\`\` стало \`\`\` ===
                     const cleanedJsonText = rawJsonText.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
                     const coords = JSON.parse(cleanedJsonText);
@@ -928,8 +936,8 @@
                     setButtonLoading(landingSubmitButton, true);
                     showStep('loading'); 
                     
-                    // Використовуємо 'freeTaskPrompt'
-                    const reportPromise = callGeminiAPI(freeTaskPrompt, `Дата народження: ${selectedDate}`);
+                    // === ОНОВЛЕНО v2.4: Використовуємо Flash для безкоштовного "гачка" ===
+                    const reportPromise = callGeminiAPI(apiFlashUrl, freeTaskPrompt, `Дата народження: ${selectedDate}`);
                     
                     const loadingSteps = [
                         'Аналізую положення планет', 
@@ -1179,8 +1187,8 @@
 
                 const finalUserQuery = userQuery + astroDataString;
 
-                // Використовуємо 'fullTaskPrompt'
-                const rawJsonString = await callGeminiAPI(fullTaskPrompt, finalUserQuery);
+                // === ОНОВЛЕНО v2.4: Використовуємо Pro для платного звіту ===
+                const rawJsonString = await callGeminiAPI(apiProUrl, fullTaskPrompt, finalUserQuery);
 
                 // ======================================================
                 // НОВА ЛОГІКА: Динамічна побудова HTML зі звіту (v2.2)
