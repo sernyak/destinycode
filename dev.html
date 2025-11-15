@@ -638,12 +638,12 @@
             const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; // ВАЖЛИВО: Замініть на свій ключ для вебу
             console.log(isCanvas ? "Running in Canvas mode (local test)." : "Running in Production mode (web).");
             
-            // === ОНОВЛЕНО v2.4: Гібридні моделі ===
+            // === ОНОВЛЕНО v2.7: Стабільна Гібридна Стратегія ===
             // Використовуємо Flash для швидких, безкоштовних запитів (Крок 3, Геокодинг)
             const apiFlashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            // Використовуємо Pro для глибокого, платного звіту (Крок 7)
-            const apiProUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro-latest:generateContent?key=${apiKey}`;
-            // =======================================
+            // Використовуємо СТАБІЛЬНУ Pro для глибокого, платного звіту (Крок 7)
+            const apiProUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent?key=${apiKey}`;
+            // ===================================================
 
             // === ВИПРАВЛЕНО: Забрано markdown з URL ===
             const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; // !! ЗАМІНИТИ !!
