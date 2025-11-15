@@ -241,10 +241,11 @@
         /* ============================================= */
 
         /* === v2.15: ОНОВЛЕНІ Стилі Завантаження (Крок 7) === */
+        /* v2.17.4: Змінено margin-top, оскільки блок тепер окремий */
         #report-typing-container {
             font-size: 1.25rem; 
             color: var(--secondary-text-color);
-            margin-top: 1rem;
+            margin-top: 1.5rem; /* Було 1rem, трохи збільшили відступ від таймбару */
             min-height: 2.5rem; 
             text-align: center;
         }
@@ -572,20 +573,20 @@
                 </div>
             </div>
 
-            <!-- === ОНОВЛЕНО v2.17.3 (FIX JUMP) === -->
-            <!-- Ми ВИДАЛИЛИ 'text-center' звідси, щоб 'w-full' коректно зафіксував ширину -->
-            <div id="report-loading-indicator" class="w-full" style="display: none;">
-                <!-- Цей h2 вже має 'text-center', тому він залишається по центру -->
+            <!-- === ОНОВЛЕНО v2.17.4 (FIX JUMP) === -->
+            <!-- Блок 1: Стабільний таймбар -->
+            <div id="report-loading-progress" class="w-full" style="display: none;">
                 <h2 class="text-2xl font-bold text-center text-white mb-6">
                     <span style="color: var(--accent-color);">Дякую!</span>
                 </h2>
                 
-                <!-- Таймбар (з v2.14) має 'margin: auto', тому він залишається по центру -->
                 <div class="timebar-container">
                     <div id="timebar-progress" class="timebar-progress"></div>
                 </div>
-                
-                <!-- Цей контейнер вже має 'text-center' -->
+            </div>
+
+            <!-- Блок 2: Окремий блок для анімації тексту -->
+            <div id="report-loading-text-animation" class="w-full" style="display: none;">
                 <div id="report-typing-container" class="typing-container">
                     <span id="report-loading-text"></span><span id="report-cursor" class="typing-cursor" style="display: none;"></span>
                 </div>
@@ -629,7 +630,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.17 (з rAF Timebar та поверненим промптом) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.17.4 (з розділеними блоками) -->
     <!-- ====================================================== -->
     <script>
         // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
@@ -681,7 +682,12 @@
 
             const finalCheckoutButton = document.getElementById('final-checkout-button');
 
-            const reportLoadingIndicator = document.getElementById('report-loading-indicator');
+            // === v2.17.4: ОНОВЛЕНІ ЕЛЕМЕНТИ ===
+            const reportLoadingProgress = document.getElementById('report-loading-progress');
+            const reportLoadingTextAnimation = document.getElementById('report-loading-text-animation');
+            // const reportLoadingIndicator = document.getElementById('report-loading-indicator'); // Видалено
+            // ==================================
+
             const timebarProgress = document.getElementById('timebar-progress');
             const reportTypingContainer = document.getElementById('report-typing-container');
             const reportLoadingTextEl = document.getElementById('report-loading-text');
@@ -898,7 +904,11 @@
                 if (isAnimationComplete && isReportReady && generatedReportData) {
                     console.log("Sync: Animation and Report are BOTH ready. Showing report.");
                     reportCursorEl.style.display = 'none'; 
-                    reportLoadingIndicator.style.display = 'none';
+                    
+                    // === v2.17.4: Ховаємо ОБИДВА блоки ===
+                    reportLoadingProgress.style.display = 'none';
+                    reportLoadingTextAnimation.style.display = 'none';
+                    // ===================================
                     
                     fullReportContentEl.innerHTML = generatedReportData;
                     fullReportContentEl.style.display = 'block';
@@ -1224,7 +1234,7 @@
             });
             
 
-            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.17) ---
+            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.17.4) ---
             emailForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = userEmailInput.value;
@@ -1243,9 +1253,11 @@
                         animationFrameId = null;
                     }
 
-                    // 2. Готуємо UI до завантаження
+                    // 2. Готуємо UI до завантаження (v2.17.4)
                     emailCaptureBox.style.display = 'none';
-                    reportLoadingIndicator.style.display = 'block';
+                    reportLoadingProgress.style.display = 'block'; // <- НОВИЙ БЛОК
+                    reportLoadingTextAnimation.style.display = 'block'; // <- НОВИЙ БЛОК
+                    
                     reportLoadingTextEl.innerHTML = ''; 
                     reportCursorEl.style.display = 'none'; 
                     timebarProgress.style.width = '0%'; // Скидаємо таймбар
