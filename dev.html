@@ -35,6 +35,7 @@
             user-select: none; /* Standard */
             -webkit-tap-highlight-color: transparent; 
         }
+
         /* --- Контейнер Воронки --- */
         .funnel-container {
             max-width: 420px; /* Оптимально для мобільних */
@@ -44,6 +45,7 @@
             min-height: 90vh; /* Щоб завжди було по центру */
             justify-content: center;
         }
+
         .funnel-step {
             display: none; /* Всі кроки сховані */
             animation: fadeIn 0.5s ease-out; /* Плавна поява */
@@ -82,6 +84,7 @@
             border-color: var(--error-color);
             box-shadow: 0 0 0 2px var(--error-color);
         }
+
         .error-text {
             color: var(--error-color);
             font-size: 0.875rem; /* text-sm */
@@ -106,6 +109,7 @@
             font-size: 1.25rem;
             transition: opacity 0.2s;
         }
+
         input[type="date"]::-webkit-calendar-picker-indicator:hover,
         input[type="time"]::-webkit-calendar-picker-indicator:hover {
             opacity: 1;
@@ -142,9 +146,11 @@
             border-color: transparent;
             border-top-color: currentColor; 
         }
+
         .btn.loading .btn-text {
             opacity: 0.5; 
         }
+
         .btn.loading .btn-spinner {
             display: block;
             position: absolute;
@@ -161,6 +167,7 @@
             box-shadow: 0 6px 20px -5px rgba(205, 164, 94, 0.5);
             transform: translateY(-2px);
         }
+
         .btn-skip {
             background: none;
             border: none;
@@ -172,13 +179,14 @@
         .btn-skip:hover {
             color: var(--primary-text-color);
         }
-
+        
         .btn-secondary {
             background-color: var(--card-bg-color);
             color: var(--accent-color);
             border: 1px solid var(--accent-color);
             opacity: 0.8;
         }
+
         .btn-secondary:not(:disabled):hover {
             opacity: 1;
             background-color: rgba(205, 164, 94, 0.05); 
@@ -192,6 +200,7 @@
             min-height: 2.5rem; 
             text-align: center;
         }
+
         .typing-cursor {
             display: inline-block; 
             width: 10px;
@@ -201,6 +210,7 @@
             margin-left: 5px;
             vertical-align: middle;
         }
+
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
@@ -216,28 +226,12 @@
             margin: 2rem auto;
             border-color: var(--accent-color) transparent var(--accent-color) transparent;
         }
+
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
 
-        /* === v2.17: ОНОВЛЕНІ Стилі Таймбару (Крок 7) === */
-        .timebar-container {
-            width: 100%;
-            height: 8px;
-            background-color: var(--border-color);
-            border-radius: 4px;
-            overflow: hidden;
-            margin: 2rem auto 1rem auto; 
-        }
-        
-        .timebar-progress {
-            width: 0%; 
-            height: 100%;
-            background-color: var(--accent-color);
-            border-radius: 4px;
-            /* v2.17: Плавність тепер не потрібна, керується rAF */
-            transition: none; 
-        }
+        /* === v2.17: СТИЛІ ТАЙМБАРУ ВИДАЛЕНІ === */
         /* ============================================= */
 
         /* === v2.15: ОНОВЛЕНІ Стилі Завантаження (Крок 7) === */
@@ -246,8 +240,13 @@
             font-size: 1.25rem; 
             color: var(--secondary-text-color);
             margin-top: 1.5rem; /* Було 1rem, трохи збільшили відступ від таймбару */
-            min-height: 2.5rem; 
-            text-align: center;
+            /* v2.17.5: FIX JUMP: Встановлюємо фіксовану висоту, достатню для 2 рядків, та центруємо */
+            height: 4rem; /* Приблизно 1.25rem * 1.6 (line-height) * 2 lines = 4rem */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* min-height: 2.5rem; (старий код, що викликав стрибок) */
+            /* text-align: center; (Тепер не потрібен, flex-центрує) */
         }
         /* ============================================= */
         
@@ -282,6 +281,7 @@
             z-index: 100;
             animation: fadeIn 0.3s ease-out;
         }
+
         .modal-content {
             background-color: var(--card-bg-color);
             border: 1px solid var(--border-color);
@@ -318,6 +318,7 @@
         /* --- Динамічний Звіт (Крок 7) --- */
         .report-section { 
         }
+
         .report-advice {
             background-color: var(--bg-color); 
             border: 1px solid var(--border-color);
@@ -336,7 +337,6 @@
             flex-direction: column;
             gap: 0.75rem; 
         }
-    
     </style>
 </head>
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
@@ -366,227 +366,12 @@
                 </p>
             </div>
 
-            <form id="birth-form" class="w-full space-y-4">
-                <label for="birth-date" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
-                    <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
-                    <span id="date-placeholder" style="color: var(--secondary-text-color);">Обрати дату</span>
-                    <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required
-                           style="opacity: 0.001;"> 
-                </label>
-                <p id="error-message" class="error-text">
-                    Будь ласка, обери дату народження.
-                </p>
-                
-                <button type="submit" class="btn btn-primary !text-lg h-14">
-                    <span class="btn-text">Дізнатися негайно</span>
-                    <span class="btn-spinner"></span>
-                </button>
-            </form>
-
-        </section>
-
-        <!-- ====================================================== -->
-        <!-- КРОК 2: ЕКРАН ЗАВАНТАЖЕННЯ (Анімація набору тексту) -->
-        <!-- ====================================================== -->
-        <section id="loading-step" class="funnel-step text-center space-y-6">
-            <div class="spinner"></div>
-
-            <!-- v2.15: ОНОВЛЕНО HTML/CSS для коректного курсору -->
-            <div id="loading-typing-container" class="typing-container">
-                <span id="loading-text"></span><span id="loading-cursor" class="typing-cursor" style="display: none;"></span>
-            </div>
-        </section>
-
-        <!-- ====================================================== -->
-        <!-- КРОК 3: РЕЗУЛЬТАТ (Безкоштовний аналіз "Ядро") -->
-        <!-- ====================================================== -->
-        <section id="result-step" class="funnel-step space-y-6">
-            <h2 class="text-2xl font-bold text-center text-white" id="result-title">Аналіз твоєї особистості</h2>
-            
-            <div class="p-5 rounded-lg space-y-3" style="background-color: var(--card-bg-color); border: 1px solid var(--border-color);">
-                <h3 class="text-xl font-bold" style="color: var(--accent-color);" id="free-report-title">
-                    <!-- Заголовок тепер генерується з промпту v2.17 -->
-                </h3>
-                
-                <div id="free-report-text" class="text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
-                    <i>(Тут з'явиться твій персональний аналіз...)</i>
-                </div>
-            </div>
-
-            <p class="text-center px-4" style="color: var(--secondary-text-color); margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 0.95rem; line-height: 1.6;" id="free-report-hook">
-                <!-- Хук тепер генерується з промпту v2.17 -->
-            </p>
-            
-            <div class="pt-4">
-                <button id="upgrade-button" class="btn btn-primary !text-lg !py-4">
-                    <span class="btn-text">Отримати повний аналіз</span>
-                    <span class="btn-spinner"></span>
-                </button>
-            </div>
-        </section>
-        
-        <!-- ====================================================== -->
-        <!-- КРОК 4: ЗБІР ЧАСУ ТА МІСЦЯ (Опціонально) -->
-        <!-- ====================================================== -->
-        <section id="premium-data-step" class="funnel-step space-y-6 text-center">
-
-             <h2 class="text-3xl font-bold text-white tracking-tight">
-                Розблокуй "Золоту Трійку"
-            </h2>
-            <p class="text-lg" style="color: var(--secondary-text-color);">
-                Твій аналіз Сонця - це лише 1/3 твого ядра. Введи час та місто, щоб розкрити свій <strong>Асцендент</strong> (твоя маска) та <strong>Місяць</strong> (твої емоції).
-            </p>
-            
-            <div id="premium-form-container" class="w-full space-y-4">
-                <div>
-                    <label for="birth-time" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Точний час народження (опціонально):</label>
-                    <label for="birth-time" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
-                        <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        <span id="time-placeholder" style="color: var(--secondary-text-color);">Обери час</span>
-                        <input type="time" id="birth-time" name="birth-time" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" style="opacity: 0.001;">
-                    </label>
-                </div>
-
-                 <div>
-                    <label for="birth-city" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Місто народження (опціонально):</label>
-                    <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ" class="input-field text-center">
-                    
-                    <p id="city-error-message" class="error-text">
-                        Текст помилки...
-                    </p>
-                    <p id="city-info-message" class="info-text">
-                        <!-- Сюди буде вставлено текст "Ми уточнили: Ужгород" -->
-                    </p>
-                </div>
-
-                <div class="pt-4 space-y-3">
-                    <button type="button" id="continue-to-paywall-button" class="btn btn-primary !text-lg !py-4">
-                        <span class="btn-text">Отримати детальний аналіз</span>
-                        <span class="btn-spinner"></span>
-                    </button>
-                    
-                    <button type="button" id="skip-button" class="btn btn-skip">
-                        Пропустити та продовжити без них
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ====================================================== -->
-        <!-- КРОК 5: ФІНАЛЬНИЙ PAYWALL -->
-        <!-- ====================================================== -->
-        <section id="final-paywall-step" class="funnel-step space-y-6">
-
-             <h2 class="text-3xl font-bold text-center text-white">Твій повний портрет</h2>
-             <p class="text-lg text-center" style="color: var(--secondary-text-color);">
-                Розблокуй <strong>повну карту</strong>, щоб побачити свій справжній потенціал.
-            </p>
-            
-            <div class="space-y-3 pt-2">
-                <div class="paywall-item">
-                    <span class="paywall-icon">🔒</span>
-                    <span class="font-semibold">Ядро Особистості (Розширено)</span>
-                </div>
-                <div class="paywall-item">
-                    <span class="paywall-icon">🔒</span>
-                    <span class="font-semibold">Кохання та Сумісність</span>
-                </div>
-                <div class="paywall-item">
-                    <span class="paywall-icon">🔒</span>
-                    <span class="font-semibold">Кар'єра та Гроші</span>
-                </div>
-                <div class="paywall-item">
-                    <span class="paywall-icon">🔒</span>
-                    <span class="font-semibold">Кармічні Уроки та Призначення</span>
-                </div>
-                 <div class="paywall-item">
-                    <span class="paywall-icon">🔒</span>
-                    <span class="font-semibold">Твої майбутні можливості</span>
-                </div>
-            </div>
-
-            <div class="space-y-4 pt-4">
-                <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
-                    <span class="btn-text">
-                        Розблокувати зараз за 149 грн (замість <span style="text-decoration: line-through; opacity: 0.8;">399 грн</span>)
-                    </span>
-                    <span class="btn-spinner"></span>
-                </button>
-                <p class="text-xs text-center" style="color: var(--secondary-text-color);">
-                    🔒 Безпечна одноразова оплата.
-                </p>
-            </div>
-
-        </section>
-        
-        <!-- ====================================================== -->
-        <!-- КРОК 6: СТОРІНКА УСПІХУ (ПІСЛЯ /success.html) -->
-        <!-- ====================================================== -->
-        <section id="payment-success-return-step" class="funnel-step text-center space-y-6">
-            <h2 class="text-2xl font-bold" style="color: var(--accent-color);">
-                Обробка платежу...
-            </h2>
-            <p style="color: var(--secondary-text-color);">
-                Зачекайте, ми підтверджуємо ваш платіж...
-            </p>
-            <div class="spinner"></div>
-        </section>
-        
-        <!-- ====================================================== -->
-        <!-- КРОК 7: УСПІХ + LTV АПСЕЛ (НОВИЙ) -->
-        <!-- ====================================================== -->
-        <section id="success-step" class="funnel-step space-y-6">
-            
-            <div id="email-capture-box" class="text-center">
-                <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                
-                <h2 class="text-2xl font-bold text-center text-white">
-                    <span style="color: var(--accent-color);">Оплату успішно проведено!</span>
-                </h2>
-                <p style="color: var(--secondary-text-color);" class="mb-6">
-                    Ваш персональний гайд готується. Вкажіть ваш email, щоб миттєво отримати звіт:
-                </p>
-                
-                <form id="email-form" class="space-y-4 mb-8">
-                    <label for="user-email" class="sr-only">Ваш Email</label>
-                    <input type="email" id="user-email" name="user-email" placeholder="your.email@gmail.com" class="input-field text-center" required>
-                    <button type="submit" class="btn btn-primary !text-lg !py-4">
-                        <span class="btn-text">Отримати звіт</span>
-                        <span class="btn-spinner"></span>
-                    </button>
-                </form>
-                
-                <div id="ltv-upsell-box" class="ltv-upsell-box text-left">
-                    <h3 class="font-bold" style="color: var(--accent-color);">P.S. Поки твій звіт генерується...</h3>
-                    <p class="text-sm mt-2 mb-4" style="color: var(--secondary-text-color);">
-                        Хочеш додати повний <strong>"Астрологічний АІ-Прогноз на 2026 рік"</strong> не просто зі знижкою - а з <strong>Персональною знижкою</strong>?
-                        Всього за <strong>247 грн</strong> замість <span style="text-decoration: line-through; opacity: 0.7;">699 грн</span>. (Твоя знижка -65%)
-                    </p>
-                    <button id="ltv-upsell-btn" class="btn btn-primary w-full opacity-90 hover:opacity-100">
-                        <span class="btn-text">Так, додати до замовлення!</span>
-                        <span class="btn-spinner"></span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- === ОНОВЛЕНО v2.17.4 (FIX JUMP) === -->
-            <!-- Блок 1: Стабільний таймбар -->
-            <div id="report-loading-progress" class="w-full" style="display: none;">
+            <!-- === v2.17.6: ПОВЕРНУЛИ СПІНЕР (нахуй таймбар) === -->
+            <div id="report-loading-indicator" class="w-full text-center" style="display: none;">
                 <h2 class="text-2xl font-bold text-center text-white mb-6">
                     <span style="color: var(--accent-color);">Дякую!</span>
                 </h2>
-                
-                <div class="timebar-container">
-                    <div id="timebar-progress" class="timebar-progress"></div>
-                </div>
-            </div>
-
-            <!-- Блок 2: Окремий блок для анімації тексту -->
-            <div id="report-loading-text-animation" class="w-full" style="display: none;">
+                <div class="spinner" style="margin-top: 2rem; margin-bottom: 1rem;"></div> <!-- The spinner from Step 2 -->
                 <div id="report-typing-container" class="typing-container">
                     <span id="report-loading-text"></span><span id="report-cursor" class="typing-cursor" style="display: none;"></span>
                 </div>
@@ -682,13 +467,9 @@
 
             const finalCheckoutButton = document.getElementById('final-checkout-button');
 
-            // === v2.17.4: ОНОВЛЕНІ ЕЛЕМЕНТИ ===
-            const reportLoadingProgress = document.getElementById('report-loading-progress');
-            const reportLoadingTextAnimation = document.getElementById('report-loading-text-animation');
-            // const reportLoadingIndicator = document.getElementById('report-loading-indicator'); // Видалено
+            // === v2.17.6: ОНОВЛЕНІ ЕЛЕМЕНТИ ===
+            const reportLoadingIndicator = document.getElementById('report-loading-indicator');
             // ==================================
-
-            const timebarProgress = document.getElementById('timebar-progress');
             const reportTypingContainer = document.getElementById('report-typing-container');
             const reportLoadingTextEl = document.getElementById('report-loading-text');
             const reportCursorEl = document.getElementById('report-cursor');
@@ -734,8 +515,7 @@
             let isReportReady = false;
             let generatedReportData = null; 
             
-            // v2.17: Глобальний ID для requestAnimationFrame
-            let animationFrameId = null;
+            // v2.17.6: Глобальний ID для rAF видалено
 
             // ======================================================
             // --- 3. СИСТЕМНІ ПРОМПТИ ---
@@ -772,7 +552,7 @@
             \`\`\`
             ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. Жодного тексту до чи після.`;
             // ========================================================
-
+            
             const fullTaskPrompt = `Місія: 'Повний Психологічний Портрет' (Платний).
             (Клієнтка вже заплатила. Цінність має бути вищою за 149 грн. Будь глибоким, емпатичним). 
             ЗАВДАННЯ:
@@ -882,10 +662,10 @@
                         } else {
                             setTimeout(() => {
                                 if (!keepCursorBlinking) {
-                                    cursorElement.style.display = 'none'; 
-                                }
+                                    cursorElement.style.display = 'none';
+                                 }
                                 resolve(); 
-                            }, pauseAfter);
+                             }, pauseAfter);
                         }
                     }
                     type();
@@ -895,19 +675,13 @@
             // === v2.17: ОНОВЛЕНА ЛОГІКА СИНХРОНІЗАЦІЇ ===
             
             function showReportIfReady() {
-                // v2.17: Зупиняємо rAF, якщо він ще працює
-                if (animationFrameId) {
-                    cancelAnimationFrame(animationFrameId);
-                    animationFrameId = null;
-                }
-
+                // v2.17.6: Спрощена логіка. Таймбару більше немає.
                 if (isAnimationComplete && isReportReady && generatedReportData) {
                     console.log("Sync: Animation and Report are BOTH ready. Showing report.");
-                    reportCursorEl.style.display = 'none'; 
+                    reportCursorEl.style.display = 'none';
                     
-                    // === v2.17.4: Ховаємо ОБИДВА блоки ===
-                    reportLoadingProgress.style.display = 'none';
-                    reportLoadingTextAnimation.style.display = 'none';
+                    // === v2.17.6: Ховаємо спінер ===
+                    reportLoadingIndicator.style.display = 'none';
                     // ===================================
                     
                     fullReportContentEl.innerHTML = generatedReportData;
@@ -917,7 +691,7 @@
             }
 
             /**
-             * v2.17: ОНОВЛЕНА Анімація завантаження звіту (з requestAnimationFrame)
+             * v2.17.6: ОНОВЛЕНО. Прибрано логіку таймбару, залишено лише анімацію тексту.
              */
             async function startReportLoadingAnimation() {
                 
@@ -931,61 +705,26 @@
                     { text: "Завантажую твій персональний звіт ⚡️", pause: 0 } // Без паузи в кінці
                 ];
 
-                // 1. Розраховуємо загальний час
-                let totalDuration = 0;
-                for (const step of loadingStepsConfig) {
-                    totalDuration += (step.text.length * typeSpeedMs) + step.pause;
+                // 3. Запускаємо текстову анімацію
+                for (let i = 0; i < loadingStepsConfig.length; i++) {
+                    const step = loadingStepsConfig[i];
+                    const isLastStep = (i === loadingStepsConfig.length - 1);
+                    await typeWriter(reportLoadingTextEl, reportCursorEl, step.text, typeSpeedMs, step.pause, isLastStep);
                 }
-                console.log(`Calculated total animation duration: ${totalDuration}ms`);
-
-                // 2. Скидаємо таймбар
-                timebarProgress.style.width = '0%';
-                       
-                // 3. Запускаємо паралельно текстову анімацію
-                async function runTextAnimation() {
-                    for (let i = 0; i < loadingStepsConfig.length; i++) {
-                        const step = loadingStepsConfig[i];
-                        const isLastStep = (i === loadingStepsConfig.length - 1);
-                        await typeWriter(reportLoadingTextEl, reportCursorEl, step.text, typeSpeedMs, step.pause, isLastStep);
-                    }
-                    // Текстова анімація завершена!
-                    console.log("Sync: Text Animation FINISHED.");
-                    isAnimationComplete = true;
-                    showReportIfReady();
-                }
-                
-                // 4. Запускаємо паралельно анімацію таймбару (rAF)
-                let startTime = performance.now();
-                
-                function animateTimebar(timestamp) {
-                    const elapsed = timestamp - startTime;
-                    let progress = elapsed / totalDuration;
-
-                    if (progress >= 1) {
-                        progress = 1;
-                        timebarProgress.style.width = '100%';
-                        animationFrameId = null; // Зупиняємо цикл
-                        console.log("Sync: Timebar FINISHED.");
-                        return;
-                    }
-                    
-                    timebarProgress.style.width = `${progress * 100}%`;
-                    animationFrameId = requestAnimationFrame(animateTimebar);
-                }
-
-                // Запускаємо обидва процеси
-                runTextAnimation();
-                animationFrameId = requestAnimationFrame(animateTimebar);
+                // Текстова анімація завершена!
+                console.log("Sync: Text Animation FINISHED.");
+                isAnimationComplete = true;
+                showReportIfReady();
             }
             
-
             // ======================================================
             // --- 5. ЛОГІКА API ---
             // ======================================================
+            
             async function callGeminiAPI(modelUrl, taskPrompt, userQuery) {
                 
                 const combinedUserRequest = `${taskPrompt}\n\nВхідні дані:\n${userQuery}`;
-
+                
                 const payload = {
                     contents: [{ parts: [{ text: combinedUserRequest }] }],
                     systemInstruction: { parts: [{ text: mainSystemPrompt }] },
@@ -1031,7 +770,7 @@
                     } catch (error) {
                         console.error("Gemini API Error (Client):", error);
                         if (i === 2) { 
-                            return '{"error": "network_failure", "message": "На жаль, сервіс тимчасово недоступний."}';
+                             return '{"error": "network_failure", "message": "На жаль, сервіс тимчасово недоступний."}';
                         }
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
@@ -1050,26 +789,27 @@
                     if (coords && typeof coords.lat === 'number' && typeof coords.lon === 'number' && typeof coords.timezone === 'string' && typeof coords.corrected_name === 'string') {
                         console.log(`Geocoding success for ${cityName}:`, coords);
                         return { 
-                            latitude: coords.lat, 
-                            longitude: coords.lon, 
-                            timezone: coords.timezone,
+                             latitude: coords.lat, 
+                             longitude: coords.lon, 
+                             timezone: coords.timezone,
                             corrected_name: coords.corrected_name,
                             error: null
                         };
-                    }
-                    if (coords && coords.error) { 
-                        console.warn(`Geocoding failed for ${cityName}:`, coords.error); 
-                        return { error: coords.error };
+                    } 
+
+                    if (coords && coords.error) {
+                         console.warn(`Geocoding failed for ${cityName}:`, coords.error); 
+                         return { error: coords.error };
                     }
                     
                     console.error(`Geocoding JSON parsing error for ${cityName}:`, coords);
                     return { error: "parse_error" };
+
                 } catch (error) {
                     console.error(`Geocoding API call failed for ${cityName}:`, error);
                     return { error: "network_failure" };
                 }
             }
-
 
             // --- 6. ОБРОБНИКИ ПОДІЙ ---
 
@@ -1114,7 +854,7 @@
                         const formattedText = reportData.psychological_analysis
                             .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-text-color);">$1</strong>')
                             .replace(/\\n/g, '<br>');
-                            
+                        
                         const formattedHook = reportData.premium_hook
                             .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-text-color);">$1</strong>')
                             .replace(/\\n/g, '<br>');
@@ -1169,11 +909,11 @@
                 
                 let infoText = null; 
                 
-                if (coords && coords.latitude) {
+                 if (coords && coords.latitude) {
                     userBirthData.geo = { 
-                        latitude: coords.latitude, 
-                        longitude: coords.longitude, 
-                        timezone: coords.timezone
+                         latitude: coords.latitude, 
+                         longitude: coords.longitude, 
+                         timezone: coords.timezone
                     };
                     userBirthData.city = coords.corrected_name;
                     console.log("City validated and saved:", userBirthData.geo);
@@ -1218,7 +958,7 @@
             // КРОК 5 -> (Симуляція Оплати)
             finalCheckoutButton.addEventListener('click', async () => {
                 setButtonLoading(finalCheckoutButton, true);
-
+                
                 try {
                     sessionStorage.setItem('destinyCodeData', JSON.stringify(userBirthData));
                 } catch (e) {
@@ -1228,12 +968,17 @@
                 console.log("Simulating payment processing... Data saved:", userBirthData);
                 await new Promise(resolve => setTimeout(resolve, 2500)); 
                 
-                console.log("Payment simulation successful.");
-                setButtonLoading(finalCheckoutButton, false);
-                showStep('success'); 
+                // === СИМУЛЯЦІЯ ПОВЕРНЕННЯ з WayForPay ===
+                // У реальному житті, WayForPay перенаправить на RETURN_URL
+                // Тут ми симулюємо це, перезавантажуючи сторінку з параметром
+                // window.location.href = RETURN_URL;
+                // АБО для миттєвого тестування без перезавантаження:
+                 console.log("Payment simulation successful.");
+                 setButtonLoading(finalCheckoutButton, false);
+                 showStep('success'); 
+                 // handlePaymentReturn(); // Викликаємо вручну, бо не було редиректу
             });
             
-
             // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.17.4) ---
             emailForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -1243,30 +988,22 @@
                     console.log("Email captured:", email);
 
                     // 1. Скидаємо прапори синхронізації
-                    isAnimationComplete = false;
-                    isReportReady = false;
-                    generatedReportData = null; 
-
-                    // v2.17: Скидаємо rAF
-                    if (animationFrameId) {
-                        cancelAnimationFrame(animationFrameId);
-                        animationFrameId = null;
-                    }
-
-                    // 2. Готуємо UI до завантаження (v2.17.4)
-                    emailCaptureBox.style.display = 'none';
-                    reportLoadingProgress.style.display = 'block'; // <- НОВИЙ БЛОК
-                    reportLoadingTextAnimation.style.display = 'block'; // <- НОВИЙ БЛОК
-                    
-                    reportLoadingTextEl.innerHTML = ''; 
-                    reportCursorEl.style.display = 'none'; 
-                    timebarProgress.style.width = '0%'; // Скидаємо таймбар
-                    
-                    // 3. Запускаємо ОБИДВА процеси паралельно
-                    startReportLoadingAnimation();
-                    fetchFullAnalysis(userBirthData, email);
-                }
-            });
+                isAnimationComplete = false;
+                isReportReady = false;
+                generatedReportData = null; 
+                
+                // 2. Готуємо UI до завантаження (v2.17.6)
+                emailCaptureBox.style.display = 'none';
+                reportLoadingIndicator.style.display = 'block'; // <- НОВИЙ БЛОК
+                
+                reportLoadingTextEl.innerHTML = ''; 
+                reportCursorEl.style.display = 'none'; 
+                
+                // 3. Запускаємо ОБИДВА процеси паралельно
+                startReportLoadingAnimation();
+                fetchFullAnalysis(userBirthData, email);
+            }
+        });
 
             // LTV Апсел
             ltvUpsellBtn.addEventListener('click', () => {
@@ -1283,18 +1020,18 @@
             downloadPdfBtn.addEventListener('click', () => {
                 showModal("PDF Генерується...", "Ваш персональний PDF-звіт готується і буде надісланий вам на пошту.<br><br>(Це симуляція; реальна логіка буде на сервері.)");
             });
+
             shareReportBtn.addEventListener('click', () => {
                  showModal("Поділитися", "Функція 'Поділитися' скоро буде доступна!<br><br>(Коли ми реалізуємо постійні посилання на сервері.)");
             });
             
-
             // --- ОБРОБКА ПОВЕРНЕННЯ ---
             async function handlePaymentReturn() {
                 const urlParams = new URLSearchParams(window.location.search);
                 
                 if (urlParams.has('payment') && urlParams.get('payment') === 'success') {
                     showStep('paymentSuccessReturn');
-
+                    
                     let savedData;
                     try {
                         savedData = JSON.parse(sessionStorage.getItem('destinyCodeData'));
@@ -1316,22 +1053,21 @@
                 }
             }
             
-            
             /**
-             * v2.17: Функція генерації ПОВНОГО звіту
+             * v2.17: Функція генерації ПОВНОГО звіту 
              */
             async function fetchFullAnalysis(data, email) {
                 let userQuery = `Дата народження: ${data.date}.`;
                 if (data.time) userQuery += ` Час: ${data.time}.`;
                 if (data.city) userQuery += ` Місто: ${data.city}.`;
-
+                
                 let astroDataString = "";
                 
                 if (Horoscope && data.date && data.geo) { 
-                    try {
+                     try {
                         const dateParts = data.date.split('-');
                         const year = parseInt(dateParts[0]);
-                        const month = parseInt(dateParts[1]) - 1;
+                        const month = parseInt(dateParts[1]) - 1; // JS month is 0-indexed
                         const date = parseInt(dateParts[2]);
                         
                         let hour = 12, minute = 0;
@@ -1365,11 +1101,12 @@
                         == Кінець Технічних Даних ==
                         `;
                         console.log("Astro data successfully generated for Gemini:", astroDataString);
+
                     } catch (err) {
                         console.error("Failed to calculate full horoscope (Step 7):", err);
                     }
-                } else { 
-                    console.log("Calculating report without GEO data (user skipped or validation failed).");
+                } else {
+                     console.log("Calculating report without GEO data (user skipped or validation failed).");
                 }
                 
                 const finalUserQuery = userQuery + astroDataString;
@@ -1381,9 +1118,9 @@
                 let formattedReportHTML = '';
                 try {
                     const reportData = JSON.parse(rawJsonString);
-
+                    
                     if (reportData.error) { 
-                        formattedReportHTML = `<p>${reportData.message || 'Сталася невідома помилка.'}</p>`;
+                         formattedReportHTML = `<p>${reportData.message || 'Сталася невідома помилка.'}</p>`;
                     } else if (reportData && reportData.sections) {
                         
                         for (const section of reportData.sections) {
@@ -1437,7 +1174,6 @@
                 console.log("Report HTML:", formattedReportHTML);
             }
             
-
             // --- 7. ІНІЦІАЛІЗАЦІЯ ---
             
             // Логіка Плейсхолдера Дати
@@ -1462,7 +1198,7 @@
             
             function setDefaultDateOnFirstFocus() {
                 if (birthDateInput.value === '') { 
-                    console.log("Setting default date to 1995-01-01 for convenience.");
+                     console.log("Setting default date to 1995-01-01 for convenience.");
                     birthDateInput.value = '1995-01-01';
                 }
             }
