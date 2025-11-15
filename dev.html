@@ -80,18 +80,25 @@
             border-color: var(--accent-color);
         }
         
-        /* === НОВИЙ СТИЛЬ: Поле з помилкою === */
         .input-field.input-error {
             border-color: var(--error-color);
             box-shadow: 0 0 0 2px var(--error-color);
         }
 
-        /* === НОВИЙ СТИЛЬ: Текст помилки === */
         .error-text {
             color: var(--error-color);
             font-size: 0.875rem; /* text-sm */
             text-align: left;
             display: none; /* Сховано за замовчуванням */
+            margin-top: 0.5rem; /* mt-2 */
+        }
+        
+        /* === НОВИЙ СТИЛЬ v2.10: Інфо-повідомлення (для міста) === */
+        .info-text {
+            color: var(--accent-color);
+            font-size: 0.875rem; /* text-sm */
+            text-align: center;
+            display: none; 
             margin-top: 0.5rem; /* mt-2 */
         }
 
@@ -130,7 +137,6 @@
             cursor: not-allowed;
         }
         
-        /* === НОВИЙ СТИЛЬ: Спіннер для кнопки === */
         .btn-spinner {
             display: none; /* Сховано */
             width: 1.25rem; /* w-5 */
@@ -144,7 +150,6 @@
             border-top-color: currentColor; 
         }
 
-        /* Коли кнопка в стані 'loading' */
         .btn.loading .btn-text {
             opacity: 0.5; /* Приглушуємо текст */
         }
@@ -199,18 +204,18 @@
             50% { opacity: 0; }
         }
         
-        /* === ОНОВЛЕНО v2.8: Спіннер (3 риски, solid) === */
+        /* === ОНОВЛЕНО v2.10: Повернено "dashed" спіннер === */
         .spinner {
             width: 4rem; /* 64px */
             height: 4rem; /* 64px */
             border-width: 4px;
-            /* Змінено на solid для крос-браузерності */
-            border-style: solid; 
+            /* Повернено dashed, як ти і просив */
+            border-style: dashed; 
             border-radius: 9999px; /* rounded-full */
             animation: spin 1.5s linear infinite;
             margin: 2rem auto;
-            /* 3 риски (три сторони кольорові, одна прозора) */
-            border-color: var(--accent-color) var(--accent-color) var(--accent-color) transparent;
+            /* Дві симетричні групи "рисочок" */
+            border-color: var(--accent-color) transparent var(--accent-color) transparent;
         }
         @keyframes spin {
             to { transform: rotate(360deg); }
@@ -327,7 +332,6 @@
                     <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
-                    <!-- === ЗБЕРЕЖЕНО: Текст "Обрати дату" === -->
                     <span id="date-placeholder" style="color: var(--secondary-text-color);">Обрати дату</span>
                     <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required 
                            style="opacity: 0.001;"> 
@@ -412,6 +416,10 @@
                     <p id="city-error-message" class="error-text">
                         Текст помилки...
                     </p>
+                    <!-- === НОВИЙ ЕЛЕМЕНТ v2.10: Інфо-повідомлення === -->
+                    <p id="city-info-message" class="info-text">
+                        <!-- Сюди буде вставлено текст "Ми уточнили: Ужгород" -->
+                    </p>
                 </div>
 
                 <div class="pt-4 space-y-3">
@@ -461,7 +469,6 @@
 
             <div class="space-y-4 pt-4">
                 <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
-                    <!-- === ЗБЕРЕЖЕНО: Текст кнопки === -->
                     <span class="btn-text">
                         Розблокувати зараз за 149 грн (замість <span style="text-decoration: line-through; opacity: 0.8;">399 грн</span>)
                     </span>
@@ -512,7 +519,6 @@
                 
                 <div id="ltv-upsell-box" class="ltv-upsell-box text-left">
                     <h3 class="font-bold" style="color: var(--accent-color);">P.S. Поки твій звіт генерується...</h3>
-                    <!-- === ЗБЕРЕЖЕНО: Текст LTV-апселу === -->
                     <p class="text-sm mt-2 mb-4" style="color: var(--secondary-text-color);">
                         Хочеш додати повний <strong>"Астрологічний АІ-Прогноз на 2026 рік"</strong> не просто зі знижкою - а з <strong>Персональною знижкою</strong>?
                         Всього за <strong>247 грн</strong> замість <span style="text-decoration: line-through; opacity: 0.7;">699 грн</span>. (Твоя знижка -65%)
@@ -538,7 +544,6 @@
             </div>
             <!-- ============================================== -->
 
-            <!-- === ОНОВЛЕНО: Сюди буде вставлено динамічний звіт === -->
             <div id="full-report-content" class="text-left p-5 rounded-lg space-y-4" style="background-color: var(--card-bg-color); display: none; border: 1px solid var(--border-color);">
                 <!-- Контент генерується... -->
             </div>
@@ -564,7 +569,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.9 (з анімацією Кроку 7 та посиленим geo-промптом) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.10 (з City Fix та Spinner Fix) -->
     <!-- ====================================================== -->
     <script>
         // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
@@ -581,7 +586,6 @@
 
             // --- 1. ОТРИМАННЯ ЕЛЕМЕНТІВ ---
             
-            // Елементи кроків
             const steps = {
                 landing: document.getElementById('landing-step'),
                 loading: document.getElementById('loading-step'),
@@ -592,7 +596,6 @@
                 success: document.getElementById('success-step')
             };
             
-            // ... (всі інші елементи DOM) ...
             const birthForm = document.getElementById('birth-form');
             const birthDateInput = document.getElementById('birth-date');
             const errorMessage = document.getElementById('error-message');
@@ -608,11 +611,12 @@
             const timePlaceholder = document.getElementById('time-placeholder');
             const birthCityInput = document.getElementById('birth-city');
             const cityErrorMessage = document.getElementById('city-error-message');
+            // === НОВИЙ ЕЛЕМЕНТ v2.10: Інфо-повідомлення ===
+            const cityInfoMessage = document.getElementById('city-info-message'); 
             const continueToPaywallButton = document.getElementById('continue-to-paywall-button');
             const skipButton = document.getElementById('skip-button');
             const finalCheckoutButton = document.getElementById('final-checkout-button');
             const reportLoadingIndicator = document.getElementById('report-loading-indicator');
-            // === НОВИЙ ЕЛЕМЕНТ v2.9: Текст завантаження звіту ===
             const reportLoadingTextEl = document.getElementById('report-loading-text'); 
             const fullReportContentEl = document.getElementById('full-report-content');
             const emailCaptureBox = document.getElementById('email-capture-box');
@@ -628,10 +632,9 @@
             // --- 2. ГЛОБАЛЬНІ ЗМІННІ ---
             
             const isCanvas = typeof __app_id !== 'undefined';
-            const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; // ВАЖЛИВО: Замініть на свій ключ для вебу
+            const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; 
             console.log(isCanvas ? "Running in Canvas mode (local test)." : "Running in Production mode (web).");
             
-            // v2.8: Використовуємо Flash для обох запитів
             const apiFlashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             const apiProUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             
@@ -646,14 +649,12 @@
                 geo: null 
             };
             
-            // === НОВИЙ ФЛАГ v2.9: Для зупинки анімації ===
             let isReportLoading = false;
 
             // ======================================================
             // --- 3. СИСТЕМНІ ПРОМПТИ ---
             // ======================================================
             
-            // v2.3: Головна Персона ('Подруга Астро-Психолог')
             const mainSystemPrompt = `Ти — 'Майстер Астро-Психолог' Destiny Code.
              Твоя Роль: Ти глибокий, мудрий 'астро-психолог', але з тоном твоєї найкращої подруги — емпатичної, авторитетної, і з легким фліртом та гумором.
              Твоя Місія: Допомогти клієнтці 'розпакувати' її натальну карту як 'карту душі'. Ти бачиш психологічні патерни, кармічні уроки та прихований потенціал. Ти даєш 'космічну валідацію' її почуттів.
@@ -670,7 +671,6 @@
             8. Смайли: Використовуй релевантні смайли (😈, ✨, 🔮, 🔥, 👑).
             9. ЗАБОРОНЕНО: Медичні терміни. Складні астро-терміни без пояснень. "Смерть".`;
 
-            // Завдання для Безкоштовного Звіту (JSON)
             const freeTaskPrompt = `Місія: 'Безкоштовний Гачок'.
              ЗАВДАННЯ:
             1. Визнач знак Сонця за датою. Використовуй ** emojis** у тексті.
@@ -686,7 +686,6 @@
             \`\`\`
             ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. Жодного тексту до чи після.`;
 
-            // Завдання для Платного Звіту (JSON)
             const fullTaskPrompt = `Місія: 'Повний Психологічний Портрет' (Платний).
             (Клієнтка вже заплатила. Цінність має бути вищою за 149 грн. Будь глибоким, емпатичним).
              ЗАВДАННЯ:
@@ -729,18 +728,20 @@
             \`\`\`
             ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. 'analysis_text' має бути деталізованим (3-4 абзаци), з **жирними** акцентами.`;
 
-            // === ОНОВЛЕНО v2.9: Посилений geoSystemPrompt ===
+            // === ОНОВЛЕНО v2.10: Посилений geoSystemPrompt ===
             const geoSystemPrompt = `
-                Ти — високоточний географічний API. Твоя єдина мета — повернути JSON-об'єкт, що містить географічні координати (lat, lon) та часовий пояс (timezone) для вказаного міста.
+                Ти — високоточний географічний API. Твоя єдина мета — повернути JSON-об'єкт, що містить географічні координати (lat, lon), часовий пояс (timezone) та **виправлену назву міста (corrected_name)**.
                 ПРАВИЛА:
-                1. Відповідь має бути ЛИШЕ в форматі JSON. Жодних пояснень чи додаткового тексту.
-                2. Використовуй формат десятихвилинних значень (наприклад, 49.8397).
-                3. Часовий пояс має бути у форматі IANA (наприклад, Europe/Kyiv).
-                4. КРИТИЧНЕ ПРАВИЛО (АВТОВИПРАВЛЕННЯ): Вхідні дані (назва міста) можуть бути будь-якою мовою (українська, англійська, російська) та містити одруки (напр., "Ужгрод", "Львіф", "Harkiv", "Киев"). Ти *повинен* докласти максимум зусиль, щоб розпізнати та **автоматично виправити** ці одруки і повернути коректні дані для правильного міста. **Краще автоматично виправити одрук, ніж повернути помилку "not_found".**
-                5. Якщо місто неможливо знайти (напр., 'asdfg') -> {"error": "not_found"}
-                6. Якщо місто неоднозначне (напр., 'Париж' без країни) -> {"error": "ambiguous"}
+                1. Відповідь має бути ЛИШЕ в форматі JSON. Жодних пояснень.
+                2. Часовий пояс має бути у форматі IANA (наприклад, Europe/Kyiv).
+                3. КРИТИЧНЕ ПРАВИЛО (АВТОВИПРАВЛЕННЯ): Вхідні дані (назва міста) можуть бути будь-якою мовою (українська, англійська, російська) та містити одруки (напр., "Ужгрод", "Львіф", "Harkiv", "Киев"). Ти *повинен* докласти максимум зусиль, щоб розпізнати та **автоматично виправити** ці одруки.
+                4. **Краще автоматично виправити одрук, ніж повернути помилку "not_found".**
+                5. Поле "corrected_name" **завжди** має містити фінальну, коректну назву міста, яку ти знайшов (напр., "Ужгород").
+                6. Якщо місто неможливо знайти (напр., 'asdfg') -> {"error": "not_found"}
+                7. Якщо місто неоднозначне (напр., 'Париж' без країни) -> {"error": "ambiguous"}
                 
-                Приклад (Успіх): {"lat": 49.8397, "lon": 24.0297, "timezone": "Europe/Kyiv"}
+                Приклад (Успіх з виправленням): {"lat": 48.6208, "lon": 22.2879, "timezone": "Europe/Uzhhorod", "corrected_name": "Ужгород"}
+                Приклад (Успіх без виправлення): {"lat": 50.4501, "lon": 30.5234, "timezone": "Europe/Kyiv", "corrected_name": "Київ"}
                 Приклад (Помилка): {"error": "not_found"}
             `;
 
@@ -797,7 +798,7 @@
                 });
             }
             
-            // === НОВА ФУНКЦІЯ v2.9: Анімація завантаження звіту ===
+            // v2.9: Анімація завантаження звіту
             async function startReportLoadingAnimation(element) {
                 isReportLoading = true;
                 const loadingSteps = [
@@ -810,12 +811,11 @@
                     "Майже готово..."
                 ];
                 let i = 0;
-                // Цикл працює, доки isReportLoading = true
                 while (isReportLoading) { 
                     await typeWriter(element, loadingSteps[i], 70);
-                    await new Promise(resolve => setTimeout(resolve, 1500)); // Чекаємо 1.5 сек
-                    if (!isReportLoading) break; // Перевіряємо знову, щоб миттєво зупинитись
-                    i = (i + 1) % loadingSteps.length; // Переходимо до наступного рядка
+                    await new Promise(resolve => setTimeout(resolve, 1500)); 
+                    if (!isReportLoading) break; 
+                    i = (i + 1) % loadingSteps.length; 
                 }
                 console.log("Report loading animation stopped.");
             }
@@ -882,20 +882,22 @@
                 return '{"error": "timeout", "message": "На жаль, сервіс тимчасово перенавантажений."}';
             }
 
+            // === ОНОВЛЕНО v2.10: Геокодування повертає "corrected_name" ===
             async function getCoordinatesFromGemini(cityName) {
                 const userQuery = `Місто: ${cityName}`; 
                 try {
-                    // Використовуємо Flash для геокодингу
                     const rawJsonText = await callGeminiAPI(apiFlashUrl, geoSystemPrompt, userQuery); 
                     const cleanedJsonText = rawJsonText.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
                     const coords = JSON.parse(cleanedJsonText);
                     
-                    if (coords && typeof coords.lat === 'number' && typeof coords.lon === 'number' && typeof coords.timezone === 'string') {
+                    // Перевіряємо нове обов'язкове поле "corrected_name"
+                    if (coords && typeof coords.lat === 'number' && typeof coords.lon === 'number' && typeof coords.timezone === 'string' && typeof coords.corrected_name === 'string') {
                         console.log(`Geocoding success for ${cityName}:`, coords);
                         return { 
                             latitude: coords.lat, 
                             longitude: coords.lon, 
                             timezone: coords.timezone,
+                            corrected_name: coords.corrected_name, // Повертаємо виправлену назву
                             error: null
                         };
                     }
@@ -983,16 +985,19 @@
                 showStep('premiumData');
             });
             
-            // КРОК 4 -> КРОК 5 (Преміум Дані -> Paywall)
+            // === ОНОВЛЕНО v2.10: Логіка валідації міста ===
             async function validateAndGoToPaywall() {
                 const time = birthTimeInput.value;
                 const city = birthCityInput.value.trim();
 
+                // Скидаємо всі повідомлення
                 cityErrorMessage.style.display = 'none';
+                cityInfoMessage.style.display = 'none';
                 birthCityInput.classList.remove('input-error');
                 
                 userBirthData.time = time || '';
 
+                // Якщо місто порожнє, це як "Skip"
                 if (city === '') {
                     userBirthData.city = '';
                     userBirthData.geo = null;
@@ -1001,31 +1006,55 @@
                     return;
                 }
                 
+                // Якщо місто НЕ порожнє, вмикаємо валідацію
                 setButtonLoading(continueToPaywallButton, true);
                 const coords = await getCoordinatesFromGemini(city);
                 
+                let infoText = null;
+                
                 if (coords && coords.latitude) {
-                    userBirthData.city = city;
-                    userBirthData.geo = {
+                    // УСПІХ
+                    userBirthData.geo = { 
                         latitude: coords.latitude, 
                         longitude: coords.longitude, 
                         timezone: coords.timezone
                     };
+                    // Зберігаємо ВИПРАВЛЕНУ назву
+                    userBirthData.city = coords.corrected_name; 
+                    
                     console.log("City validated and saved:", userBirthData.geo);
-                    showStep('paywall');
+
+                    // Перевіряємо, чи була одрук
+                    if (city.toLowerCase() !== coords.corrected_name.toLowerCase()) {
+                        infoText = `Ми уточнили: ${coords.corrected_name} 😉`;
+                    }
+                    
+                    if (infoText) {
+                        cityInfoMessage.innerText = infoText;
+                        cityInfoMessage.style.display = 'block';
+                    }
+
+                    setButtonLoading(continueToPaywallButton, false);
+                    // Чекаємо 1.2 сек, ТІЛЬКИ якщо показали повідомлення
+                    setTimeout(() => {
+                        showStep('paywall');
+                    }, infoText ? 1200 : 0);
+
 
                 } else if (coords && coords.error === 'ambiguous') {
+                    // ПОМИЛКА: Неоднозначно
                     cityErrorMessage.innerText = `Місто "${city}" знайдено в кількох місцях. Будь ласка, уточни, додавши країну (напр., 'Париж, Франція').`;
                     cityErrorMessage.style.display = 'block';
                     birthCityInput.classList.add('input-error');
+                    setButtonLoading(continueToPaywallButton, false);
 
                 } else {
+                    // ПОМИЛКА: Не знайдено або інша
                     cityErrorMessage.innerText = `Не можемо знайти місто "${city}". Перевірте, будь ласка, назву.`;
                     cityErrorMessage.style.display = 'block';
                     birthCityInput.classList.add('input-error');
+                    setButtonLoading(continueToPaywallButton, false);
                 }
-                
-                setButtonLoading(continueToPaywallButton, false);
             }
             
             continueToPaywallButton.addEventListener('click', validateAndGoToPaywall);
@@ -1051,7 +1080,7 @@
                 await new Promise(resolve => setTimeout(resolve, 2500));
                 console.log("Payment simulation successful.");
                 setButtonLoading(finalCheckoutButton, false);
-                showStep('success'); // Перехід на Крок 7
+                showStep('success'); 
             });
             
             
@@ -1066,10 +1095,9 @@
                     emailCaptureBox.style.display = 'none';
                     reportLoadingIndicator.style.display = 'block';
                     
-                    // === ОНОВЛЕНО v2.9: Запускаємо анімацію ===
+                    // v2.9: Запускаємо анімацію
                     startReportLoadingAnimation(reportLoadingTextEl);
                     
-                    // Запускаємо генерацію (вона зупинить анімацію, коли завершиться)
                     await fetchFullAnalysis(userBirthData, email);
                 }
             });
@@ -1120,7 +1148,7 @@
             async function fetchFullAnalysis(data, email) {
                 let userQuery = `Дата народження: ${data.date}.`;
                 if (data.time) userQuery += ` Час: ${data.time}.`;
-                if (data.city) userQuery += ` Місто: ${data.city}.`;
+                if (data.city) userQuery += ` Місто: ${data.city}.`; // Надсилаємо вже виправлене місто
 
                 let astroDataString = ""; 
                 
@@ -1172,7 +1200,6 @@
 
                 const finalUserQuery = userQuery + astroDataString;
 
-                // Використовуємо наш швидкий apiProUrl (який зараз = Flash)
                 const rawJsonString = await callGeminiAPI(apiProUrl, fullTaskPrompt, finalUserQuery);
 
                 // --- Динамічна побудова HTML ---
@@ -1221,7 +1248,7 @@
                     formattedReportHTML = `<p>На жаль, сталася помилка при обробці JSON-відповіді. Текст помилки: ${rawJsonString}</p>`;
                 }
                 
-                // === ОНОВЛЕНО v2.9: Зупиняємо анімацію ===
+                // v2.9: Зупиняємо анімацію
                 isReportLoading = false; 
                 
                 if (reportLoadingIndicator) reportLoadingIndicator.style.display = 'none';
@@ -1285,8 +1312,10 @@
             birthTimeInput.addEventListener('change', updateTimePlaceholder);
             updateTimePlaceholder(); 
             
+            // === ОНОВЛЕНО v2.10: Скидання обох повідомлень ===
             birthCityInput.addEventListener('input', () => {
                  cityErrorMessage.style.display = 'none';
+                 cityInfoMessage.style.display = 'none';
                  birthCityInput.classList.remove('input-error');
             });
 
