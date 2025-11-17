@@ -375,7 +375,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v3.1 (Fix) -->
+    <!-- JAVASCRIPT ЛОГІКА v3.2 (API Key Fix) -->
     <!-- ====================================================== -->
     <script>
         // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
@@ -439,7 +439,8 @@
 
             // --- 2. ГЛОБАЛЬНІ ЗМІННІ ---
             const isCanvas = typeof __app_id !== 'undefined';
-            const apiKey = isCanvas ? "" : "YOUR_LOCAL_API_KEY_HERE"; // Локальний ключ
+            // === FIX v3.2: ПОВЕРНУЛИ РОБОЧИЙ API KEY з вашого "робочого" файлу ===
+            const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc";
             console.log(isCanvas ? "Running in Canvas mode." : "Running in Production/Local mode.");
 
             const apiFlashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
