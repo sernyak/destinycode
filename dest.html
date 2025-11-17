@@ -375,7 +375,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v3.0 (Full Backend Integration) -->
+    <!-- JAVASCRIPT ЛОГІКА v3.1 (Fix) -->
     <!-- ====================================================== -->
     <script>
         // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
@@ -1048,7 +1048,7 @@
             }
                                     
             /**
-             * v3.0: Функція генерації ПОВНОГО звіту (повертає HTML)
+             * v3.1 (FIX): Функція генерації ПОВНОГО звіту (повертає HTML)
              */
             async function fetchFullAnalysis(data) {
                 let userQuery = `Дата народження: ${data.date}.`;
@@ -1082,17 +1082,19 @@
                             origin: origin, houseSystem: "placidus", zodiac: "tropical"
                         });
                         
+                        // === FIX v3.1: Виправлено одрук 'horscope' на 'horoscope' ===
                         astroDataString = `
                         == Технічні Астрологічні Дані (для аналізу) ==
                         * Сонце: ${horoscope.CelestialBodies.sun.Sign.label} (у ${horoscope.CelestialBodies.sun.House.label} Домі)
                         * Місяць: ${horoscope.CelestialBodies.moon.Sign.label} (у ${horoscope.CelestialBodies.moon.House.label} Домі)
                         * Асцендент (ASC): ${horoscope.Ascendant.Sign.label}
                         * Середина Неба (MC): ${horoscope.Midheaven.Sign.label}
-                        * Венера: ${horscope.CelestialBodies.venus.Sign.label} (у ${horoscope.CelestialBodies.venus.House.label} Домі)
+                        * Венера: ${horoscope.CelestialBodies.venus.Sign.label} (у ${horoscope.CelestialBodies.venus.House.label} Домі)
                         * Марс: ${horoscope.CelestialBodies.mars.Sign.label} (у ${horoscope.CelestialBodies.mars.House.label} Домі)
                         * Північний Вузол: ${horoscope.CelestialBodies.northnode.Sign.label} (у ${horoscope.CelestialBodies.northnode.House.label} Домі)
                         == Кінець Технічних Даних ==
                         `;
+                        // =======================================================
                     } catch (err) {
                         console.error("Failed to calculate full horoscope (Step 7):", err);
                     }
@@ -1167,8 +1169,11 @@
             }
             birthDateInput.addEventListener('input', updateDatePlaceholder);
             birthDateInput.addEventListener('change', updateDatePlaceholder);
+            
+            // === Логіка дати за замовчуванням (Ваше питання) ===
             function setDefaultDateOnFirstFocus() {
                 if (birthDateInput.value === '') { 
+                    // Встановлюємо 1995-01-01. Це "золота середина" ЦА 24-45.
                     birthDateInput.value = '1995-01-01';
                 }
             }
@@ -1177,6 +1182,8 @@
             birthDateInput.addEventListener('touchstart', setDefaultDateOnFirstFocus); 
             birthDateInput.addEventListener('blur', updateDatePlaceholder);
             updateDatePlaceholder(); 
+            // ==================================================
+
             function updateTimePlaceholder() {
                 if (birthTimeInput.value === '') {
                     timePlaceholder.innerText = 'Обери час';
