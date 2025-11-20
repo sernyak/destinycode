@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
-import { Shield, Heart, Send, AlertCircle, ChevronRight, Save, FileText, Star, Printer, Download } from 'lucide-react';
+import { Shield, Heart, Send, AlertCircle, ChevronRight, Save, FileText, Star, Printer, Download, Coffee, Trash2, Tv, Bug, Users, Moon } from 'lucide-react';
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // --- КОНФІГУРАЦІЯ ---
 
-// 1. ЯКЩО ТИ ХОСТИШ ЦЕ САМ (Frontend Only варіант):
 const USER_PROVIDED_KEY = ""; 
+
+// --- HELPER FUNCTIONS ---
+
+const cleanText = (text) => {
+  if (!text) return "";
+  return text.replace(/\*\*/g, '').replace(/\*/g, '');
+};
 
 // --- COMPONENTS ---
 
 const Button = ({ children, onClick, variant = 'primary', disabled = false, className = '' }) => {
-  const baseStyle = "px-6 py-3 font-mono text-sm uppercase tracking-wider font-bold transition-all duration-200 flex items-center justify-center gap-2 relative overflow-hidden select-none";
+  const baseStyle = "w-full md:w-auto px-6 py-4 md:py-3 font-mono text-sm uppercase tracking-wider font-bold transition-all duration-200 flex items-center justify-center gap-2 relative overflow-hidden select-none touch-manipulation";
   
   const variants = {
-    primary: "bg-stone-800 text-amber-50 hover:bg-stone-700 border-l-4 border-amber-600 shadow-lg active:translate-y-1",
-    secondary: "bg-stone-200 text-stone-800 hover:bg-stone-300 border-l-4 border-stone-500 shadow-md",
+    primary: "bg-stone-900 text-amber-50 hover:bg-stone-700 border-l-4 border-amber-600 shadow-lg active:translate-y-1",
+    secondary: "bg-stone-200 text-stone-800 hover:bg-stone-300 border-l-4 border-stone-500 shadow-md active:translate-y-1",
     outline: "bg-transparent text-stone-800 border-2 border-stone-800 hover:bg-stone-100",
   };
 
@@ -29,10 +35,10 @@ const Button = ({ children, onClick, variant = 'primary', disabled = false, clas
   );
 };
 
-const InputField = ({ label, value, onChange, placeholder, icon: Icon }) => (
-  <div className="mb-6">
-    <label className="block text-xs font-bold uppercase tracking-widest text-stone-500 mb-2 flex items-center gap-2">
-      {Icon && <Icon size={14} />}
+const InputField = ({ label, value, onChange, placeholder, icon: Icon, className = "" }) => (
+  <div className={`mb-5 ${className}`}>
+    <label className="block text-xs font-bold uppercase tracking-widest text-stone-600 mb-2 flex items-center gap-2">
+      {Icon && <Icon size={16} className="text-amber-700" />}
       {label}
     </label>
     <input
@@ -40,37 +46,46 @@ const InputField = ({ label, value, onChange, placeholder, icon: Icon }) => (
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className="w-full bg-stone-100 border-b-2 border-stone-300 text-stone-900 p-3 font-serif focus:outline-none focus:border-amber-600 focus:bg-white transition-colors placeholder-stone-400"
+      className="w-full bg-stone-50 border-b-2 border-stone-300 text-stone-900 p-3 md:p-4 text-base font-serif focus:outline-none focus:border-amber-600 focus:bg-white transition-colors placeholder-stone-400 rounded-t-md"
     />
   </div>
 );
 
+const SectionHeader = ({ title }) => (
+  <div className="flex items-center gap-4 my-8">
+    <div className="h-px bg-stone-300 flex-grow"></div>
+    <span className="text-xs font-mono uppercase tracking-widest text-stone-500 font-bold text-center px-2">{title}</span>
+    <div className="h-px bg-stone-300 flex-grow"></div>
+  </div>
+);
+
 const Card = ({ children, title, subtitle, className = '' }) => (
-  <div className={`w-full max-w-2xl mx-auto bg-[#f4f4f0] shadow-2xl border border-stone-300 relative ${className}`}>
-    {/* Folder Tab Look */}
-    <div className="absolute -top-3 left-0 bg-stone-800 text-amber-50 px-4 py-1 text-xs font-mono uppercase tracking-widest shadow-sm">
+  <div className={`w-full max-w-2xl mx-auto bg-[#f4f4f0] shadow-xl border border-stone-300 relative ${className}`}>
+    <div className="absolute -top-4 left-0 bg-stone-900 text-amber-50 px-6 py-1.5 text-xs font-mono uppercase tracking-widest shadow-sm z-20">
       DOC-{Math.floor(Math.random() * 10000)} // TOP SECRET
     </div>
     
-    <div className="p-8 md:p-12 relative">
-       {/* Watermark */}
+    <div className="p-6 pt-10 md:p-12 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-[0.03]">
-        <Shield size={400} />
+        <Shield size={300} />
       </div>
 
       {title && (
-        <div className="mb-8 border-b-2 border-stone-800 pb-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-black text-stone-800 uppercase tracking-tight font-serif">{title}</h2>
-          {subtitle && <p className="text-stone-500 font-mono text-sm mt-2 uppercase tracking-widest">{subtitle}</p>}
+        <div className="mb-8 border-b-2 border-stone-800 pb-4 text-center relative z-10">
+          <h2 className="text-3xl md:text-4xl font-black text-stone-900 uppercase tracking-tight font-serif leading-tight mb-2">
+            {title}
+          </h2>
+          {subtitle && <p className="text-stone-600 font-mono text-xs md:text-sm mt-2 uppercase tracking-widest font-bold">{subtitle}</p>}
         </div>
       )}
+      
       <div className="relative z-10">
         {children}
       </div>
-    </div>
-    {/* Stamps visual decoration */}
-    <div className="absolute bottom-4 right-4 opacity-20 rotate-[-15deg] border-4 border-red-800 text-red-800 p-2 font-black text-xl uppercase rounded pointer-events-none">
-      Затверджено
+
+      <div className="absolute bottom-4 right-4 opacity-20 rotate-[-15deg] border-4 border-red-800 text-red-800 p-2 font-black text-xl uppercase rounded pointer-events-none z-0">
+        ТАЄМНО
+      </div>
     </div>
   </div>
 );
@@ -78,19 +93,30 @@ const Card = ({ children, title, subtitle, className = '' }) => (
 // --- MAIN APP ---
 
 export default function FamilyStatuteApp() {
-  const [step, setStep] = useState('intro'); // intro, quiz, generating, result
+  const [step, setStep] = useState('intro'); 
   const [error, setError] = useState(null);
   const [generatedStatute, setGeneratedStatute] = useState('');
   
   const [formData, setFormData] = useState({
+    // Intro Data
     husbandName: '',
     husbandCallsign: '',
     wifeName: '',
     wifeCallsign: '',
-    conflictWeapon: 'Мовчання', 
-    peaceTreaty: 'Смачна вечеря',
-    financeChief: 'Спільний бюджет', 
-    strategicGoal: 'Побудувати дім', 
+    
+    // Quiz Data - ТЕПЕР ПУСТІ, щоб було видно placeholder
+    conflictWeapon: '', 
+    peaceTreaty: '',
+    financeChief: '', 
+    strategicGoal: '',
+    
+    // New Questions - ТЕПЕР ПУСТІ
+    morningBathroom: '',
+    garbageDisposal: '',
+    tvRemote: '',
+    spiderProtocol: '',
+    inLawsDiplomacy: '',
+    nightSnoring: '',
   });
 
   const generateDirectly = async () => {
@@ -103,30 +129,60 @@ export default function FamilyStatuteApp() {
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-09-2025" });
 
+      // Якщо поля пусті, використовуємо дефолтні значення для генерації, щоб ШІ не зламався
+      const safeData = {
+         husbandName: formData.husbandName || "Чоловік",
+         husbandCallsign: formData.husbandCallsign || "Командир 1",
+         wifeName: formData.wifeName || "Дружина",
+         wifeCallsign: formData.wifeCallsign || "Командир 2",
+         conflictWeapon: formData.conflictWeapon || "Тактичне мовчання",
+         peaceTreaty: formData.peaceTreaty || "Переговори",
+         financeChief: formData.financeChief || "Спільний бюджет",
+         strategicGoal: formData.strategicGoal || "Щасливе життя",
+         morningBathroom: formData.morningBathroom || "Хто перший встав",
+         garbageDisposal: formData.garbageDisposal || "По черзі",
+         tvRemote: formData.tvRemote || "Компроміс",
+         spiderProtocol: formData.spiderProtocol || "Евакуація",
+         inLawsDiplomacy: formData.inLawsDiplomacy || "Нейтралітет",
+         nightSnoring: formData.nightSnoring || "Відсутнє",
+      };
+
       const systemPrompt = `
         Ти - креативний військовий штабний писар з чудовим почуттям гумору.
         Твоє завдання: Написати жартівливий, але зворушливий "Бойовий Статут Сімейного Життя" (БССЖ) для молодят.
-        Брат нареченого зараз служить у війську, тому стиль має бути псевдо-військовим, офіційним, з використанням термінів (дислокація, тил, спецзавдання, стратегічні запаси), але про мирне сімейне життя.
+        
+        КОНТЕКСТ:
+        Брат нареченого зараз служить у війську (командир мінометного взводу). Наречена займається благодійністю.
+        Тому стиль має бути псевдо-військовим, офіційним, з використанням термінів (дислокація, тил, спецзавдання, стратегічні запаси, калібр, волонтерка), але про мирне сімейне життя.
 
-        Вхідні дані:
-        - Чоловік (Командир 1): ${formData.husbandName} (Позивний: ${formData.husbandCallsign})
-        - Дружина (Командир 2): ${formData.wifeName} (Позивний: ${formData.wifeCallsign})
-        - Зброя у конфліктах: ${formData.conflictWeapon}
-        - Спосіб примирення: ${formData.peaceTreaty}
-        - Хто керує фінансами: ${formData.financeChief}
-        - Стратегічна ціль: ${formData.strategicGoal}
+        ОСОБОВИЙ СКЛАД:
+        - Чоловік (Командир 1): ${safeData.husbandName} (Позивний: ${safeData.husbandCallsign})
+        - Дружина (Командир 2): ${safeData.wifeName} (Позивний: ${safeData.wifeCallsign})
 
-        Структура відповіді (обов'язково Markdown):
+        РОЗВІДУВАЛЬНІ ДАНІ (Відповіді на квіз):
+        1. Зброя у конфліктах: ${safeData.conflictWeapon}
+        2. Спосіб примирення: ${safeData.peaceTreaty}
+        3. Начальник фінчастини: ${safeData.financeChief}
+        4. Стратегічна ціль: ${safeData.strategicGoal}
+        
+        ДОДАТКОВІ ПРОТОКОЛИ:
+        - Ранкова окупація ванної кімнати: ${safeData.morningBathroom}
+        - Утилізація відходів: ${safeData.garbageDisposal}
+        - Контроль пульта ТВ: ${safeData.tvRemote}
+        - Протокол "Павук": ${safeData.spiderProtocol}
+        - Дипломатія з батьками: ${safeData.inLawsDiplomacy}
+        - Хропіння: ${safeData.nightSnoring}
+
+        СТРУКТУРА ВІДПОВІДІ (Markdown):
         1. Заголовок (Урочистий).
-        2. Преамбула (Про створення нового бойового підрозділу "Сім'я").
-        3. Розділ 1: Ієрархія та Субординація (жартівливо обіграти рівноправ'я або особливості їх відповідей).
-        4. Розділ 2: Тилове забезпечення (про фінанси та їжу).
-        5. Розділ 3: Бойові дії та Перемир'я (використати дані про конфлікти та примирення).
-        6. Розділ 4: Стратегічні цілі (про їх мрію).
-        7. Фінальний наказ (Бажання щастя, любові та перемоги).
+        2. Преамбула (Про створення підрозділу).
+        3. Розділ 1: Розпорядок дня та Бойова готовність.
+        4. Розділ 2: Тилове забезпечення та Логістика.
+        5. Розділ 3: Надзвичайні ситуації.
+        6. Розділ 4: Зовнішня політика.
+        7. Розділ 5: Стратегічні цілі та Фінальний наказ.
 
-        Тон: Повага до військової справи, але дуже теплий, сімейний і смішний.
-        Мова: Українська.
+        Тон: Душевний, смішний, з повагою. Мова: Українська. Не використовуй жирний шрифт (зірочки) у тексті, пиши просто текстом.
       `;
 
       const result = await model.generateContent({
@@ -148,40 +204,45 @@ export default function FamilyStatuteApp() {
 
   const renderIntro = () => (
     <Card title="Ініціалізація Підрозділу" subtitle="Реєстрація нового сімейного формування">
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField 
-            label="Ім'я Нареченого" 
-            value={formData.husbandName} 
-            onChange={(v) => setFormData({...formData, husbandName: v})}
-            placeholder="Віктор"
-            icon={Star}
-          />
-           <InputField 
-            label="Позивний (Для сім'ї)" 
-            value={formData.husbandCallsign} 
-            onChange={(v) => setFormData({...formData, husbandCallsign: v})}
-            placeholder="Ведмідь / Генерал"
-            icon={Shield}
-          />
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6">
+          <div className="bg-stone-100 p-4 rounded border border-stone-200">
+            <InputField 
+              label="Ім'я Нареченого" 
+              value={formData.husbandName} 
+              onChange={(v) => setFormData({...formData, husbandName: v})}
+              placeholder="Ввести ім'я"
+              icon={Star}
+            />
+             <InputField 
+              label="Позивний (Для сім'ї)" 
+              value={formData.husbandCallsign} 
+              onChange={(v) => setFormData({...formData, husbandCallsign: v})}
+              placeholder="Ввести позивний"
+              icon={Shield}
+              className="mb-0"
+            />
+          </div>
+          
+          <div className="bg-stone-100 p-4 rounded border border-stone-200">
+            <InputField 
+              label="Ім'я Нареченої" 
+              value={formData.wifeName} 
+              onChange={(v) => setFormData({...formData, wifeName: v})}
+              placeholder="Ввести ім'я"
+              icon={Heart}
+            />
+             <InputField 
+              label="Позивний (Для сім'ї)" 
+              value={formData.wifeCallsign} 
+              onChange={(v) => setFormData({...formData, wifeCallsign: v})}
+              placeholder="Ввести позивний"
+              icon={Shield}
+              className="mb-0"
+            />
+          </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <InputField 
-            label="Ім'я Нареченої" 
-            value={formData.wifeName} 
-            onChange={(v) => setFormData({...formData, wifeName: v})}
-            placeholder="Анастасія"
-            icon={Heart}
-          />
-           <InputField 
-            label="Позивний (Для сім'ї)" 
-            value={formData.wifeCallsign} 
-            onChange={(v) => setFormData({...formData, wifeCallsign: v})}
-            placeholder="Лисичка / Шеф"
-            icon={Shield}
-          />
-        </div>
-        <div className="pt-6 flex justify-center">
+        <div className="pt-4 flex justify-center">
           <Button 
             onClick={() => setStep('quiz')}
             disabled={!formData.husbandName || !formData.wifeName}
@@ -194,49 +255,104 @@ export default function FamilyStatuteApp() {
   );
 
   const renderQuiz = () => (
-    <Card title="Тактичний Опитувальник" subtitle="Збір розвідувальних даних для статуту">
-      <div className="space-y-6">
+    <Card title="Тактичний Опитувальник" subtitle="Збір розвідувальних даних">
+      <div className="space-y-2">
         
-        <InputField 
-          label="Основна тактика дружини у суперечці?" 
-          value={formData.conflictWeapon} 
-          onChange={(v) => setFormData({...formData, conflictWeapon: v})}
-          placeholder="Плаче / Кричить / Мовчить"
-          icon={AlertCircle}
-        />
+        {/* БЛОК 1 */}
+        <SectionHeader title="Стратегія та Ресурси" />
+        <div className="grid grid-cols-1 gap-0">
+           <InputField 
+            label="Начальник фінчастини (бюджету)?" 
+            value={formData.financeChief} 
+            onChange={(v) => setFormData({...formData, financeChief: v})}
+            placeholder="Наприклад: Разом / Дружина"
+            icon={FileText}
+          />
+           <InputField 
+            label="Головна стратегічна ціль (5 років)?" 
+            value={formData.strategicGoal} 
+            onChange={(v) => setFormData({...formData, strategicGoal: v})}
+            placeholder="Наприклад: Дім / Подорож / Діти"
+            icon={Star}
+          />
+        </div>
 
-        <InputField 
-          label="Найефективніший метод підписання миру?" 
-          value={formData.peaceTreaty} 
-          onChange={(v) => setFormData({...formData, peaceTreaty: v})}
-          placeholder="Піца / Обійми / Секс"
-          icon={Heart}
-        />
+        {/* БЛОК 2 */}
+        <SectionHeader title="Тилове забезпечення" />
+        <div className="grid grid-cols-1 gap-0">
+            <InputField 
+                label="Хто займає страт. об'єкт 'Ванна'?" 
+                value={formData.morningBathroom} 
+                onChange={(v) => setFormData({...formData, morningBathroom: v})}
+                placeholder="Наприклад: Хто перший встав"
+                icon={Coffee}
+            />
+            <InputField 
+                label="Утилізація відходів (сміття)?" 
+                value={formData.garbageDisposal} 
+                onChange={(v) => setFormData({...formData, garbageDisposal: v})}
+                placeholder="Наприклад: Чоловік / По черзі"
+                icon={Trash2}
+            />
+            <InputField 
+                label="Контроль пульта ТВ?" 
+                value={formData.tvRemote} 
+                onChange={(v) => setFormData({...formData, tvRemote: v})}
+                placeholder="Наприклад: Спільні переговори"
+                icon={Tv}
+            />
+            <InputField 
+                label="Хто порушує режим тиші (хропе)?" 
+                value={formData.nightSnoring} 
+                onChange={(v) => setFormData({...formData, nightSnoring: v})}
+                placeholder="Наприклад: Ніхто / Чоловік"
+                icon={Moon}
+            />
+        </div>
 
-        <InputField 
-          label="Хто начальник фінчастини (бюджету)?" 
-          value={formData.financeChief} 
-          onChange={(v) => setFormData({...formData, financeChief: v})}
-          placeholder="Разом / Дружина / Чоловік"
-          icon={FileText}
-        />
+        {/* БЛОК 3 */}
+        <SectionHeader title="Бойові дії та Дипломатія" />
+        
+        <div className="grid grid-cols-1 gap-0">
+             <InputField 
+                label="Тактика дружини у суперечці?" 
+                value={formData.conflictWeapon} 
+                onChange={(v) => setFormData({...formData, conflictWeapon: v})}
+                placeholder="Наприклад: Аргументи / Мовчання"
+                icon={AlertCircle}
+            />
+             <InputField 
+                label="Метод підписання мирної угоди?" 
+                value={formData.peaceTreaty} 
+                onChange={(v) => setFormData({...formData, peaceTreaty: v})}
+                placeholder="Наприклад: Обійми / Вечеря"
+                icon={Heart}
+            />
+            <InputField 
+                label="Протокол 'Павук у периметрі'?" 
+                value={formData.spiderProtocol} 
+                onChange={(v) => setFormData({...formData, spiderProtocol: v})}
+                placeholder="Наприклад: Чоловік ліквідує"
+                icon={Bug}
+            />
+            <InputField 
+                label="Переговори з 'Союзними силами'?" 
+                value={formData.inLawsDiplomacy} 
+                onChange={(v) => setFormData({...formData, inLawsDiplomacy: v})}
+                placeholder="Наприклад: Кожен зі своїми"
+                icon={Users}
+            />
+        </div>
 
-        <InputField 
-          label="Головна стратегічна ціль на 5 років?" 
-          value={formData.strategicGoal} 
-          onChange={(v) => setFormData({...formData, strategicGoal: v})}
-          placeholder="Дім / Діти / Подорож"
-          icon={Star}
-        />
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mt-4">
             <strong className="font-bold">Увага! </strong>
             <span className="block sm:inline">{error}</span>
           </div>
         )}
 
-        <div className="pt-6 flex justify-between">
+        <div className="pt-8 flex flex-col-reverse md:flex-row justify-between gap-4">
            <Button variant="secondary" onClick={() => setStep('intro')}>
              Назад
            </Button>
@@ -257,7 +373,7 @@ export default function FamilyStatuteApp() {
   );
 
   const renderResult = () => (
-    <div className="max-w-4xl mx-auto py-8 px-4">
+    <div className="max-w-4xl mx-auto py-4 md:py-8 px-4">
       <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
         <Button variant="secondary" onClick={() => setStep('intro')}>Створити новий</Button>
         <Button onClick={() => window.print()} variant="primary">
@@ -266,11 +382,11 @@ export default function FamilyStatuteApp() {
       </div>
 
       {/* Основний контейнер документа */}
-      <div className="bg-white text-stone-900 p-8 md:p-16 shadow-2xl border-2 border-stone-800 relative print-container">
+      <div className="bg-white text-stone-900 p-6 md:p-16 shadow-2xl border-2 border-stone-800 relative print-container">
         {/* Header Decoration */}
         <div className="border-b-4 border-double border-stone-800 pb-6 mb-8 flex justify-between items-start">
           <div>
-             <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-2 font-serif">
+             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 font-serif text-stone-900">
                Статут <br/> <span className="text-amber-700">Сімейного Підрозділу</span>
              </h1>
              <div className="flex items-center gap-2 text-stone-500">
@@ -281,8 +397,8 @@ export default function FamilyStatuteApp() {
              </div>
           </div>
           <div className="opacity-80 hidden sm:block">
-            <div className="w-20 h-20 border-4 border-stone-800 rounded-full flex items-center justify-center">
-                 <Star size={40} className="text-amber-700" fill="currentColor" />
+            <div className="w-24 h-24 border-4 border-stone-800 rounded-full flex items-center justify-center">
+                 <Star size={48} className="text-amber-700" fill="currentColor" />
             </div>
           </div>
         </div>
@@ -290,24 +406,42 @@ export default function FamilyStatuteApp() {
         {/* Content from AI */}
         <div className="prose prose-stone prose-lg max-w-none font-serif leading-relaxed whitespace-pre-line">
             {generatedStatute.split('\n').map((line, i) => {
-                if (line.startsWith('##')) return <h2 key={i} className="text-xl font-bold mt-6 mb-3 uppercase border-b border-stone-300 pb-1 text-stone-800">{line.replace('##', '')}</h2>;
-                if (line.startsWith('#')) return <h1 key={i} className="text-2xl font-black mt-8 mb-4 text-center uppercase tracking-wide">{line.replace('#', '')}</h1>;
-                if (line.startsWith('*') || line.startsWith('-')) return <li key={i} className="ml-4 list-disc marker:text-amber-700">{line.replace(/[*|-]/, '')}</li>;
-                if (line.trim() === '') return <br key={i}/>;
-                return <p key={i} className="mb-2 text-justify">{line.replace(/\*\*(.*?)\*\*/g, '$1')}</p>;
+                // Очищуємо текст від зірочок
+                let cleanedLine = cleanText(line).trim();
+                
+                if (!cleanedLine) return <br key={i}/>;
+
+                // Використовуємо Regex для видалення хешів, незалежно від їх кількості (##, ###, #)
+                if (cleanedLine.startsWith('#')) {
+                   const isMainHeader = cleanedLine.startsWith('#') && !cleanedLine.startsWith('##');
+                   // Видаляємо всі хеші та пробіли на початку
+                   const textWithoutHashes = cleanedLine.replace(/^#+\s*/, '');
+                   
+                   if (isMainHeader) {
+                      return <h1 key={i} className="text-2xl font-black mt-8 mb-4 text-center uppercase tracking-wide text-stone-900">{textWithoutHashes}</h1>;
+                   } else {
+                      return <h2 key={i} className="text-xl font-bold mt-6 mb-3 uppercase border-b border-stone-300 pb-1 text-stone-900">{textWithoutHashes}</h2>;
+                   }
+                }
+
+                if (cleanedLine.startsWith('-') || cleanedLine.startsWith('*')) {
+                    return <li key={i} className="ml-4 list-disc marker:text-amber-700">{cleanedLine.replace(/^[-*]\s*/, '')}</li>;
+                }
+                
+                return <p key={i} className="mb-2 text-justify text-stone-800">{cleanedLine}</p>;
             })}
         </div>
 
         {/* Footer Signature Area */}
-        <div className="mt-16 pt-8 border-t-2 border-stone-800 grid grid-cols-2 gap-12 break-inside-avoid">
+        <div className="mt-16 pt-8 border-t-2 border-stone-800 grid grid-cols-2 gap-4 md:gap-12 break-inside-avoid">
           <div>
-            <p className="text-xs font-bold uppercase mb-12 tracking-widest">Командир 1 ({formData.husbandName})</p>
+            <p className="text-xs font-bold uppercase mb-12 tracking-widest">Командир 1 ({formData.husbandName || "Чоловік"})</p>
             <div className="h-px bg-stone-900 w-full relative">
                 <span className="absolute top-2 left-0 text-[10px] text-stone-500 uppercase">Підпис</span>
             </div>
           </div>
           <div>
-            <p className="text-xs font-bold uppercase mb-12 tracking-widest">Командир 2 ({formData.wifeName})</p>
+            <p className="text-xs font-bold uppercase mb-12 tracking-widest">Командир 2 ({formData.wifeName || "Дружина"})</p>
             <div className="h-px bg-stone-900 w-full relative">
                  <span className="absolute top-2 left-0 text-[10px] text-stone-500 uppercase">Підпис</span>
             </div>
@@ -320,21 +454,21 @@ export default function FamilyStatuteApp() {
             </p>
         </div>
         
-        {/* Stamp */}
+        {/* Stamp - Returned to bottom right */}
         <div className="absolute bottom-32 right-16 opacity-70 rotate-[-12deg] border-[6px] border-amber-800 text-amber-800 p-4 font-black text-2xl uppercase rounded-lg hidden md:block print:block">
-          ЗАТВЕРДЖЕНО<br/><span className="text-sm block text-center mt-1">ГЕНШТАБ ЛЮБОВІ</span>
+          ТАЄМНО<br/><span className="text-sm block text-center mt-1">ГЕНШТАБ ЛЮБОВІ</span>
         </div>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-stone-200 text-stone-800 font-sans selection:bg-amber-200 pb-20">
-      <header className="bg-stone-900 text-stone-400 p-4 text-center text-xs font-mono uppercase tracking-[0.2em] shadow-md no-print">
+    <div className="min-h-screen bg-stone-200 text-stone-800 font-sans selection:bg-amber-200 pb-10 md:pb-20">
+      <header className="bg-stone-900 text-stone-400 p-4 text-center text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] shadow-md no-print">
         Military-Grade Family Planning System v1.0
       </header>
       
-      <main className="container mx-auto pt-10 px-4 print:pt-0 print:px-0 print:max-w-none">
+      <main className="container mx-auto pt-6 md:pt-10 px-4 print:pt-0 print:px-0 print:max-w-none">
         {step === 'intro' && renderIntro()}
         {step === 'quiz' && renderQuiz()}
         {step === 'generating' && renderLoading()}
