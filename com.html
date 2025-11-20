@@ -1,485 +1,37 @@
-import React, { useState } from 'react';
-import { Shield, Heart, Send, AlertCircle, ChevronRight, Save, FileText, Star, Printer, Download, Coffee, Trash2, Tv, Bug, Users, Moon } from 'lucide-react';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// --- КОНФІГУРАЦІЯ ---
-
-const USER_PROVIDED_KEY = ""; 
-
-// --- HELPER FUNCTIONS ---
-
-const cleanText = (text) => {
-  if (!text) return "";
-  return text.replace(/\*\*/g, '').replace(/\*/g, '');
-};
-
-// --- COMPONENTS ---
-
-const Button = ({ children, onClick, variant = 'primary', disabled = false, className = '' }) => {
-  const baseStyle = "w-full md:w-auto px-6 py-4 md:py-3 font-mono text-sm uppercase tracking-wider font-bold transition-all duration-200 flex items-center justify-center gap-2 relative overflow-hidden select-none touch-manipulation";
-  
-  const variants = {
-    primary: "bg-stone-900 text-amber-50 hover:bg-stone-700 border-l-4 border-amber-600 shadow-lg active:translate-y-1",
-    secondary: "bg-stone-200 text-stone-800 hover:bg-stone-300 border-l-4 border-stone-500 shadow-md active:translate-y-1",
-    outline: "bg-transparent text-stone-800 border-2 border-stone-800 hover:bg-stone-100",
-  };
-
-  return (
-    <button 
-      onClick={onClick} 
-      disabled={disabled}
-      className={`${baseStyle} ${variants[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
-    >
-      {children}
-    </button>
-  );
-};
-
-const InputField = ({ label, value, onChange, placeholder, icon: Icon, className = "" }) => (
-  <div className={`mb-5 ${className}`}>
-    <label className="block text-xs font-bold uppercase tracking-widest text-stone-600 mb-2 flex items-center gap-2">
-      {Icon && <Icon size={16} className="text-amber-700" />}
-      {label}
-    </label>
-    <input
-      type="text"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder={placeholder}
-      className="w-full bg-stone-50 border-b-2 border-stone-300 text-stone-900 p-3 md:p-4 text-base font-serif focus:outline-none focus:border-amber-600 focus:bg-white transition-colors placeholder-stone-400 rounded-t-md"
-    />
-  </div>
-);
-
-const SectionHeader = ({ title }) => (
-  <div className="flex items-center gap-4 my-8">
-    <div className="h-px bg-stone-300 flex-grow"></div>
-    <span className="text-xs font-mono uppercase tracking-widest text-stone-500 font-bold text-center px-2">{title}</span>
-    <div className="h-px bg-stone-300 flex-grow"></div>
-  </div>
-);
-
-const Card = ({ children, title, subtitle, className = '' }) => (
-  <div className={`w-full max-w-2xl mx-auto bg-[#f4f4f0] shadow-xl border border-stone-300 relative ${className}`}>
-    <div className="absolute -top-4 left-0 bg-stone-900 text-amber-50 px-6 py-1.5 text-xs font-mono uppercase tracking-widest shadow-sm z-20">
-      DOC-{Math.floor(Math.random() * 10000)} // TOP SECRET
-    </div>
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сімейний Бойовий Статут</title>
     
-    <div className="p-6 pt-10 md:p-12 relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-[0.03]">
-        <Shield size={300} />
-      </div>
-
-      {title && (
-        <div className="mb-8 border-b-2 border-stone-800 pb-4 text-center relative z-10">
-          <h2 className="text-3xl md:text-4xl font-black text-stone-900 uppercase tracking-tight font-serif leading-tight mb-2">
-            {title}
-          </h2>
-          {subtitle && <p className="text-stone-600 font-mono text-xs md:text-sm mt-2 uppercase tracking-widest font-bold">{subtitle}</p>}
-        </div>
-      )}
-      
-      <div className="relative z-10">
-        {children}
-      </div>
-
-      <div className="absolute bottom-4 right-4 opacity-20 rotate-[-15deg] border-4 border-red-800 text-red-800 p-2 font-black text-xl uppercase rounded pointer-events-none z-0">
-        ТАЄМНО
-      </div>
-    </div>
-  </div>
-);
-
-// --- MAIN APP ---
-
-export default function FamilyStatuteApp() {
-  const [step, setStep] = useState('intro'); 
-  const [error, setError] = useState(null);
-  const [generatedStatute, setGeneratedStatute] = useState('');
-  
-  const [formData, setFormData] = useState({
-    // Intro Data
-    husbandName: '',
-    husbandCallsign: '',
-    wifeName: '',
-    wifeCallsign: '',
+    <!-- Підключення Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     
-    // Quiz Data - ТЕПЕР ПУСТІ, щоб було видно placeholder
-    conflictWeapon: '', 
-    peaceTreaty: '',
-    financeChief: '', 
-    strategicGoal: '',
+    <!-- Підключення React та ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    // New Questions - ТЕПЕР ПУСТІ
-    morningBathroom: '',
-    garbageDisposal: '',
-    tvRemote: '',
-    spiderProtocol: '',
-    inLawsDiplomacy: '',
-    nightSnoring: '',
-  });
+    <!-- Підключення Babel для JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  const generateDirectly = async () => {
-    setStep('generating');
-    setError(null);
+    <!-- Налаштування Import Map для Google Generative AI -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/generative-ai": "https://esm.run/@google/generative-ai"
+        }
+      }
+    </script>
 
-    try {
-      const apiKey = USER_PROVIDED_KEY || ""; 
-      
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-09-2025" });
+    <!-- Шрифти -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-      // Якщо поля пусті, використовуємо дефолтні значення для генерації, щоб ШІ не зламався
-      const safeData = {
-         husbandName: formData.husbandName || "Чоловік",
-         husbandCallsign: formData.husbandCallsign || "Командир 1",
-         wifeName: formData.wifeName || "Дружина",
-         wifeCallsign: formData.wifeCallsign || "Командир 2",
-         conflictWeapon: formData.conflictWeapon || "Тактичне мовчання",
-         peaceTreaty: formData.peaceTreaty || "Переговори",
-         financeChief: formData.financeChief || "Спільний бюджет",
-         strategicGoal: formData.strategicGoal || "Щасливе життя",
-         morningBathroom: formData.morningBathroom || "Хто перший встав",
-         garbageDisposal: formData.garbageDisposal || "По черзі",
-         tvRemote: formData.tvRemote || "Компроміс",
-         spiderProtocol: formData.spiderProtocol || "Евакуація",
-         inLawsDiplomacy: formData.inLawsDiplomacy || "Нейтралітет",
-         nightSnoring: formData.nightSnoring || "Відсутнє",
-      };
-
-      const systemPrompt = `
-        Ти - креативний військовий штабний писар з чудовим почуттям гумору.
-        Твоє завдання: Написати жартівливий, але зворушливий "Бойовий Статут Сімейного Життя" (БССЖ) для молодят.
-        
-        КОНТЕКСТ:
-        Брат нареченого зараз служить у війську (командир мінометного взводу). Наречена займається благодійністю.
-        Тому стиль має бути псевдо-військовим, офіційним, з використанням термінів (дислокація, тил, спецзавдання, стратегічні запаси, калібр, волонтерка), але про мирне сімейне життя.
-
-        ОСОБОВИЙ СКЛАД:
-        - Чоловік (Командир 1): ${safeData.husbandName} (Позивний: ${safeData.husbandCallsign})
-        - Дружина (Командир 2): ${safeData.wifeName} (Позивний: ${safeData.wifeCallsign})
-
-        РОЗВІДУВАЛЬНІ ДАНІ (Відповіді на квіз):
-        1. Зброя у конфліктах: ${safeData.conflictWeapon}
-        2. Спосіб примирення: ${safeData.peaceTreaty}
-        3. Начальник фінчастини: ${safeData.financeChief}
-        4. Стратегічна ціль: ${safeData.strategicGoal}
-        
-        ДОДАТКОВІ ПРОТОКОЛИ:
-        - Ранкова окупація ванної кімнати: ${safeData.morningBathroom}
-        - Утилізація відходів: ${safeData.garbageDisposal}
-        - Контроль пульта ТВ: ${safeData.tvRemote}
-        - Протокол "Павук": ${safeData.spiderProtocol}
-        - Дипломатія з батьками: ${safeData.inLawsDiplomacy}
-        - Хропіння: ${safeData.nightSnoring}
-
-        СТРУКТУРА ВІДПОВІДІ (Markdown):
-        1. Заголовок (Урочистий).
-        2. Преамбула (Про створення підрозділу).
-        3. Розділ 1: Розпорядок дня та Бойова готовність.
-        4. Розділ 2: Тилове забезпечення та Логістика.
-        5. Розділ 3: Надзвичайні ситуації.
-        6. Розділ 4: Зовнішня політика.
-        7. Розділ 5: Стратегічні цілі та Фінальний наказ.
-
-        Тон: Душевний, смішний, з повагою. Мова: Українська. Не використовуй жирний шрифт (зірочки) у тексті, пиши просто текстом.
-      `;
-
-      const result = await model.generateContent({
-        contents: [{ parts: [{ text: systemPrompt }] }],
-      });
-
-      const text = result.response.text();
-      setGeneratedStatute(text);
-      setStep('result');
-
-    } catch (err) {
-      console.error("AI Error:", err);
-      setError("Штаб не відповідає. Перевірте з'єднання.");
-      setStep('quiz');
-    }
-  };
-
-  // --- RENDER STEPS ---
-
-  const renderIntro = () => (
-    <Card title="Ініціалізація Підрозділу" subtitle="Реєстрація нового сімейного формування">
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 gap-6">
-          <div className="bg-stone-100 p-4 rounded border border-stone-200">
-            <InputField 
-              label="Ім'я Нареченого" 
-              value={formData.husbandName} 
-              onChange={(v) => setFormData({...formData, husbandName: v})}
-              placeholder="Ввести ім'я"
-              icon={Star}
-            />
-             <InputField 
-              label="Позивний (Для сім'ї)" 
-              value={formData.husbandCallsign} 
-              onChange={(v) => setFormData({...formData, husbandCallsign: v})}
-              placeholder="Ввести позивний"
-              icon={Shield}
-              className="mb-0"
-            />
-          </div>
-          
-          <div className="bg-stone-100 p-4 rounded border border-stone-200">
-            <InputField 
-              label="Ім'я Нареченої" 
-              value={formData.wifeName} 
-              onChange={(v) => setFormData({...formData, wifeName: v})}
-              placeholder="Ввести ім'я"
-              icon={Heart}
-            />
-             <InputField 
-              label="Позивний (Для сім'ї)" 
-              value={formData.wifeCallsign} 
-              onChange={(v) => setFormData({...formData, wifeCallsign: v})}
-              placeholder="Ввести позивний"
-              icon={Shield}
-              className="mb-0"
-            />
-          </div>
-        </div>
-        <div className="pt-4 flex justify-center">
-          <Button 
-            onClick={() => setStep('quiz')}
-            disabled={!formData.husbandName || !formData.wifeName}
-          >
-            Підтвердити особовий склад <ChevronRight />
-          </Button>
-        </div>
-      </div>
-    </Card>
-  );
-
-  const renderQuiz = () => (
-    <Card title="Тактичний Опитувальник" subtitle="Збір розвідувальних даних">
-      <div className="space-y-2">
-        
-        {/* БЛОК 1 */}
-        <SectionHeader title="Стратегія та Ресурси" />
-        <div className="grid grid-cols-1 gap-0">
-           <InputField 
-            label="Начальник фінчастини (бюджету)?" 
-            value={formData.financeChief} 
-            onChange={(v) => setFormData({...formData, financeChief: v})}
-            placeholder="Наприклад: Разом / Дружина"
-            icon={FileText}
-          />
-           <InputField 
-            label="Головна стратегічна ціль (5 років)?" 
-            value={formData.strategicGoal} 
-            onChange={(v) => setFormData({...formData, strategicGoal: v})}
-            placeholder="Наприклад: Дім / Подорож / Діти"
-            icon={Star}
-          />
-        </div>
-
-        {/* БЛОК 2 */}
-        <SectionHeader title="Тилове забезпечення" />
-        <div className="grid grid-cols-1 gap-0">
-            <InputField 
-                label="Хто займає страт. об'єкт 'Ванна'?" 
-                value={formData.morningBathroom} 
-                onChange={(v) => setFormData({...formData, morningBathroom: v})}
-                placeholder="Наприклад: Хто перший встав"
-                icon={Coffee}
-            />
-            <InputField 
-                label="Утилізація відходів (сміття)?" 
-                value={formData.garbageDisposal} 
-                onChange={(v) => setFormData({...formData, garbageDisposal: v})}
-                placeholder="Наприклад: Чоловік / По черзі"
-                icon={Trash2}
-            />
-            <InputField 
-                label="Контроль пульта ТВ?" 
-                value={formData.tvRemote} 
-                onChange={(v) => setFormData({...formData, tvRemote: v})}
-                placeholder="Наприклад: Спільні переговори"
-                icon={Tv}
-            />
-            <InputField 
-                label="Хто порушує режим тиші (хропе)?" 
-                value={formData.nightSnoring} 
-                onChange={(v) => setFormData({...formData, nightSnoring: v})}
-                placeholder="Наприклад: Ніхто / Чоловік"
-                icon={Moon}
-            />
-        </div>
-
-        {/* БЛОК 3 */}
-        <SectionHeader title="Бойові дії та Дипломатія" />
-        
-        <div className="grid grid-cols-1 gap-0">
-             <InputField 
-                label="Тактика дружини у суперечці?" 
-                value={formData.conflictWeapon} 
-                onChange={(v) => setFormData({...formData, conflictWeapon: v})}
-                placeholder="Наприклад: Аргументи / Мовчання"
-                icon={AlertCircle}
-            />
-             <InputField 
-                label="Метод підписання мирної угоди?" 
-                value={formData.peaceTreaty} 
-                onChange={(v) => setFormData({...formData, peaceTreaty: v})}
-                placeholder="Наприклад: Обійми / Вечеря"
-                icon={Heart}
-            />
-            <InputField 
-                label="Протокол 'Павук у периметрі'?" 
-                value={formData.spiderProtocol} 
-                onChange={(v) => setFormData({...formData, spiderProtocol: v})}
-                placeholder="Наприклад: Чоловік ліквідує"
-                icon={Bug}
-            />
-            <InputField 
-                label="Переговори з 'Союзними силами'?" 
-                value={formData.inLawsDiplomacy} 
-                onChange={(v) => setFormData({...formData, inLawsDiplomacy: v})}
-                placeholder="Наприклад: Кожен зі своїми"
-                icon={Users}
-            />
-        </div>
-
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mt-4">
-            <strong className="font-bold">Увага! </strong>
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
-
-        <div className="pt-8 flex flex-col-reverse md:flex-row justify-between gap-4">
-           <Button variant="secondary" onClick={() => setStep('intro')}>
-             Назад
-           </Button>
-           <Button onClick={generateDirectly}>
-             Затвердити Статут <Send size={16} />
-           </Button>
-        </div>
-      </div>
-    </Card>
-  );
-
-  const renderLoading = () => (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-      <div className="w-16 h-16 border-4 border-stone-300 border-t-amber-600 rounded-full animate-spin mb-8"></div>
-      <h2 className="text-2xl font-bold text-stone-800 mb-2 font-mono uppercase">Обробка даних у штабі...</h2>
-      <p className="text-stone-600 animate-pulse">Генерал Штучний Інтелект узгоджує пункти статуту...</p>
-    </div>
-  );
-
-  const renderResult = () => (
-    <div className="max-w-4xl mx-auto py-4 md:py-8 px-4">
-      <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
-        <Button variant="secondary" onClick={() => setStep('intro')}>Створити новий</Button>
-        <Button onClick={() => window.print()} variant="primary">
-          <Printer size={16} /> Друкувати / Зберегти PDF
-        </Button>
-      </div>
-
-      {/* Основний контейнер документа */}
-      <div className="bg-white text-stone-900 p-6 md:p-16 shadow-2xl border-2 border-stone-800 relative print-container">
-        {/* Header Decoration */}
-        <div className="border-b-4 border-double border-stone-800 pb-6 mb-8 flex justify-between items-start">
-          <div>
-             <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 font-serif text-stone-900">
-               Статут <br/> <span className="text-amber-700">Сімейного Підрозділу</span>
-             </h1>
-             <div className="flex items-center gap-2 text-stone-500">
-                <Shield size={16} />
-                <p className="font-mono text-xs uppercase tracking-widest">
-                Наказ № {new Date().getFullYear()}-{Math.floor(Math.random() * 100)}
-                </p>
-             </div>
-          </div>
-          <div className="opacity-80 hidden sm:block">
-            <div className="w-24 h-24 border-4 border-stone-800 rounded-full flex items-center justify-center">
-                 <Star size={48} className="text-amber-700" fill="currentColor" />
-            </div>
-          </div>
-        </div>
-
-        {/* Content from AI */}
-        <div className="prose prose-stone prose-lg max-w-none font-serif leading-relaxed whitespace-pre-line">
-            {generatedStatute.split('\n').map((line, i) => {
-                // Очищуємо текст від зірочок
-                let cleanedLine = cleanText(line).trim();
-                
-                if (!cleanedLine) return <br key={i}/>;
-
-                // Використовуємо Regex для видалення хешів, незалежно від їх кількості (##, ###, #)
-                if (cleanedLine.startsWith('#')) {
-                   const isMainHeader = cleanedLine.startsWith('#') && !cleanedLine.startsWith('##');
-                   // Видаляємо всі хеші та пробіли на початку
-                   const textWithoutHashes = cleanedLine.replace(/^#+\s*/, '');
-                   
-                   if (isMainHeader) {
-                      return <h1 key={i} className="text-2xl font-black mt-8 mb-4 text-center uppercase tracking-wide text-stone-900">{textWithoutHashes}</h1>;
-                   } else {
-                      return <h2 key={i} className="text-xl font-bold mt-6 mb-3 uppercase border-b border-stone-300 pb-1 text-stone-900">{textWithoutHashes}</h2>;
-                   }
-                }
-
-                if (cleanedLine.startsWith('-') || cleanedLine.startsWith('*')) {
-                    return <li key={i} className="ml-4 list-disc marker:text-amber-700">{cleanedLine.replace(/^[-*]\s*/, '')}</li>;
-                }
-                
-                return <p key={i} className="mb-2 text-justify text-stone-800">{cleanedLine}</p>;
-            })}
-        </div>
-
-        {/* Footer Signature Area */}
-        <div className="mt-16 pt-8 border-t-2 border-stone-800 grid grid-cols-2 gap-4 md:gap-12 break-inside-avoid">
-          <div>
-            <p className="text-xs font-bold uppercase mb-12 tracking-widest">Командир 1 ({formData.husbandName || "Чоловік"})</p>
-            <div className="h-px bg-stone-900 w-full relative">
-                <span className="absolute top-2 left-0 text-[10px] text-stone-500 uppercase">Підпис</span>
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-bold uppercase mb-12 tracking-widest">Командир 2 ({formData.wifeName || "Дружина"})</p>
-            <div className="h-px bg-stone-900 w-full relative">
-                 <span className="absolute top-2 left-0 text-[10px] text-stone-500 uppercase">Підпис</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 text-center">
-            <p className="font-mono text-[10px] uppercase text-stone-400">
-                Згенеровано системою бойового управління "Гіменей" • {new Date().toLocaleDateString('uk-UA')}
-            </p>
-        </div>
-        
-        {/* Stamp - Returned to bottom right */}
-        <div className="absolute bottom-32 right-16 opacity-70 rotate-[-12deg] border-[6px] border-amber-800 text-amber-800 p-4 font-black text-2xl uppercase rounded-lg hidden md:block print:block">
-          ТАЄМНО<br/><span className="text-sm block text-center mt-1">ГЕНШТАБ ЛЮБОВІ</span>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-stone-200 text-stone-800 font-sans selection:bg-amber-200 pb-10 md:pb-20">
-      <header className="bg-stone-900 text-stone-400 p-4 text-center text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] shadow-md no-print">
-        Military-Grade Family Planning System v1.0
-      </header>
-      
-      <main className="container mx-auto pt-6 md:pt-10 px-4 print:pt-0 print:px-0 print:max-w-none">
-        {step === 'intro' && renderIntro()}
-        {step === 'quiz' && renderQuiz()}
-        {step === 'generating' && renderLoading()}
-        {step === 'result' && renderResult()}
-      </main>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Roboto+Mono:wght@400;700&display=swap');
+    <style>
+        body { font-family: 'Roboto Mono', monospace; }
         .font-serif { font-family: 'Playfair Display', serif; }
         .font-mono { font-family: 'Roboto Mono', monospace; }
-
+        
         @media print {
           @page { margin: 0; size: auto; }
           body { background-color: white; -webkit-print-color-adjust: exact; }
@@ -491,7 +43,494 @@ export default function FamilyStatuteApp() {
           }
           * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
-      `}</style>
-    </div>
-  );
-}
+    </style>
+</head>
+<body class="bg-stone-200 text-stone-800">
+    <div id="root"></div>
+
+    <script type="text/babel" data-type="module">
+        import { GoogleGenerativeAI } from "@google/generative-ai";
+        const { useState, useEffect } = React;
+
+        // --- КОНФІГУРАЦІЯ ---
+        const USER_PROVIDED_KEY = "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; 
+
+        // --- ICONS (Вбудовані SVG компоненти) ---
+        const IconWrapper = ({ children, size = 24, className = "" }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                {children}
+            </svg>
+        );
+
+        const Shield = (props) => <IconWrapper {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></IconWrapper>;
+        const Heart = (props) => <IconWrapper {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></IconWrapper>;
+        const Send = (props) => <IconWrapper {...props}><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></IconWrapper>;
+        const AlertCircle = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconWrapper>;
+        const ChevronRight = (props) => <IconWrapper {...props}><path d="m9 18 6-6-6-6"/></IconWrapper>;
+        const FileText = (props) => <IconWrapper {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></IconWrapper>;
+        const Star = (props) => <IconWrapper {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconWrapper>;
+        const Printer = (props) => <IconWrapper {...props}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></IconWrapper>;
+        const Coffee = (props) => <IconWrapper {...props}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></IconWrapper>;
+        const Trash2 = (props) => <IconWrapper {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></IconWrapper>;
+        const Tv = (props) => <IconWrapper {...props}><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></IconWrapper>;
+        const Moon = (props) => <IconWrapper {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></IconWrapper>;
+        const Bug = (props) => <IconWrapper {...props}><path d="m8 2 1.88 1.88"/><path d="M14.12 3.88 16 2"/><path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6"/><path d="M12 20v-9"/><path d="M6.53 9C4.6 8.8 3 7.1 3 5"/><path d="M6 13H2"/><path d="M3 21c0-2.1 1.7-3.9 3.8-4"/><path d="M20.97 5c0 2.1-1.6 3.8-3.5 4"/><path d="M22 13h-4"/><path d="M17.2 17c2.1.1 3.8 1.9 3.8 4"/></IconWrapper>;
+        const Users = (props) => <IconWrapper {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconWrapper>;
+
+        // --- HELPER FUNCTIONS ---
+        const cleanText = (text) => {
+          if (!text) return "";
+          return text.replace(/\*\*/g, '').replace(/\*/g, '');
+        };
+
+        // --- UI COMPONENTS ---
+        const Button = ({ children, onClick, variant = 'primary', disabled = false, className = '' }) => {
+          const baseStyle = "w-full md:w-auto px-6 py-4 md:py-3 font-mono text-sm uppercase tracking-wider font-bold transition-all duration-200 flex items-center justify-center gap-2 relative overflow-hidden select-none touch-manipulation";
+          
+          const variants = {
+            primary: "bg-stone-900 text-amber-50 hover:bg-stone-700 border-l-4 border-amber-600 shadow-lg active:translate-y-1",
+            secondary: "bg-stone-200 text-stone-800 hover:bg-stone-300 border-l-4 border-stone-500 shadow-md active:translate-y-1",
+            outline: "bg-transparent text-stone-800 border-2 border-stone-800 hover:bg-stone-100",
+          };
+
+          return (
+            <button 
+              onClick={onClick} 
+              disabled={disabled}
+              className={`${baseStyle} ${variants[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+            >
+              {children}
+            </button>
+          );
+        };
+
+        const InputField = ({ label, value, onChange, placeholder, icon: Icon, className = "" }) => (
+          <div className={`mb-5 ${className}`}>
+            <label className="block text-xs font-bold uppercase tracking-widest text-stone-600 mb-2 flex items-center gap-2">
+              {Icon && <Icon size={16} className="text-amber-700" />}
+              {label}
+            </label>
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              placeholder={placeholder}
+              className="w-full bg-stone-50 border-b-2 border-stone-300 text-stone-900 p-3 md:p-4 text-base font-serif focus:outline-none focus:border-amber-600 focus:bg-white transition-colors placeholder-stone-400 rounded-t-md"
+            />
+          </div>
+        );
+
+        const SectionHeader = ({ title }) => (
+          <div className="flex items-center gap-4 my-8">
+            <div className="h-px bg-stone-300 flex-grow"></div>
+            <span className="text-xs font-mono uppercase tracking-widest text-stone-500 font-bold text-center px-2">{title}</span>
+            <div className="h-px bg-stone-300 flex-grow"></div>
+          </div>
+        );
+
+        const Card = ({ children, title, subtitle, className = '' }) => (
+          <div className={`w-full max-w-2xl mx-auto bg-[#f4f4f0] shadow-xl border border-stone-300 relative ${className}`}>
+            <div className="absolute -top-4 left-0 bg-stone-900 text-amber-50 px-6 py-1.5 text-xs font-mono uppercase tracking-widest shadow-sm z-20">
+              DOC-{Math.floor(Math.random() * 10000)} // TOP SECRET
+            </div>
+            
+            <div className="p-6 pt-10 md:p-12 relative overflow-hidden">
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-[0.03]">
+                <Shield size={300} />
+              </div>
+
+              {title && (
+                <div className="mb-8 border-b-2 border-stone-800 pb-4 text-center relative z-10">
+                  <h2 className="text-3xl md:text-4xl font-black text-stone-900 uppercase tracking-tight font-serif leading-tight mb-2">
+                    {title}
+                  </h2>
+                  {subtitle && <p className="text-stone-600 font-mono text-xs md:text-sm mt-2 uppercase tracking-widest font-bold">{subtitle}</p>}
+                </div>
+              )}
+              
+              <div className="relative z-10">
+                {children}
+              </div>
+
+              <div className="absolute bottom-4 right-4 opacity-20 rotate-[-15deg] border-4 border-red-800 text-red-800 p-2 font-black text-xl uppercase rounded pointer-events-none z-0">
+                ТАЄМНО
+              </div>
+            </div>
+          </div>
+        );
+
+        // --- MAIN APP ---
+        function FamilyStatuteApp() {
+          const [step, setStep] = useState('intro'); 
+          const [error, setError] = useState(null);
+          const [generatedStatute, setGeneratedStatute] = useState('');
+          
+          // Всі поля ініціалізовані пустими рядками для відображення placeholder
+          const [formData, setFormData] = useState({
+            husbandName: '',
+            husbandCallsign: '',
+            wifeName: '',
+            wifeCallsign: '',
+            conflictWeapon: '', 
+            peaceTreaty: '',
+            financeChief: '', 
+            strategicGoal: '',
+            morningBathroom: '',
+            garbageDisposal: '',
+            tvRemote: '',
+            spiderProtocol: '',
+            inLawsDiplomacy: '',
+            nightSnoring: '',
+          });
+
+          const generateDirectly = async () => {
+            setStep('generating');
+            setError(null);
+
+            try {
+              // Використовуємо наданий API ключ
+              const apiKey = USER_PROVIDED_KEY;
+              
+              if (!apiKey) {
+                  throw new Error("Відсутній API Key. Відкрийте файл index.html в редакторі і додайте ключ у змінну USER_PROVIDED_KEY.");
+              }
+
+              const genAI = new GoogleGenerativeAI(apiKey);
+              const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-09-2025" });
+
+              // Використовуємо безпечні дефолтні дані, якщо поля пусті
+              const safeData = {
+                 husbandName: formData.husbandName || "Чоловік",
+                 husbandCallsign: formData.husbandCallsign || "Командир 1",
+                 wifeName: formData.wifeName || "Дружина",
+                 wifeCallsign: formData.wifeCallsign || "Командир 2",
+                 conflictWeapon: formData.conflictWeapon || "Тактичне мовчання",
+                 peaceTreaty: formData.peaceTreaty || "Переговори",
+                 financeChief: formData.financeChief || "Спільний бюджет",
+                 strategicGoal: formData.strategicGoal || "Щасливе життя",
+                 morningBathroom: formData.morningBathroom || "Хто перший встав",
+                 garbageDisposal: formData.garbageDisposal || "По черзі",
+                 tvRemote: formData.tvRemote || "Компроміс",
+                 spiderProtocol: formData.spiderProtocol || "Евакуація",
+                 inLawsDiplomacy: formData.inLawsDiplomacy || "Нейтралітет",
+                 nightSnoring: formData.nightSnoring || "Відсутнє",
+              };
+
+              const systemPrompt = `
+                Ти - креативний військовий штабний писар з чудовим почуттям гумору.
+                Твоє завдання: Написати жартівливий, але зворушливий "Бойовий Статут Сімейного Життя" (БССЖ) для молодят.
+                
+                КОНТЕКСТ:
+                Брат нареченого зараз служить у війську (командир мінометного взводу). Наречена займається благодійністю.
+                Тому стиль має бути псевдо-військовим, офіційним, з використанням термінів (дислокація, тил, спецзавдання, стратегічні запаси, калібр, волонтерка), але про мирне сімейне життя.
+
+                ОСОБОВИЙ СКЛАД:
+                - Чоловік (Командир 1): ${safeData.husbandName} (Позивний: ${safeData.husbandCallsign})
+                - Дружина (Командир 2): ${safeData.wifeName} (Позивний: ${safeData.wifeCallsign})
+
+                РОЗВІДУВАЛЬНІ ДАНІ:
+                1. Зброя у конфліктах: ${safeData.conflictWeapon}
+                2. Спосіб примирення: ${safeData.peaceTreaty}
+                3. Начальник фінчастини: ${safeData.financeChief}
+                4. Стратегічна ціль: ${safeData.strategicGoal}
+                
+                ДОДАТКОВІ ПРОТОКОЛИ:
+                - Ранкова окупація ванної: ${safeData.morningBathroom}
+                - Сміття: ${safeData.garbageDisposal}
+                - Пульт ТВ: ${safeData.tvRemote}
+                - Павуки: ${safeData.spiderProtocol}
+                - Батьки: ${safeData.inLawsDiplomacy}
+                - Хропіння: ${safeData.nightSnoring}
+
+                СТРУКТУРА (Markdown):
+                1. Заголовок.
+                2. Преамбула.
+                3. Розділ 1: Розпорядок дня.
+                4. Розділ 2: Тилове забезпечення.
+                5. Розділ 3: Надзвичайні ситуації.
+                6. Розділ 4: Зовнішня політика.
+                7. Розділ 5: Стратегічні цілі та Фінальний наказ.
+
+                Тон: Душевний, смішний, з повагою. Мова: Українська. Не використовуй жирний шрифт.
+              `;
+
+              const result = await model.generateContent({
+                contents: [{ parts: [{ text: systemPrompt }] }],
+              });
+
+              const text = result.response.text();
+              setGeneratedStatute(text);
+              setStep('result');
+
+            } catch (err) {
+              console.error("AI Error:", err);
+              setError(err.message || "Штаб не відповідає. Перевірте з'єднання.");
+              setStep('quiz');
+            }
+          };
+
+          const renderIntro = () => (
+            <Card title="Ініціалізація Підрозділу" subtitle="Реєстрація нового сімейного формування">
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 gap-6">
+                  <div className="bg-stone-100 p-4 rounded border border-stone-200">
+                    <InputField 
+                      label="Ім'я Нареченого" 
+                      value={formData.husbandName} 
+                      onChange={(v) => setFormData({...formData, husbandName: v})}
+                      placeholder="Ввести ім'я"
+                      icon={Star}
+                    />
+                     <InputField 
+                      label="Позивний (Для сім'ї)" 
+                      value={formData.husbandCallsign} 
+                      onChange={(v) => setFormData({...formData, husbandCallsign: v})}
+                      placeholder="Ввести позивний"
+                      icon={Shield}
+                      className="mb-0"
+                    />
+                  </div>
+                  
+                  <div className="bg-stone-100 p-4 rounded border border-stone-200">
+                    <InputField 
+                      label="Ім'я Нареченої" 
+                      value={formData.wifeName} 
+                      onChange={(v) => setFormData({...formData, wifeName: v})}
+                      placeholder="Ввести ім'я"
+                      icon={Heart}
+                    />
+                     <InputField 
+                      label="Позивний (Для сім'ї)" 
+                      value={formData.wifeCallsign} 
+                      onChange={(v) => setFormData({...formData, wifeCallsign: v})}
+                      placeholder="Ввести позивний"
+                      icon={Shield}
+                      className="mb-0"
+                    />
+                  </div>
+                </div>
+                <div className="pt-4 flex justify-center">
+                  <Button 
+                    onClick={() => setStep('quiz')}
+                    disabled={!formData.husbandName || !formData.wifeName}
+                  >
+                    Підтвердити особовий склад <ChevronRight />
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          );
+
+          const renderQuiz = () => (
+            <Card title="Тактичний Опитувальник" subtitle="Збір розвідувальних даних">
+              <div className="space-y-2">
+                
+                <SectionHeader title="Стратегія та Ресурси" />
+                <div className="grid grid-cols-1 gap-0">
+                   <InputField 
+                    label="Начальник фінчастини (бюджету)?" 
+                    value={formData.financeChief} 
+                    onChange={(v) => setFormData({...formData, financeChief: v})}
+                    placeholder="Наприклад: Разом / Дружина"
+                    icon={FileText}
+                  />
+                   <InputField 
+                    label="Головна стратегічна ціль (5 років)?" 
+                    value={formData.strategicGoal} 
+                    onChange={(v) => setFormData({...formData, strategicGoal: v})}
+                    placeholder="Наприклад: Дім / Подорож / Діти"
+                    icon={Star}
+                  />
+                </div>
+
+                <SectionHeader title="Тилове забезпечення" />
+                <div className="grid grid-cols-1 gap-0">
+                    <InputField 
+                        label="Хто займає страт. об'єкт 'Ванна'?" 
+                        value={formData.morningBathroom} 
+                        onChange={(v) => setFormData({...formData, morningBathroom: v})}
+                        placeholder="Наприклад: Хто перший встав"
+                        icon={Coffee}
+                    />
+                    <InputField 
+                        label="Утилізація відходів (сміття)?" 
+                        value={formData.garbageDisposal} 
+                        onChange={(v) => setFormData({...formData, garbageDisposal: v})}
+                        placeholder="Наприклад: Чоловік / По черзі"
+                        icon={Trash2}
+                    />
+                    <InputField 
+                        label="Контроль пульта ТВ?" 
+                        value={formData.tvRemote} 
+                        onChange={(v) => setFormData({...formData, tvRemote: v})}
+                        placeholder="Наприклад: Спільні переговори"
+                        icon={Tv}
+                    />
+                    <InputField 
+                        label="Хто порушує режим тиші (хропе)?" 
+                        value={formData.nightSnoring} 
+                        onChange={(v) => setFormData({...formData, nightSnoring: v})}
+                        placeholder="Наприклад: Ніхто / Чоловік"
+                        icon={Moon}
+                    />
+                </div>
+
+                <SectionHeader title="Бойові дії та Дипломатія" />
+                
+                <div className="grid grid-cols-1 gap-0">
+                     <InputField 
+                        label="Тактика дружини у суперечці?" 
+                        value={formData.conflictWeapon} 
+                        onChange={(v) => setFormData({...formData, conflictWeapon: v})}
+                        placeholder="Наприклад: Аргументи / Мовчання"
+                        icon={AlertCircle}
+                    />
+                     <InputField 
+                        label="Метод підписання мирної угоди?" 
+                        value={formData.peaceTreaty} 
+                        onChange={(v) => setFormData({...formData, peaceTreaty: v})}
+                        placeholder="Наприклад: Обійми / Вечеря"
+                        icon={Heart}
+                    />
+                    <InputField 
+                        label="Протокол 'Павук у периметрі'?" 
+                        value={formData.spiderProtocol} 
+                        onChange={(v) => setFormData({...formData, spiderProtocol: v})}
+                        placeholder="Наприклад: Чоловік ліквідує"
+                        icon={Bug}
+                    />
+                    <InputField 
+                        label="Переговори з 'Союзними силами'?" 
+                        value={formData.inLawsDiplomacy} 
+                        onChange={(v) => setFormData({...formData, inLawsDiplomacy: v})}
+                        placeholder="Наприклад: Кожен зі своїми"
+                        icon={Users}
+                    />
+                </div>
+
+
+                {error && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mt-4">
+                    <strong className="font-bold">Увага! </strong>
+                    <span className="block sm:inline">{error}</span>
+                  </div>
+                )}
+
+                <div className="pt-8 flex flex-col-reverse md:flex-row justify-between gap-4">
+                   <Button variant="secondary" onClick={() => setStep('intro')}>
+                     Назад
+                   </Button>
+                   <Button onClick={generateDirectly}>
+                     Затвердити Статут <Send size={16} />
+                   </Button>
+                </div>
+              </div>
+            </Card>
+          );
+
+          const renderLoading = () => (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
+              <div className="w-16 h-16 border-4 border-stone-300 border-t-amber-600 rounded-full animate-spin mb-8"></div>
+              <h2 className="text-2xl font-bold text-stone-800 mb-2 font-mono uppercase">Обробка даних у штабі...</h2>
+              <p className="text-stone-600 animate-pulse">Генерал Штучний Інтелект узгоджує пункти статуту...</p>
+            </div>
+          );
+
+          const renderResult = () => (
+            <div className="max-w-4xl mx-auto py-4 md:py-8 px-4">
+              <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 no-print">
+                <Button variant="secondary" onClick={() => setStep('intro')}>Створити новий</Button>
+                <Button onClick={() => window.print()} variant="primary">
+                  <Printer size={16} /> Друкувати / Зберегти PDF
+                </Button>
+              </div>
+
+              <div className="bg-white text-stone-900 p-6 md:p-16 shadow-2xl border-2 border-stone-800 relative print-container">
+                <div className="border-b-4 border-double border-stone-800 pb-6 mb-8 flex justify-between items-start">
+                  <div>
+                     <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-2 font-serif text-stone-900">
+                       Статут <br/> <span className="text-amber-700">Сімейного Підрозділу</span>
+                     </h1>
+                     <div className="flex items-center gap-2 text-stone-500">
+                        <Shield size={16} />
+                        <p className="font-mono text-xs uppercase tracking-widest">
+                        Наказ № {new Date().getFullYear()}-{Math.floor(Math.random() * 100)}
+                        </p>
+                     </div>
+                  </div>
+                  <div className="opacity-80 hidden sm:block">
+                    <div className="w-24 h-24 border-4 border-stone-800 rounded-full flex items-center justify-center">
+                         <Star size={48} className="text-amber-700" fill="currentColor" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="prose prose-stone prose-lg max-w-none font-serif leading-relaxed whitespace-pre-line">
+                    {generatedStatute.split('\n').map((line, i) => {
+                        let cleanedLine = cleanText(line).trim();
+                        if (!cleanedLine) return <br key={i}/>;
+                        if (cleanedLine.startsWith('#')) {
+                           const isMainHeader = cleanedLine.startsWith('#') && !cleanedLine.startsWith('##');
+                           const textWithoutHashes = cleanedLine.replace(/^#+\s*/, '');
+                           if (isMainHeader) {
+                              return <h1 key={i} className="text-2xl font-black mt-8 mb-4 text-center uppercase tracking-wide text-stone-900">{textWithoutHashes}</h1>;
+                           } else {
+                              return <h2 key={i} className="text-xl font-bold mt-6 mb-3 uppercase border-b border-stone-300 pb-1 text-stone-900">{textWithoutHashes}</h2>;
+                           }
+                        }
+                        if (cleanedLine.startsWith('-') || cleanedLine.startsWith('*')) {
+                            return <li key={i} className="ml-4 list-disc marker:text-amber-700">{cleanedLine.replace(/^[-*]\s*/, '')}</li>;
+                        }
+                        return <p key={i} className="mb-2 text-justify text-stone-800">{cleanedLine}</p>;
+                    })}
+                </div>
+
+                <div className="mt-16 pt-8 border-t-2 border-stone-800 grid grid-cols-2 gap-4 md:gap-12 break-inside-avoid">
+                  <div>
+                    <p className="text-xs font-bold uppercase mb-12 tracking-widest">Командир 1 ({formData.husbandName || "Чоловік"})</p>
+                    <div className="h-px bg-stone-900 w-full relative">
+                        <span className="absolute top-2 left-0 text-[10px] text-stone-500 uppercase">Підпис</span>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold uppercase mb-12 tracking-widest">Командир 2 ({formData.wifeName || "Дружина"})</p>
+                    <div className="h-px bg-stone-900 w-full relative">
+                         <span className="absolute top-2 left-0 text-[10px] text-stone-500 uppercase">Підпис</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 text-center">
+                    <p className="font-mono text-[10px] uppercase text-stone-400">
+                        Згенеровано системою бойового управління "Гіменей" • {new Date().toLocaleDateString('uk-UA')}
+                    </p>
+                </div>
+                
+                <div className="absolute bottom-32 right-16 opacity-70 rotate-[-12deg] border-[6px] border-amber-800 text-amber-800 p-4 font-black text-2xl uppercase rounded-lg hidden md:block print:block">
+                  ТАЄМНО<br/><span className="text-sm block text-center mt-1">ГЕНШТАБ ЛЮБОВІ</span>
+                </div>
+              </div>
+            </div>
+          );
+
+          return (
+            <div className="min-h-screen bg-stone-200 text-stone-800 font-sans selection:bg-amber-200 pb-10 md:pb-20">
+              <header className="bg-stone-900 text-stone-400 p-4 text-center text-[10px] md:text-xs font-mono uppercase tracking-[0.2em] shadow-md no-print">
+                Military-Grade Family Planning System v1.0
+              </header>
+              
+              <main className="container mx-auto pt-6 md:pt-10 px-4 print:pt-0 print:px-0 print:max-w-none">
+                {step === 'intro' && renderIntro()}
+                {step === 'quiz' && renderQuiz()}
+                {step === 'generating' && renderLoading()}
+                {step === 'result' && renderResult()}
+              </main>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<FamilyStatuteApp />);
+    </script>
+</body>
+</html>
