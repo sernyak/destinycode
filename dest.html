@@ -1301,13 +1301,23 @@
                     const result = await response.json();
 
                     if (result.success && result.pdfBase64) {
-                        // 3. Запускаємо завантаження файлу в браузері
+                        // === КРИТИЧНЕ ВИПРАВЛЕННЯ ДЛЯ МОБІЛЬНИХ (Blob замість Base64) ===
+                        const byteCharacters = atob(result.pdfBase64);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], {type: 'application/pdf'});
+                        const blobUrl = URL.createObjectURL(blob);
+                        
                         const link = document.createElement('a');
-                        link.href = `data:application/pdf;base64,${result.pdfBase64}`;
+                        link.href = blobUrl;
                         link.download = result.filename;
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
                         
                         showModal("Успіх!", "Ваш PDF-звіт успішно завантажено.");
                     } else {
