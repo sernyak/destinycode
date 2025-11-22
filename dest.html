@@ -1434,12 +1434,16 @@
                         
                         for (const section of reportData.sections) {
                             
+                            // === FIX FOR MAGAZINE LAYOUT ===
+                            // Convert \n to </p><p> for real paragraphs
                             const formattedText = section.analysis_text
-                                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-text-color);">$1</strong>')
-                                .replace(/\\n/g, '<br>');
+                                .split('\n')
+                                .filter(line => line.trim().length > 0)
+                                .map(line => `<p>${line.trim().replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`)
+                                .join('');
                             
                             const formattedAdvice = section.practical_advice
-                                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-text-color);">$1</strong>')
+                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                                 .replace(/\\n/g, '<br>');
 
                             formattedReportHTML += `
@@ -1448,7 +1452,7 @@
                                         ${section.icon || '✨'} ${section.title}
                                     </h2>
                                     
-                                    <div class="text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
+                                    <div class="report-content-text text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
                                         ${formattedText}
                                     </div>
                                     
