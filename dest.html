@@ -4,107 +4,207 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Destiny Code - Твій AI-Астролог</title>
-    <!-- Підключення Tailwind CSS -->
+    
+    <!-- === LIBRARIES === -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Шрифт Montserrat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Астро-бібліотека -->
     <script src="https://cdn.jsdelivr.net/npm/circular-natal-horoscope-js/dist/circular-natal-horoscope-js.browser.min.js"></script>
     
     <style>
-        /* --- Базові Змінні --- */
+        /* =========================================
+           1. CORE THEME & VARIABLES
+           ========================================= */
         :root {
             --bg-color: #121212;
             --primary-text-color: #e0e0e0;
             --secondary-text-color: #a0a0a0;
-            --accent-color: #cda45e; /* Золотий акцент */
+            --accent-color: #cda45e; /* Gold */
             --card-bg-color: #1a1a1a;
             --border-color: #333333;
-            --error-color: #ef4444; /* red-500 */
+            --error-color: #ef4444;
         }
 
         body {
             font-family: 'Montserrat', sans-serif;
             background-color: var(--bg-color);
             color: var(--primary-text-color);
-            -webkit-user-select: none; /* Safari */
-            -ms-user-select: none; /* IE 10+ */
-            user-select: none; /* Standard */
-            -webkit-tap-highlight-color: transparent; 
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
+        /* =========================================
+           2. LAYOUT & ANIMATIONS
+           ========================================= */
         .funnel-container {
-            max-width: 420px; margin: auto; display: flex; flex-direction: column; min-height: 90vh; justify-content: center;
+            max-width: 420px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 90vh;
+            justify-content: center;
         }
 
-        .funnel-step { display: none; animation: fadeIn 0.5s ease-out; }
+        .funnel-step {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
         .funnel-step.active { display: block; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* =========================================
+           3. UI COMPONENTS (Inputs, Buttons)
+           ========================================= */
+        /* --- Inputs --- */
         .input-field {
-            position: relative; color: var(--primary-text-color); padding: 1rem; border: 1px solid var(--border-color);
-            background-color: var(--card-bg-color); border-radius: 0.5rem; width: 100%; font-size: 1rem; font-family: 'Montserrat', sans-serif;
+            position: relative;
+            color: var(--primary-text-color);
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg-color);
+            border-radius: 0.5rem;
+            width: 100%;
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
             transition: border-color 0.2s ease, box-shadow 0.2s ease;
         }
-        .input-field:focus { outline: none; box-shadow: 0 0 0 2px var(--accent-color); border-color: var(--accent-color); }
-        .input-field.input-error { border-color: var(--error-color); box-shadow: 0 0 0 2px var(--error-color); }
-
-        .error-text { color: var(--error-color); font-size: 0.875rem; text-align: left; display: none; margin-top: 0.5rem; }
-        .info-text { color: var(--accent-color); font-size: 0.875rem; text-align: center; display: none; margin-top: 0.5rem; }
+        .input-field:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        .input-field.input-error {
+            border-color: var(--error-color);
+            box-shadow: 0 0 0 2px var(--error-color);
+        }
         
+        /* Date Picker Customization */
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(80%) sepia(30%) saturate(5000%) hue-rotate(350deg) brightness(1.1);
+            cursor: pointer; opacity: 0.9; font-size: 1.25rem; transition: opacity 0.2s;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover,
+        input[type="time"]::-webkit-calendar-picker-indicator:hover { opacity: 1; }
+
+        /* --- Buttons --- */
         .btn {
-            width: 100%; font-weight: 700; border-radius: 0.5rem; padding: 1rem; font-size: 1rem; transition: all 0.3s ease; cursor: pointer;
-            position: relative; display: flex; align-items: center; justify-content: center;
+            width: 100%; font-weight: 700; border-radius: 0.5rem; padding: 1rem; font-size: 1rem;
+            transition: all 0.3s ease; cursor: pointer; position: relative; display: flex; align-items: center; justify-content: center;
         }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-spinner { display: none; width: 1.25rem; height: 1.25rem; border-width: 2px; border-style: solid; border-radius: 9999px; animation: spin 1s linear infinite; border-color: transparent; border-top-color: currentColor; }
-        .btn.loading .btn-text { opacity: 0.5; }
-        .btn.loading .btn-spinner { display: block; position: absolute; }
+        
+        .btn-primary {
+            background-color: var(--accent-color); color: var(--bg-color);
+            box-shadow: 0 4px 15px -5px rgba(205, 164, 94, 0.4);
+        }
+        .btn-primary:not(:disabled):hover {
+            opacity: 0.9; box-shadow: 0 6px 20px -5px rgba(205, 164, 94, 0.5); transform: translateY(-2px);
+        }
 
-        .btn-primary { background-color: var(--accent-color); color: var(--bg-color); box-shadow: 0 4px 15px -5px rgba(205, 164, 94, 0.4); }
-        .btn-primary:not(:disabled):hover { opacity: 0.9; box-shadow: 0 6px 20px -5px rgba(205, 164, 94, 0.5); transform: translateY(-2px); }
+        .btn-secondary {
+            background-color: var(--card-bg-color); color: var(--accent-color);
+            border: 1px solid var(--accent-color); opacity: 0.8;
+        }
+        .btn-secondary:not(:disabled):hover { opacity: 1; background-color: rgba(205, 164, 94, 0.05); }
 
         .btn-skip { background: none; border: none; color: var(--secondary-text-color); font-size: 0.9rem; font-weight: 500; }
         .btn-skip:hover { color: var(--primary-text-color); }
 
-        .btn-secondary { background-color: var(--card-bg-color); color: var(--accent-color); border: 1px solid var(--accent-color); opacity: 0.8; }
-        .btn-secondary:not(:disabled):hover { opacity: 1; background-color: rgba(205, 164, 94, 0.05); }
-        
-        #loading-typing-container, #report-typing-container { font-size: 1.25rem; color: var(--secondary-text-color); margin-top: 1rem; min-height: 2.5rem; text-align: center; }
-        .typing-cursor { display: inline-block; width: 10px; height: 1.25rem; background-color: var(--accent-color); animation: blink 0.7s infinite; margin-left: 5px; vertical-align: middle; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        /* Button Loading State */
+        .btn-spinner {
+            display: none; width: 1.25rem; height: 1.25rem; border-width: 2px; border-style: solid;
+            border-radius: 9999px; animation: spin 1s linear infinite; border-color: transparent; border-top-color: currentColor;
+        }
+        .btn.loading .btn-text { opacity: 0.5; }
+        .btn.loading .btn-spinner { display: block; position: absolute; }
 
-        .spinner { width: 4rem; height: 4rem; border-width: 4px; border-style: dashed; border-radius: 9999px; animation: spin 1.5s linear infinite; margin: 2rem auto; border-color: var(--accent-color) transparent var(--accent-color) transparent; }
+        /* =========================================
+           4. SPECIFIC SECTIONS (Loading, Paywall, Report)
+           ========================================= */
+        /* --- Typography & Text Helpers --- */
+        .error-text { color: var(--error-color); font-size: 0.875rem; text-align: left; display: none; margin-top: 0.5rem; }
+        .info-text { color: var(--accent-color); font-size: 0.875rem; text-align: center; display: none; margin-top: 0.5rem; }
+        
+        /* --- Loading Animation --- */
+        #loading-typing-container, #report-typing-container {
+            font-size: 1.25rem; color: var(--secondary-text-color); margin-top: 1rem;
+            min-height: 2.5rem; text-align: center; display: flex; align-items: center; justify-content: center;
+        }
+        .typing-cursor {
+            display: inline-block; width: 10px; height: 1.25rem; background-color: var(--accent-color);
+            animation: blink 0.7s infinite; margin-left: 5px; vertical-align: middle;
+        }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        
+        .spinner {
+            width: 4rem; height: 4rem; border-width: 4px; border-style: dashed; border-radius: 9999px;
+            animation: spin 1.5s linear infinite; margin: 2rem auto;
+            border-color: var(--accent-color) transparent var(--accent-color) transparent;
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
-        
-        .paywall-item { display: flex; align-items: center; background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; opacity: 0.7; }
+
+        /* --- Paywall --- */
+        .paywall-item {
+            display: flex; align-items: center; background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; opacity: 0.7;
+        }
         .paywall-icon { color: var(--accent-color); font-size: 1.25rem; margin-right: 0.75rem; }
-        
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8); display: none; justify-content: center; align-items: center; z-index: 100; animation: fadeIn 0.3s ease-out; }
-        .modal-content { background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-top: 4px solid var(--accent-color); border-radius: 0.5rem; padding: 2rem; max-width: 90%; width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3); }
+
+        /* --- Report Content --- */
+        .report-section { }
+        .report-advice {
+            background-color: var(--bg-color); border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-color); margin-top: 1rem; padding: 1rem; border-radius: 0.25rem 0.5rem 0.5rem 0.25rem;
+        }
+        .ltv-upsell-box {
+            background-color: var(--card-bg-color); border: 1px solid var(--accent-color);
+            border-radius: 0.5rem; padding: 1rem; margin-top: 1.5rem;
+            box-shadow: 0 0 25px rgba(205, 164, 94, 0.1), 0 4px 10px rgba(0,0,0,0.2);
+        }
+        #report-actions-container {
+            margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);
+            display: flex; flex-direction: column; gap: 0.75rem;
+        }
+
+        /* --- Modal --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.8);
+            display: none; justify-content: center; align-items: center; z-index: 100; animation: fadeIn 0.3s ease-out;
+        }
+        .modal-content {
+            background-color: var(--card-bg-color); border: 1px solid var(--border-color); border-top: 4px solid var(--accent-color);
+            border-radius: 0.5rem; padding: 2rem; max-width: 90%; width: 400px; text-align: center; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
         .modal-btn-close { margin-top: 1.5rem; background-color: #4b5563; color: white; border: 1px solid #4b5563; }
         .modal-btn-close:hover { background-color: #6b7280; border-color: #6b7280; }
-        
-        .ltv-upsell-box { background-color: var(--card-bg-color); border: 1px solid var(--accent-color); border-radius: 0.5rem; padding: 1rem; margin-top: 1.5rem; box-shadow: 0 0 25px rgba(205, 164, 94, 0.1), 0 4px 10px rgba(0,0,0,0.2); }
-        
-        .report-advice { background-color: var(--bg-color); border: 1px solid var(--border-color); border-left: 3px solid var(--accent-color); margin-top: 1rem; padding: 1rem; border-radius: 0.25rem 0.5rem 0.5rem 0.25rem; }
-        
-        #report-actions-container { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.75rem; }
     </style>
 </head>
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
 
-    <!-- Головний контейнер воронки -->
+    <!-- === MAIN APP CONTAINER === -->
     <main class="funnel-container">
         
-        <!-- КРОК 1 -->
+        <!-- STEP 1: LANDING -->
         <section id="landing-step" class="funnel-step active space-y-8 text-center">
-            <div><svg class="w-16 h-16 mx-auto" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-color);"><circle cx="32" cy="32" r="2.5" fill="currentColor"/><path d="M52 32C52 43.0457 43.0457 52 32 52C20.9543 52 12 43.0457 12 32C12 20.9543 20.9543 12 32 12C43.0457 12 52 20.9543 52 32Z" stroke="currentColor" stroke-width="2.5" stroke-opacity="0.3"/><path d="M46.8564 32C46.8564 39.098 40.098 44.8564 32 44.8564C23.902 44.8564 17.1436 39.098 17.1436 32C17.1436 24.902 23.902 19.1436 32 19.1436C40.098 19.1436 46.8564 24.902 46.8564 32Z" stroke="currentColor" stroke-width="2.5"/></svg></div>
-            <div class="space-y-4"><h2 class="text-3xl font-bold text-white tracking-tight">Приховані подробиці твого характеру 😈</h2><p class="text-lg" style="color: var(--secondary-text-color);">Обери дату народження, щоб дізнатися, на скільки ти ахуєнна 😇</p></div>
+            <div>
+                <svg class="w-16 h-16 mx-auto" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-color);">
+                    <circle cx="32" cy="32" r="2.5" fill="currentColor"/>
+                    <path d="M52 32C52 43.0457 43.0457 52 32 52C20.9543 52 12 43.0457 12 32C12 20.9543 20.9543 12 32 12C43.0457 12 52 20.9543 52 32Z" stroke="currentColor" stroke-width="2.5" stroke-opacity="0.3"/>
+                    <path d="M46.8564 32C46.8564 39.098 40.098 44.8564 32 44.8564C23.902 44.8564 17.1436 39.098 17.1436 32C17.1436 24.902 23.902 19.1436 32 19.1436C40.098 19.1436 46.8564 24.902 46.8564 32Z" stroke="currentColor" stroke-width="2.5"/>
+                </svg>
+            </div>
+            <div class="space-y-4">
+                <h2 class="text-3xl font-bold text-white tracking-tight">Приховані подробиці твого характеру 😈</h2>
+                <p class="text-lg" style="color: var(--secondary-text-color);">Обери дату народження, щоб дізнатися, на скільки ти ахуєнна 😇</p>
+            </div>
             <form id="birth-form" class="w-full space-y-4">
                 <label for="birth-date" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
                     <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -116,30 +216,55 @@
             </form>
         </section>
 
-        <!-- КРОК 2 -->
-        <section id="loading-step" class="funnel-step text-center space-y-6"><div class="spinner"></div><div id="loading-typing-container" class="typing-container"><span id="loading-text"></span><span id="loading-cursor" class="typing-cursor" style="display: none;"></span></div></section>
+        <!-- STEP 2: LOADING -->
+        <section id="loading-step" class="funnel-step text-center space-y-6">
+            <div class="spinner"></div>
+            <div id="loading-typing-container" class="typing-container">
+                <span id="loading-text"></span><span id="loading-cursor" class="typing-cursor" style="display: none;"></span>
+            </div>
+        </section>
 
-        <!-- КРОК 3 -->
+        <!-- STEP 3: FREE RESULT -->
         <section id="result-step" class="funnel-step space-y-6">
             <h2 class="text-2xl font-bold text-center text-white" id="result-title">Аналіз твоєї особистості</h2>
-            <div class="p-5 rounded-lg space-y-3" style="background-color: var(--card-bg-color); border: 1px solid var(--border-color);"><h3 class="text-xl font-bold" style="color: var(--accent-color);" id="free-report-title"></h3><div id="free-report-text" class="text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);"><i>(Тут з'явиться твій персональний аналіз...)</i></div></div>
+            <div class="p-5 rounded-lg space-y-3" style="background-color: var(--card-bg-color); border: 1px solid var(--border-color);">
+                <h3 class="text-xl font-bold" style="color: var(--accent-color);" id="free-report-title"></h3>
+                <div id="free-report-text" class="text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);"><i>(Тут з'явиться твій персональний аналіз...)</i></div>
+            </div>
             <p class="text-center px-4" style="color: var(--secondary-text-color); margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 0.95rem; line-height: 1.6;" id="free-report-hook"></p>
             <div class="pt-4"><button id="upgrade-button" class="btn btn-primary !text-lg !py-4"><span class="btn-text">Отримати повний аналіз</span><span class="btn-spinner"></span></button></div>
         </section>
 
-        <!-- КРОК 4 -->
+        <!-- STEP 4: PREMIUM DATA COLLECTION -->
         <section id="premium-data-step" class="funnel-step space-y-6 text-center">
-            <h2 class="text-3xl font-bold text-white tracking-tight">Розблокуй "Золоту Трійку"</h2><p class="text-lg" style="color: var(--secondary-text-color);">Твій аналіз Сонця - це лише 1/3 твого ядра. Введи час та місто, щоб розкрити свій <strong>Асцендент</strong> (твоя маска) та <strong>Місяць</strong> (твої емоції).</p>
+            <h2 class="text-3xl font-bold text-white tracking-tight">Розблокуй "Золоту Трійку"</h2>
+            <p class="text-lg" style="color: var(--secondary-text-color);">Твій аналіз Сонця - це лише 1/3 твого ядра. Введи час та місто, щоб розкрити свій <strong>Асцендент</strong> (твоя маска) та <strong>Місяць</strong> (твої емоції).</p>
             <div id="premium-form-container" class="w-full space-y-4">
-                <div><label for="birth-time" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Точний час народження (опціонально):</label><label for="birth-time" class="input-field h-14 flex items-center justify-center relative cursor-pointer"><svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span id="time-placeholder" style="color: var(--secondary-text-color);">Обери час</span><input type="time" id="birth-time" name="birth-time" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" style="opacity: 0.001;"></label></div>
-                <div><label for="birth-city" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Місто народження (опціонально):</label><input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ" class="input-field text-center"><p id="city-error-message" class="error-text">Текст помилки...</p><p id="city-info-message" class="info-text"></p></div>
-                <div class="pt-4 space-y-3"><button type="button" id="continue-to-paywall-button" class="btn btn-primary !text-lg !py-4"><span class="btn-text">Отримати детальний аналіз</span><span class="btn-spinner"></span></button><button type="button" id="skip-button" class="btn btn-skip">Пропустити та продовжити без них</button></div>
+                <div>
+                    <label for="birth-time" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Точний час народження (опціонально):</label>
+                    <label for="birth-time" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
+                        <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span id="time-placeholder" style="color: var(--secondary-text-color);">Обери час</span>
+                        <input type="time" id="birth-time" name="birth-time" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" style="opacity: 0.001;">
+                    </label>
+                </div>
+                <div>
+                    <label for="birth-city" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Місто народження (опціонально):</label>
+                    <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ" class="input-field text-center">
+                    <p id="city-error-message" class="error-text">Текст помилки...</p>
+                    <p id="city-info-message" class="info-text"></p>
+                </div>
+                <div class="pt-4 space-y-3">
+                    <button type="button" id="continue-to-paywall-button" class="btn btn-primary !text-lg !py-4"><span class="btn-text">Отримати детальний аналіз</span><span class="btn-spinner"></span></button>
+                    <button type="button" id="skip-button" class="btn btn-skip">Пропустити та продовжити без них</button>
+                </div>
             </div>
         </section>
 
-        <!-- КРОК 5 -->
+        <!-- STEP 5: FINAL PAYWALL -->
         <section id="final-paywall-step" class="funnel-step space-y-6">
-            <h2 class="text-3xl font-bold text-center text-white">Твій повний портрет</h2><p class="text-lg text-center" style="color: var(--secondary-text-color);">Розблокуй <strong>повну карту</strong>, щоб побачити свій справжній потенціал.</p>
+            <h2 class="text-3xl font-bold text-center text-white">Твій повний портрет</h2>
+            <p class="text-lg text-center" style="color: var(--secondary-text-color);">Розблокуй <strong>повну карту</strong>, щоб побачити свій справжній потенціал.</p>
             <div class="space-y-3 pt-2">
                 <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Ядро Особистості (Розширено)</span></div>
                 <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Кохання та Сумісність</span></div>
@@ -147,13 +272,23 @@
                 <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Кармічні Уроки та Призначення</span></div>
                 <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Твої майбутні можливості</span></div>
             </div>
-            <div class="space-y-4 pt-4"><button id="final-checkout-button" class="btn btn-primary !text-lg !py-4"><span class="btn-text">Розблокувати зараз за 149 грн (замість <span style="text-decoration: line-through; opacity: 0.8;">399 грн</span>)</span><span class="btn-spinner"></span></button><p class="text-xs text-center" style="color: var(--secondary-text-color);">🔒 Безпечна одноразова оплата.</p></div>
+            <div class="space-y-4 pt-4">
+                <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
+                    <span class="btn-text">Розблокувати зараз за 149 грн (замість <span style="text-decoration: line-through; opacity: 0.8;">399 грн</span>)</span>
+                    <span class="btn-spinner"></span>
+                </button>
+                <p class="text-xs text-center" style="color: var(--secondary-text-color);">🔒 Безпечна одноразова оплата.</p>
+            </div>
         </section>
 
-        <!-- КРОК 6 -->
-        <section id="payment-success-return-step" class="funnel-step text-center space-y-6"><h2 class="text-2xl font-bold" style="color: var(--accent-color);">Обробка платежу...</h2><p style="color: var(--secondary-text-color);">Зачекайте, ми підтверджуємо ваш платіж...</p><div class="spinner"></div></section>
+        <!-- STEP 6: PAYMENT RETURN HANDLING -->
+        <section id="payment-success-return-step" class="funnel-step text-center space-y-6">
+            <h2 class="text-2xl font-bold" style="color: var(--accent-color);">Обробка платежу...</h2>
+            <p style="color: var(--secondary-text-color);">Зачекайте, ми підтверджуємо ваш платіж...</p>
+            <div class="spinner"></div>
+        </section>
 
-        <!-- КРОК 7 -->
+        <!-- STEP 7: SUCCESS & LTV UPSELL -->
         <section id="success-step" class="funnel-step space-y-6">
             <div id="email-capture-box" class="text-center">
                 <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -164,103 +299,224 @@
                     <input type="email" id="user-email" name="user-email" placeholder="your.email@gmail.com" class="input-field text-center" required>
                     <button type="submit" class="btn btn-primary !text-lg !py-4"><span class="btn-text">Отримати звіт</span><span class="btn-spinner"></span></button>
                 </form>
-                <div id="ltv-upsell-box" class="ltv-upsell-box text-left"><h3 class="font-bold" style="color: var(--accent-color);">P.S. Поки твій звіт готується...</h3><p class="text-sm mt-2 mb-4" style="color: var(--secondary-text-color);">Хочеш додати повний <strong>"Астрологічний AI-прогноз" на наступний рік</strong> з Персональною знижкою 65% всього за 247 грн. замість <span style="text-decoration: line-through; opacity: 0.7;">699 грн.</span>?</p><button id="ltv-upsell-btn" class="btn btn-primary w-full opacity-90 hover:opacity-100"><span class="btn-text">Так, додати до замовлення!</span><span class="btn-spinner"></span></button></div>
+                <div id="ltv-upsell-box" class="ltv-upsell-box text-left">
+                    <h3 class="font-bold" style="color: var(--accent-color);">P.S. Поки твій звіт готується...</h3>
+                    <p class="text-sm mt-2 mb-4" style="color: var(--secondary-text-color);">Хочеш додати повний <strong>"Астрологічний AI-прогноз" на наступний рік</strong> з Персональною знижкою 65% всього за 247 грн. замість <span style="text-decoration: line-through; opacity: 0.7;">699 грн.</span>?</p>
+                    <button id="ltv-upsell-btn" class="btn btn-primary w-full opacity-90 hover:opacity-100"><span class="btn-text">Так, додати до замовлення!</span><span class="btn-spinner"></span></button>
+                </div>
             </div>
-            <div id="report-loading-indicator" class="w-full text-center" style="display: none;"><h2 class="text-2xl font-bold text-center text-white mb-6"><span style="color: var(--accent-color);">Дякую!</span></h2><div class="spinner" style="margin-top: 2rem; margin-bottom: 1rem;"></div><div id="report-typing-container" class="typing-container"><span id="report-loading-text"></span><span id="report-cursor" class="typing-cursor" style="display: none;"></span></div></div>
+            
+            <div id="report-loading-indicator" class="w-full text-center" style="display: none;">
+                <h2 class="text-2xl font-bold text-center text-white mb-6"><span style="color: var(--accent-color);">Дякую!</span></h2>
+                <div class="spinner" style="margin-top: 2rem; margin-bottom: 1rem;"></div>
+                <div id="report-typing-container" class="typing-container"><span id="report-loading-text"></span><span id="report-cursor" class="typing-cursor" style="display: none;"></span></div>
+            </div>
+            
             <div id="full-report-content" class="text-left p-5 rounded-lg space-y-4" style="background-color: var(--card-bg-color); display: none; border: 1px solid var(--border-color);"></div>
-            <div id="report-actions-container" style="display: none;"><button id="download-pdf-btn" class="btn btn-secondary"><span class="btn-text">Завантажити PDF</span><span class="btn-spinner"></span></button><button id="share-report-btn" class="btn btn-secondary"><span class="btn-text">Поділитися звітом</span><span class="btn-spinner"></span></button></div>
+            <div id="report-actions-container" style="display: none;">
+                <button id="download-pdf-btn" class="btn btn-secondary"><span class="btn-text">Завантажити PDF</span><span class="btn-spinner"></span></button>
+                <button id="share-report-btn" class="btn btn-secondary"><span class="btn-text">Поділитися звітом</span><span class="btn-spinner"></span></button>
+            </div>
         </section>
 
     </main>
 
+    <!-- HIDDEN UTILS -->
     <div id="wfp-form-container" style="display: none;"></div>
-    
-    <div id="modal" class="modal-overlay"><div class="modal-content"><h3 id="modal-title" class="text-2xl font-bold text-white mb-4">Повідомлення</h3><p id="modal-message" style="color: var(--secondary-text-color);" class="mb-6">Текст повідомлення...</p><button id="modal-close-btn" class="btn modal-btn-close"><span class="btn-text">Закрити</span><span class="btn-spinner"></span></button></div></div>
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title" class="text-2xl font-bold text-white mb-4">Повідомлення</h3>
+            <p id="modal-message" style="color: var(--secondary-text-color);" class="mb-6">Текст повідомлення...</p>
+            <button id="modal-close-btn" class="btn modal-btn-close"><span class="btn-text">Закрити</span><span class="btn-spinner"></span></button>
+        </div>
+    </div>
 
+    <!-- ====================================================== -->
+    <!-- LOGIC START -->
+    <!-- ====================================================== -->
     <script>
-        // GLOBAL STORE FOR PDF DATA (Planets + SVG Chart)
-        window.FINAL_PDF_PAYLOAD = null;
+        // ==========================================
+        // 1. CONFIGURATION & CONSTANTS
+        // ==========================================
+        const isCanvas = typeof __app_id !== 'undefined';
+        const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc";
+        const apiFlashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        const apiProUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+        
+        // Backend URLs (Europe-West1)
+        const EMAIL_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/sendReportEmail';
+        const PDF_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/createPDF';
+
+        // Prompts
+        const mainSystemPrompt = `Ти — 'Майстер Астро-Психолог' Destiny Code... (Оригінальний промпт "Подруга")`;
+        const freeTaskPrompt = `Місія: 'Безкоштовний Гачок'... (Оригінальний промпт)`;
+        const fullTaskPrompt = `Місія: 'Повний Психологічний Портрет' (Платний). (Оригінальний стиль)... 6. 'planetary_coordinates': Склади список позицій планет (технічне поле, не впливає на тон). Формат: ТІЛЬКИ JSON.`;
+        const geoSystemPrompt = `Ти — високоточний географічний API...`;
+
+        // Library Check
+        const { Origin, Horoscope, Renderer } = window.CircularNatalHoroscope || {};
+        if (!Horoscope) console.error("!!! Astro Library FAILED TO LOAD !!!");
+        else console.log("Astro Library loaded successfully.");
 
         document.addEventListener('DOMContentLoaded', () => {
-            const steps = { landing: document.getElementById('landing-step'), loading: document.getElementById('loading-step'), result: document.getElementById('result-step'), premiumData: document.getElementById('premium-data-step'), paywall: document.getElementById('final-paywall-step'), paymentSuccessReturn: document.getElementById('payment-success-return-step'), success: document.getElementById('success-step') };
-            const birthForm = document.getElementById('birth-form'), birthDateInput = document.getElementById('birth-date'), errorMessage = document.getElementById('error-message'), datePlaceholder = document.getElementById('date-placeholder'), landingSubmitButton = birthForm.querySelector('button[type="submit"]'), loadingTypingContainer = document.getElementById('loading-typing-container'), loadingTextEl = document.getElementById('loading-text'), loadingCursorEl = document.getElementById('loading-cursor'), resultTitleEl = document.getElementById('result-title'), freeReportTitleEl = document.getElementById('free-report-title'), freeReportTextEl = document.getElementById('free-report-text'), freeReportHookEl = document.getElementById('free-report-hook'), upgradeButton = document.getElementById('upgrade-button'), birthTimeInput = document.getElementById('birth-time'), timePlaceholder = document.getElementById('time-placeholder'), birthCityInput = document.getElementById('birth-city'), cityErrorMessage = document.getElementById('city-error-message'), cityInfoMessage = document.getElementById('city-info-message'), continueToPaywallButton = document.getElementById('continue-to-paywall-button'), skipButton = document.getElementById('skip-button'), finalCheckoutButton = document.getElementById('final-checkout-button'), reportLoadingIndicator = document.getElementById('report-loading-indicator'), reportTypingContainer = document.getElementById('report-typing-container'), reportLoadingTextEl = document.getElementById('report-loading-text'), reportCursorEl = document.getElementById('report-cursor'), fullReportContentEl = document.getElementById('full-report-content'), reportActionsContainer = document.getElementById('report-actions-container'), downloadPdfBtn = document.getElementById('download-pdf-btn'), shareReportBtn = document.getElementById('share-report-btn'), emailCaptureBox = document.getElementById('email-capture-box'), emailForm = document.getElementById('email-form'), userEmailInput = document.getElementById('user-email'), ltvUpsellBtn = document.getElementById('ltv-upsell-btn'), wfpFormContainer = document.getElementById('wfp-form-container'), modal = document.getElementById('modal'), modalTitle = document.getElementById('modal-title'), modalMessage = document.getElementById('modal-message'), modalCloseBtn = document.getElementById('modal-close-btn');
-            
-            const isCanvas = typeof __app_id !== 'undefined';
-            const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; 
-            const apiFlashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const apiProUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const EMAIL_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/sendReportEmail'; 
-            const PDF_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/createPDF'; 
-            
+
+            // ==========================================
+            // 2. DOM ELEMENTS (Selectors)
+            // ==========================================
+            const els = {
+                steps: {
+                    landing: document.getElementById('landing-step'),
+                    loading: document.getElementById('loading-step'),
+                    result: document.getElementById('result-step'),
+                    premiumData: document.getElementById('premium-data-step'),
+                    paywall: document.getElementById('final-paywall-step'),
+                    paymentSuccessReturn: document.getElementById('payment-success-return-step'),
+                    success: document.getElementById('success-step')
+                },
+                form: {
+                    birth: document.getElementById('birth-form'),
+                    dateInput: document.getElementById('birth-date'),
+                    placeholder: document.getElementById('date-placeholder'),
+                    error: document.getElementById('error-message'),
+                    submitBtn: document.getElementById('birth-form').querySelector('button[type="submit"]'),
+                    timeInput: document.getElementById('birth-time'),
+                    timePlaceholder: document.getElementById('time-placeholder'),
+                    cityInput: document.getElementById('birth-city'),
+                    cityError: document.getElementById('city-error-message'),
+                    cityInfo: document.getElementById('city-info-message')
+                },
+                loading: {
+                    container: document.getElementById('loading-typing-container'),
+                    text: document.getElementById('loading-text'),
+                    cursor: document.getElementById('loading-cursor')
+                },
+                result: {
+                    title: document.getElementById('result-title'),
+                    freeTitle: document.getElementById('free-report-title'),
+                    freeText: document.getElementById('free-report-text'),
+                    freeHook: document.getElementById('free-report-hook'),
+                    upgradeBtn: document.getElementById('upgrade-button')
+                },
+                premium: {
+                    continueBtn: document.getElementById('continue-to-paywall-button'),
+                    skipBtn: document.getElementById('skip-button')
+                },
+                paywall: {
+                    checkoutBtn: document.getElementById('final-checkout-button')
+                },
+                success: {
+                    emailBox: document.getElementById('email-capture-box'),
+                    emailForm: document.getElementById('email-form'),
+                    emailInput: document.getElementById('user-email'),
+                    ltvUpsellBtn: document.getElementById('ltv-upsell-btn'),
+                    reportLoader: document.getElementById('report-loading-indicator'),
+                    reportTyping: {
+                        container: document.getElementById('report-typing-container'),
+                        text: document.getElementById('report-loading-text'),
+                        cursor: document.getElementById('report-cursor')
+                    },
+                    reportContent: document.getElementById('full-report-content'),
+                    actions: document.getElementById('report-actions-container'),
+                    downloadBtn: document.getElementById('download-pdf-btn'),
+                    shareBtn: document.getElementById('share-report-btn')
+                },
+                modal: {
+                    el: document.getElementById('modal'),
+                    title: document.getElementById('modal-title'),
+                    msg: document.getElementById('modal-message'),
+                    close: document.getElementById('modal-close-btn')
+                }
+            };
+
+            // ==========================================
+            // 3. STATE MANAGEMENT
+            // ==========================================
             let userBirthData = { date: '', time: '', city: '', geo: null };
             let isAnimationComplete = false;
             let isReportReady = false;
-            let generatedReportData = null; 
+            let generatedReportData = null;
+            // Global store for PDF data
+            window.FINAL_PDF_PAYLOAD = null;
 
-            const mainSystemPrompt = `Ти — 'Майстер Астро-Психолог' Destiny Code... (Оригінальний промпт "Подруга")`;
-            const freeTaskPrompt = `Місія: 'Безкоштовний Гачок'... (Оригінальний промпт)`;
-            const fullTaskPrompt = `Місія: 'Повний Психологічний Портрет' (Платний). (Оригінальний стиль)... 6. 'planetary_coordinates': Склади список позицій планет (технічне поле, не впливає на тон). Формат: ТІЛЬКИ JSON.`;
-            const geoSystemPrompt = `Ти — високоточний географічний API...`;
+            // ==========================================
+            // 4. UTILITY FUNCTIONS
+            // ==========================================
+            function showStep(stepId) {
+                Object.values(els.steps).forEach(step => step.classList.remove('active'));
+                if (els.steps[stepId]) els.steps[stepId].classList.add('active');
+            }
 
-            // --- HELPERS ---
-            function showStep(stepId) { Object.values(steps).forEach(step => step.classList.remove('active')); if (steps[stepId]) steps[stepId].classList.add('active'); }
-            function showModal(title, message) { modalTitle.innerText = title; modalMessage.innerHTML = message; modal.style.display = 'flex'; }
-            function closeModal() { modal.style.display = 'none'; }
-            modalCloseBtn.addEventListener('click', closeModal);
-            function setButtonLoading(btn, loading) { if(loading){ btn.classList.add('loading'); btn.disabled=true;} else { btn.classList.remove('loading'); btn.disabled=false;}}
-            
+            function showModal(title, message) {
+                els.modal.title.innerText = title;
+                els.modal.msg.innerHTML = message;
+                els.modal.el.style.display = 'flex';
+            }
+            els.modal.close.addEventListener('click', () => els.modal.el.style.display = 'none');
+
+            function setButtonLoading(btn, isLoading) {
+                if (isLoading) { btn.classList.add('loading'); btn.disabled = true; }
+                else { btn.classList.remove('loading'); btn.disabled = false; }
+            }
+
             function typeWriter(element, cursorElement, text, speed, pauseAfter = 0, keepCursorBlinking = false) {
-                return new Promise(resolve => { let i = 0; cursorElement.style.display = 'inline-block'; element.innerHTML = ''; function type() { if (i < text.length) { element.innerHTML = text.substring(0, i + 1); i++; setTimeout(type, speed); } else { setTimeout(() => { if (!keepCursorBlinking) cursorElement.style.display = 'none'; resolve(); }, pauseAfter); } } type(); });
+                return new Promise(resolve => {
+                    let i = 0; cursorElement.style.display = 'inline-block'; element.innerHTML = '';
+                    function type() {
+                        if (i < text.length) { element.innerHTML = text.substring(0, i + 1); i++; setTimeout(type, speed); }
+                        else { setTimeout(() => { if (!keepCursorBlinking) cursorElement.style.display = 'none'; resolve(); }, pauseAfter); }
+                    }
+                    type();
+                });
             }
 
-            async function callGeminiAPI(modelUrl, taskPrompt, userQuery) { 
+            // ==========================================
+            // 5. API SERVICES (GEMINI & BACKEND)
+            // ==========================================
+            async function callGeminiAPI(modelUrl, taskPrompt, userQuery) {
                 const payload = { contents: [{ parts: [{ text: `${taskPrompt}\n\nВхідні дані:\n${userQuery}` }] }], systemInstruction: { parts: [{ text: mainSystemPrompt }] } };
-                try { const res = await fetch(modelUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) }); 
-                const result = await res.json(); return result.candidates?.[0]?.content?.parts?.[0]?.text?.match(/```json\n([\s\S]*?)\n```/)?.[1] || result.candidates?.[0]?.content?.parts?.[0]?.text || 'Error'; } catch(e){return 'Error';}
-            }
-            
-            async function getCoordinatesFromGemini(cityName) { 
-                  try { const res = await fetch(apiFlashUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: `${geoSystemPrompt}\n\nМісто: ${cityName}` }] }] }) }); 
-                  const text = (await res.json()).candidates?.[0]?.content?.parts?.[0]?.text.replace(/```json\n?|\n?```/g, '').trim(); 
-                  const json = JSON.parse(text); return (json.lat)? {latitude: json.lat, longitude: json.lon, timezone: json.timezone, corrected_name: json.corrected_name} : {error: 'not_found'}; 
-                  } catch(e){return {error: 'network'};}
+                try {
+                    const res = await fetch(modelUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+                    const result = await res.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text?.match(/```json\n([\s\S]*?)\n```/)?.[1] || result.candidates?.[0]?.content?.parts?.[0]?.text || 'Error';
+                } catch(e) { return 'Error'; }
             }
 
+            async function getCoordinatesFromGemini(cityName) {
+                try {
+                    const res = await fetch(apiFlashUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: `${geoSystemPrompt}\n\nМісто: ${cityName}` }] }] }) });
+                    const text = (await res.json()).candidates?.[0]?.content?.parts?.[0]?.text.replace(/```json\n?|\n?```/g, '').trim();
+                    const json = JSON.parse(text);
+                    return (json.lat) ? {latitude: json.lat, longitude: json.lon, timezone: json.timezone, corrected_name: json.corrected_name} : {error: 'not_found'};
+                } catch(e) { return {error: 'network'}; }
+            }
+
+            // ==========================================
+            // 6. BUSINESS LOGIC (REPORT GEN)
+            // ==========================================
+            
             function showReportIfReady() {
                 if(isAnimationComplete && isReportReady) {
-                    reportLoadingIndicator.style.display = 'none';
-                    fullReportContentEl.innerHTML = generatedReportData;
-                    fullReportContentEl.style.display = 'block';
-                    reportActionsContainer.style.display = 'flex';
+                    els.success.reportLoader.style.display = 'none';
+                    els.success.reportContent.innerHTML = generatedReportData;
+                    els.success.reportContent.style.display = 'block';
+                    els.success.actions.style.display = 'flex';
                 }
             }
 
-            function startReportLoadingAnimation() {
-                const phrases = ["Підключаюся до ефемерид NASA...", "Розраховую положення планет...", "Аналізую аспекти...", "Формую ваш портрет..."];
-                let i = 0;
-                async function play() {
-                    if (i < phrases.length) {
-                        await typeWriter(reportLoadingTextEl, reportCursorEl, phrases[i], 30, 800, true);
-                        i++; play();
-                    } else if (!isReportReady) {
-                         setTimeout(play, 1000); 
-                    } else {
-                        isAnimationComplete = true;
-                        showReportIfReady();
-                    }
+            async function startReportLoadingAnimation() {
+                const phrases = ["✨ Аналізую Ядро твоєї Особистості", "❤️‍🔥 Розшифровую твої сценарії Кохання", "👑 Шукаю, де приховані твої Гроші", "🔮 Вивчаю твої Кармічні Уроки", "⚡️ Завантажую твій персональний звіт"];
+                for (let i = 0; i < phrases.length; i++) {
+                    await typeWriter(els.success.reportTyping.text, els.success.reportTyping.cursor, phrases[i], 70, 1000, i === phrases.length - 1);
                 }
-                play();
+                isAnimationComplete = true;
+                showReportIfReady();
             }
 
-            // --- MAIN REPORT GENERATION (UPDATED FOR PRECISION) ---
             async function fetchFullAnalysis(data, email) {
-                const { Origin, Horoscope, Renderer } = window.CircularNatalHoroscope || {};
-                
-                // 1. CALCULATE PLANETS & CHART (High Precision Mode)
+                // 1. ASTRO CALCULATION (High Precision)
                 let pdfPlanets = [];
                 let pdfChartSvg = null;
                 
-                // Fallback Data
                 let geoData = data.geo || { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" }; 
                 let timeData = data.time || "12:00";
                 let isFallback = !data.geo;
@@ -274,13 +530,10 @@
                             year: y, month: m-1, date: d, hour: h, minute: min,
                             latitude: geoData.latitude, longitude: geoData.longitude, timezone: geoData.timezone
                         });
-                        
                         const horoscope = new Horoscope({ origin: origin, houseSystem: "placidus", zodiac: "tropical" });
-
-                        // --- PRECISION PLANETS CALCULATION ---
-                        const bodies = horoscope.CelestialBodies;
                         
-                        // Helper: Converts decimal (45.7) -> "45° 42' Leo"
+                        // --- PRECISION MATH (Deg + Min) ---
+                        const bodies = horoscope.CelestialBodies;
                         const formatPrecise = (n, b) => {
                             const decimal = b.ChartPosition.Ecliptic.DecimalDegrees;
                             const deg = Math.floor(decimal);
@@ -289,48 +542,27 @@
                         };
 
                         pdfPlanets = [
-                            formatPrecise('Sun', bodies.sun),
-                            formatPrecise('Moon', bodies.moon),
-                            formatPrecise('Asc', horoscope.Ascendant),
-                            formatPrecise('MC', horoscope.Midheaven),
-                            formatPrecise('Mercury', bodies.mercury),
-                            formatPrecise('Venus', bodies.venus),
-                            formatPrecise('Mars', bodies.mars),
-                            formatPrecise('Jupiter', bodies.jupiter),
-                            formatPrecise('Saturn', bodies.saturn),
+                            formatPrecise('Sun', bodies.sun), formatPrecise('Moon', bodies.moon), formatPrecise('Asc', horoscope.Ascendant),
+                            formatPrecise('MC', horoscope.Midheaven), formatPrecise('Mercury', bodies.mercury), formatPrecise('Venus', bodies.venus),
+                            formatPrecise('Mars', bodies.mars), formatPrecise('Jupiter', bodies.jupiter), formatPrecise('Saturn', bodies.saturn),
                             formatPrecise('Node', bodies.northnode)
                         ];
 
-                        // --- CHART SVG GENERATION ---
+                        // --- SVG GENERATION ---
                         if (Renderer) {
                             const div = document.createElement('div');
                             new Renderer(horoscope).render(div);
                             let svg = div.innerHTML;
-                            // Styling for PDF (Gold/Grey theme)
-                            svg = svg.replace(/stroke="#000000"/g, 'stroke="#cda45e"')
-                                     .replace(/fill="#000000"/g, 'fill="#e0e0e0"')
-                                     .replace(/stroke-width="1"/g, 'stroke-width="2"');
+                            svg = svg.replace(/stroke="#000000"/g, 'stroke="#cda45e"').replace(/fill="#000000"/g, 'fill="#e0e0e0"').replace(/stroke-width="1"/g, 'stroke-width="2"');
                             pdfChartSvg = svg;
                         }
-
-                    } catch (e) {
-                        console.error("Astro calc error:", e);
-                        pdfPlanets = ["Error calculating planets"];
-                    }
+                    } catch (e) { console.error("Astro calc error:", e); }
                 }
 
-                // 2. STORE IN GLOBAL PAYLOAD (Ready for PDF)
-                window.FINAL_PDF_PAYLOAD = {
-                    ...data,
-                    planets: pdfPlanets,
-                    chartSvg: pdfChartSvg, // Sending the vector image
-                    city: isFallback ? "Київ (Загальний розрахунок)" : data.city,
-                    time: isFallback ? "12:00 (Середній час)" : data.time
-                };
-                console.log("FINAL_PDF_PAYLOAD ready:", window.FINAL_PDF_PAYLOAD);
+                // 2. STORE GLOBAL PAYLOAD
+                window.FINAL_PDF_PAYLOAD = { ...data, planets: pdfPlanets, chartSvg: pdfChartSvg, city: isFallback ? "Київ (Загальний)" : data.city, time: isFallback ? "12:00" : data.time };
 
-                // 3. FETCH TEXT FROM AI
-                // We send simplified data to AI (just signs) to save tokens, but print precise data in PDF
+                // 3. AI TEXT GENERATION
                 const astroText = `\n== Технічні дані ==\n${pdfPlanets.join('\n')}\n== Кінець ==\n`;
                 let userQuery = `Дата: ${data.date}, Час: ${timeData}, Місто: ${isFallback ? 'Київ' : data.city}. ${astroText}`;
                 
@@ -352,85 +584,173 @@
                                 </div>
                             </div>
                         `).join('');
-                    } else { reportHtml = "<p>Error generating report structure.</p>"; }
+                    } else { reportHtml = "<p>Error generating report.</p>"; }
                 } catch (e) { reportHtml = "<p>Error parsing AI response.</p>"; }
                 
                 generatedReportData = reportHtml;
-                isAnimationComplete = true; 
                 isReportReady = true;
                 showReportIfReady();
 
-                // 4. SEND EMAIL (Background)
+                // 4. SEND EMAIL
                 try {
                     const titleMatch = reportHtml.match(/<h2.*?>(.*?)<\/h2>/i);
                     fetch(EMAIL_BACKEND_URL, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({
-                            userEmail: email,
-                            reportHtml: reportHtml,
-                            reportTitle: titleMatch ? titleMatch[1] : 'Звіт',
-                            reportType: 'main',
-                            userData: window.FINAL_PDF_PAYLOAD // Contains precise coordinates & SVG
-                        })
+                        method: 'POST', headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ userEmail: email, reportHtml: reportHtml, reportTitle: titleMatch?titleMatch[1]:'Звіт', reportType: 'main', userData: window.FINAL_PDF_PAYLOAD })
                     });
-                } catch (e) { console.error("Email send error:", e); }
+                } catch (e) { console.error("Email error:", e); }
             }
 
-            // --- EVENT LISTENERS ---
-            birthForm.addEventListener('submit', (e) => { e.preventDefault(); userBirthData.date = birthDateInput.value; showStep('loading'); setTimeout(() => { showStep('result'); }, 3000); }); 
-            upgradeButton.addEventListener('click', () => showStep('premiumData'));
-            skipButton.addEventListener('click', () => { userBirthData.time = ''; userBirthData.geo = null; showStep('paywall'); });
+            // ==========================================
+            // 7. EVENT HANDLERS
+            // ==========================================
             
-            continueToPaywallButton.addEventListener('click', async () => {
-               setButtonLoading(continueToPaywallButton, true);
-               const coords = await getCoordinatesFromGemini(birthCityInput.value);
-               if(coords.latitude) { userBirthData.geo = coords; userBirthData.city = coords.corrected_name; userBirthData.time = birthTimeInput.value; showStep('paywall'); }
-               else { 
-                   // Fallback or error logic could go here
-                   showStep('paywall'); // Allow proceed anyway for now
-               }
-               setButtonLoading(continueToPaywallButton, false);
-            });
-
-            finalCheckoutButton.addEventListener('click', async () => { setButtonLoading(finalCheckoutButton, true); await new Promise(r=>setTimeout(r, 2000)); showStep('success'); });
-            
-            emailForm.addEventListener('submit', (e) => {
+            // --- STEP 1: Landing ---
+            els.form.birth.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const email = userEmailInput.value;
-                document.getElementById('email-capture-box').style.display = 'none';
-                document.getElementById('report-loading-indicator').style.display = 'block';
-                startReportLoadingAnimation();
-                fetchFullAnalysis(userBirthData, email);
+                userBirthData.date = els.form.dateInput.value;
+                if (!userBirthData.date) { els.form.error.style.display = 'block'; return; }
+                
+                setButtonLoading(els.form.submitBtn, true);
+                showStep('loading');
+                
+                // Free Hook Logic
+                const loadingSteps = ['Аналізую положення планет', 'Будую твою натальну карту', 'Приготуйся дізнатись, наскільки ти ахуєнна'];
+                await typeWriter(els.loading.text, els.loading.cursor, loadingSteps[0], 70, 500);
+                
+                const reportPromise = callGeminiAPI(apiFlashUrl, freeTaskPrompt, `Дата: ${userBirthData.date}`);
+                await typeWriter(els.loading.text, els.loading.cursor, loadingSteps[1], 70, 500);
+                await typeWriter(els.loading.text, els.loading.cursor, loadingSteps[2], 70, 1500, true);
+                
+                const rawJson = await reportPromise;
+                setButtonLoading(els.form.submitBtn, false);
+                
+                try {
+                    const json = JSON.parse(rawJson);
+                    els.result.title.innerText = "Аналіз твоєї особистості";
+                    els.result.freeTitle.innerHTML = json.title;
+                    els.result.freeText.innerHTML = json.psychological_analysis.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\\n/g, '<br>');
+                    els.result.freeHook.innerHTML = json.premium_hook.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    showStep('result');
+                } catch(e) { console.error(e); showStep('result'); }
             });
 
-            downloadPdfBtn.addEventListener('click', async () => {
-                setButtonLoading(downloadPdfBtn, true);
-                if (!generatedReportData || !window.FINAL_PDF_PAYLOAD) {
-                    showModal("Зачекайте", "Звіт ще формується...");
-                    setButtonLoading(downloadPdfBtn, false);
-                    return;
+            // --- STEP 3: Result ---
+            els.result.upgradeBtn.addEventListener('click', () => showStep('premiumData'));
+
+            // --- STEP 4: Premium Data ---
+            els.premium.continueBtn.addEventListener('click', async () => {
+                setButtonLoading(els.premium.continueBtn, true);
+                const city = els.form.cityInput.value.trim();
+                userBirthData.time = els.form.timeInput.value;
+                
+                if(!city) { userBirthData.geo = null; showStep('paywall'); return; }
+                
+                const coords = await getCoordinatesFromGemini(city);
+                if(coords.latitude) {
+                    userBirthData.geo = coords; userBirthData.city = coords.corrected_name;
+                    if(city.toLowerCase() !== coords.corrected_name.toLowerCase()) {
+                         els.form.cityInfo.innerText = `Ми уточнили: ${coords.corrected_name} 😉`; els.form.cityInfo.style.display = 'block';
+                    }
+                    setTimeout(() => showStep('paywall'), 1000);
+                } else {
+                    els.form.cityError.innerText = "Не можемо знайти місто."; els.form.cityError.style.display = 'block';
                 }
-                try {
-                    // Send styles for PDF renderer
-                    const styles = Array.from(document.styleSheets).map(s => { try{return Array.from(s.cssRules).map(r=>r.cssText).join('\n')}catch(e){return ''}}).join('\n');
-                    
-                    const res = await fetch(PDF_BACKEND_URL, {
-                        method: 'POST', headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ reportHtml: generatedReportData, reportStyles: styles, userData: window.FINAL_PDF_PAYLOAD })
-                    });
-                    const result = await res.json();
-                    if (result.success) {
-                        const link = document.createElement('a');
-                        link.href = `data:application/pdf;base64,${result.pdfBase64}`;
-                        link.download = result.filename;
-                        link.click();
-                    } else { throw new Error("Server Error"); }
-                } catch (e) { showModal("Помилка", "Не вдалося завантажити PDF."); }
-                setButtonLoading(downloadPdfBtn, false);
+                setButtonLoading(els.premium.continueBtn, false);
             });
+            els.premium.skipBtn.addEventListener('click', () => { userBirthData.time = ''; userBirthData.geo = null; showStep('paywall'); });
+
+            // --- STEP 5: Paywall ---
+            els.paywall.checkoutBtn.addEventListener('click', async () => {
+                setButtonLoading(els.paywall.checkoutBtn, true);
+                try { sessionStorage.setItem('destinyCodeData', JSON.stringify(userBirthData)); } catch(e){}
+                await new Promise(r=>setTimeout(r, 2000)); // Simulating payment
+                showStep('success');
+            });
+
+            // --- STEP 7: Success ---
+            els.success.emailForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = els.success.emailInput.value;
+                if(email) {
+                    els.success.emailBox.style.display = 'none';
+                    els.success.reportLoader.style.display = 'block';
+                    startReportLoadingAnimation();
+                    fetchFullAnalysis(userBirthData, email);
+                }
+            });
+
+            els.success.ltvUpsellBtn.addEventListener('click', async () => {
+                const btn = els.success.ltvUpsellBtn;
+                btn.classList.add('loading'); btn.disabled = true;
+                await new Promise(r=>setTimeout(r, 2000));
+                
+                // Upsell Email Logic
+                const email = els.success.emailInput.value;
+                const forecastHtml = generatedReportData + "<br><br><h2>🔮 Твій Прогноз на 2026 рік</h2><p>Наступний рік стане для тебе роком трансформацій...</p>";
+                await fetch(EMAIL_BACKEND_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ userEmail: email, reportHtml: forecastHtml, reportType: 'upsell', userData: userBirthData }) });
+                
+                btn.classList.remove('loading'); btn.innerText = "Оплачено! Прогноз відправлено ✅";
+                showModal("Дякуємо!", "Ваш прогноз на 2026 рік відправлено на пошту.");
+            });
+
+            els.success.downloadBtn.addEventListener('click', async () => {
+                setButtonLoading(els.success.downloadBtn, true);
+                if (!generatedReportData || !window.FINAL_PDF_PAYLOAD) { showModal("Зачекайте", "Звіт ще формується..."); setButtonLoading(els.success.downloadBtn, false); return; }
+                
+                try {
+                    const styles = Array.from(document.styleSheets).map(s => { try{return Array.from(s.cssRules).map(r=>r.cssText).join('\n')}catch(e){return ''}}).join('\n');
+                    const res = await fetch(PDF_BACKEND_URL, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ reportHtml: generatedReportData, reportStyles: styles, userData: window.FINAL_PDF_PAYLOAD }) });
+                    const result = await res.json();
+                    if(result.success) {
+                        const byteCharacters = atob(result.pdfBase64);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        const blob = new Blob([new Uint8Array(byteNumbers)], {type: 'application/pdf'});
+                        const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = result.filename; link.click();
+                        showModal("Успіх!", "Ваш PDF-звіт успішно завантажено.");
+                    } else throw new Error();
+                } catch(e) { showModal("Помилка", "Не вдалося завантажити PDF."); }
+                setButtonLoading(els.success.downloadBtn, false);
+            });
+
+            // ==========================================
+            // 8. INITIALIZATION
+            // ==========================================
+            function updateDatePlaceholder() {
+                if (!els.form.dateInput.value) { els.form.placeholder.innerText = 'Обрати дату'; els.form.placeholder.style.color = 'var(--secondary-text-color)'; }
+                else { const p = els.form.dateInput.value.split('-'); els.form.placeholder.innerText = `${p[2]}.${p[1]}.${p[0]}`; els.form.placeholder.style.color = 'var(--primary-text-color)'; }
+            }
+            function updateTimePlaceholder() {
+                if (!els.form.timeInput.value) { els.form.timePlaceholder.innerText = 'Обери час'; els.form.timePlaceholder.style.color = 'var(--secondary-text-color)'; }
+                else { els.form.timePlaceholder.innerText = els.form.timeInput.value; els.form.timePlaceholder.style.color = 'var(--primary-text-color)'; }
+            }
+            function setDefaultDate() { if(!els.form.dateInput.value) els.form.dateInput.value = '1995-01-01'; }
+
+            els.form.dateInput.addEventListener('input', updateDatePlaceholder);
+            els.form.dateInput.addEventListener('change', updateDatePlaceholder);
+            els.form.dateInput.addEventListener('focus', setDefaultDate);
+            els.form.dateInput.addEventListener('click', setDefaultDate);
+            els.form.dateInput.addEventListener('touchstart', setDefaultDate);
+            els.form.dateInput.addEventListener('blur', updateDatePlaceholder);
             
-            birthDateInput.addEventListener('blur', () => { if(birthDateInput.value) datePlaceholder.innerText = birthDateInput.value; });
+            els.form.timeInput.addEventListener('input', updateTimePlaceholder);
+            els.form.timeInput.addEventListener('change', updateTimePlaceholder);
+            
+            updateDatePlaceholder();
+            updateTimePlaceholder();
+
+            // Check Payment Return
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('payment') === 'success') {
+                showStep('paymentSuccessReturn');
+                try {
+                    const saved = JSON.parse(sessionStorage.getItem('destinyCodeData'));
+                    if(saved) { userBirthData = saved; setTimeout(() => showStep('success'), 1500); }
+                    else { showStep('landing'); }
+                } catch(e){ showStep('landing'); }
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
         });
     </script>
 </body>
