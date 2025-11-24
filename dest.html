@@ -1307,6 +1307,9 @@
             
             /** * v2.17: Функція генерації ПОВНОГО звіту  */
             async function fetchFullAnalysis(data, email) {
+                // 2. Ensure library is accessible here
+                const { Origin, Horoscope, Renderer } = window.CircularNatalHoroscope || {};
+                
                 let userQuery = `Дата народження: ${data.date}.`;
                 if (data.time) userQuery += ` Час: ${data.time}.`;
                 if (data.city) userQuery += ` Місто: ${data.city}.`;
