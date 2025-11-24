@@ -808,6 +808,17 @@
             birthDateInput.addEventListener('change', updateDate);
             const updateTime = () => { timePlaceholder.innerText = birthTimeInput.value || 'Обери час'; timePlaceholder.style.color = birthTimeInput.value ? '#e0e0e0' : '#a0a0a0'; };
             birthTimeInput.addEventListener('change', updateTime);
+
+            // === RESTORED DATE DEFAULT (Fix for UX) ===
+            function setDefaultDateOnFirstFocus() {
+                if (birthDateInput.value === '') {
+                    birthDateInput.value = '1995-01-01';
+                }
+            }
+            birthDateInput.addEventListener('focus', setDefaultDateOnFirstFocus);
+            birthDateInput.addEventListener('click', setDefaultDateOnFirstFocus);
+            birthDateInput.addEventListener('touchstart', setDefaultDateOnFirstFocus);
+            birthDateInput.addEventListener('blur', updateDate);
         });
     </script>
 </body>
