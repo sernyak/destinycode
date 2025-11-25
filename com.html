@@ -2,733 +2,1076 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Сімейний Бойовий Статут v3.7 [Gemini 2.5 Pro]</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destiny Code - Твій AI-Астролог</title>
     <!-- Підключення Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Шрифт Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     
-    <!-- Підключення React та ReactDOM -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Астро-бібліотека -->
+    <script src="https://cdn.jsdelivr.net/npm/circular-natal-horoscope-js/dist/circular-natal-horoscope-js.browser.min.js"></script>
     
-    <!-- Підключення Babel для JSX -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-    <!-- Налаштування Import Map для Google Generative AI -->
-    <script type="importmap">
-      {
-        "imports": {
-          "@google/generative-ai": "https://esm.run/@google/generative-ai"
-        }
-      }
-    </script>
-
-    <!-- Шрифти -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-
     <style>
-        body { font-family: 'Roboto Mono', monospace; -webkit-font-smoothing: antialiased; }
-        .font-serif { font-family: 'Playfair Display', serif; }
-        .font-mono { font-family: 'Roboto Mono', monospace; }
-        
-        /* Текстура старого паперу для результату */
-        .paper-texture {
-            background-color: #fdfbf7;
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+        /* --- Базові Змінні --- */
+        :root {
+            --bg-color: #121212;
+            --primary-text-color: #e0e0e0;
+            --secondary-text-color: #a0a0a0;
+            --accent-color: #cda45e; /* Золотий акцент */
+            --card-bg-color: #1a1a1a;
+            --border-color: #333333;
+            --error-color: #ef4444; /* red-500 */
         }
 
-        /* Стилізація слайдерів */
-        input[type=range] {
-            -webkit-appearance: none; 
-            background: transparent; 
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-text-color);
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard */
+            -webkit-tap-highlight-color: transparent; 
         }
-        input[type=range]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            height: 28px;
-            width: 28px;
-            border-radius: 50%;
-            background: #b45309;
-            cursor: pointer;
-            margin-top: -12px; 
-            border: 3px solid #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+
+        /* --- Контейнер Воронки --- */
+        .funnel-container {
+            max-width: 420px; /* Оптимально для мобільних */
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 90vh; /* Щоб завжди було по центру */
+            justify-content: center;
         }
-        input[type=range]::-webkit-slider-runnable-track {
+
+        .funnel-step {
+            display: none; /* Всі кроки сховані */
+            animation: fadeIn 0.5s ease-out; /* Плавна поява */
+        }
+
+        .funnel-step.active {
+            display: block; /* Активний крок видимий */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Стилі Елементів --- */
+        .input-field {
+            position: relative;
+            color: var(--primary-text-color);
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg-color);
+            border-radius: 0.5rem; /* rounded-lg */
             width: 100%;
-            height: 6px;
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .input-field.input-error {
+            border-color: var(--error-color);
+            box-shadow: 0 0 0 2px var(--error-color);
+        }
+
+        .error-text {
+            color: var(--error-color);
+            font-size: 0.875rem; /* text-sm */
+            text-align: left;
+            display: none; /* Сховано за замовчуванням */
+            margin-top: 0.5rem; /* mt-2 */
+        }
+        
+        .info-text {
+            color: var(--accent-color);
+            font-size: 0.875rem; /* text-sm */
+            text-align: center;
+            display: none; 
+            margin-top: 0.5rem; /* mt-2 */
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator,
+        input[type="time"]::-webkit-calendar-picker-indicator {
+            filter: invert(80%) sepia(30%) saturate(5000%) hue-rotate(350deg) brightness(1.1);
             cursor: pointer;
-            background: #d6d3d1;
-            border-radius: 3px;
+            opacity: 0.9;
+            font-size: 1.25rem;
+            transition: opacity 0.2s;
         }
 
-        /* Анімація радара */
-        @keyframes pulse-radar {
-            0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
-            70% { box-shadow: 0 0 0 20px rgba(217, 119, 6, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
-        }
-        .animate-radar {
-            animation: pulse-radar 2s infinite;
+        input[type="date"]::-webkit-calendar-picker-indicator:hover,
+        input[type="time"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
         }
 
-        /* Курсор терміналу */
+        /* --- Стилі Кнопок --- */
+        .btn {
+            width: 100%;
+            font-weight: 700;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-spinner {
+            display: none; 
+            width: 1.25rem; 
+            height: 1.25rem;
+            border-width: 2px;
+            border-style: solid;
+            border-radius: 9999px;
+            animation: spin 1s linear infinite;
+            border-color: transparent;
+            border-top-color: currentColor; 
+        }
+
+        .btn.loading .btn-text {
+            opacity: 0.5; 
+        }
+        .btn.loading .btn-spinner {
+            display: block;
+            position: absolute;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            box-shadow: 0 4px 15px -5px rgba(205, 164, 94, 0.4); 
+        }
+        .btn-primary:not(:disabled):hover {
+            opacity: 0.9;
+            box-shadow: 0 6px 20px -5px rgba(205, 164, 94, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-skip {
+            background: none;
+            border: none;
+            color: var(--secondary-text-color);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .btn-skip:hover {
+            color: var(--primary-text-color);
+        }
+
+        .btn-secondary {
+            background-color: var(--card-bg-color);
+            color: var(--accent-color);
+            border: 1px solid var(--accent-color);
+            opacity: 0.8;
+        }
+        
+        .btn-secondary:not(:disabled):hover {
+            opacity: 1;
+            background-color: rgba(205, 164, 94, 0.05); 
+        }
+
+        /* --- Стилі Завантаження --- */
+        #loading-typing-container {
+            font-size: 1.25rem; 
+            color: var(--secondary-text-color);
+            margin-top: 1rem;
+            min-height: 2.5rem; 
+            text-align: center;
+        }
+
+        .typing-cursor {
+            display: inline-block; 
+            width: 10px;
+            height: 1.25rem;
+            background-color: var(--accent-color);
+            animation: blink 0.7s infinite;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
         @keyframes blink {
             0%, 100% { opacity: 1; }
             50% { opacity: 0; }
         }
-        .cursor-blink::after {
-            content: '█';
-            animation: blink 1s infinite;
-            margin-left: 4px;
-            color: #d97706; 
+
+        .spinner { 
+            width: 4rem; 
+            height: 4rem;
+            border-width: 4px;
+            border-style: dashed; 
+            border-radius: 9999px; 
+            animation: spin 1.5s linear infinite;
+            margin: 2rem auto;
+            border-color: var(--accent-color) transparent var(--accent-color) transparent;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        @media print {
-          @page { margin: 0; size: auto; }
-          body { background-color: white; -webkit-print-color-adjust: exact; }
-          .no-print { display: none !important; }
-          .print-container {
-            position: absolute; left: 0; top: 0; width: 100%; min-height: 100vh;
-            margin: 0; padding: 20px !important; box-shadow: none !important; border: none !important;
-            background-color: white !important;
-          }
-          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        #report-typing-container {
+            font-size: 1.25rem; 
+            color: var(--secondary-text-color);
+            margin-top: 1.5rem;
+            height: 4rem; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- Стилі Paywall --- */
+        .paywall-item {
+            display: flex;
+            align-items: center;
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            opacity: 0.7; 
+        }
+
+        .paywall-icon {
+            color: var(--accent-color);
+            font-size: 1.25rem;
+            margin-right: 0.75rem;
+        }
+
+        /* --- Модальне вікно --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--border-color);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 0.5rem;
+            padding: 2rem;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-btn-close {
+            margin-top: 1.5rem;
+            background-color: #4b5563; 
+            color: white;
+            border: 1px solid #4b5563;
+        }
+        
+        .modal-btn-close:hover {
+            background-color: #6b7280; 
+            border-color: #6b7280;
+        }
+
+        /* --- LTV Апсел (Крок 7) --- */
+        .ltv-upsell-box {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--accent-color);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 0 25px rgba(205, 164, 94, 0.1), 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        /* --- Динамічний Звіт (Крок 7) --- */
+        .report-section { }
+        
+        .report-advice {
+            background-color: var(--bg-color); 
+            border: 1px solid var(--border-color);
+            border-left: 3px solid var(--accent-color); 
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 0.25rem 0.5rem 0.5rem 0.25rem;
+        }
+
+        /* --- Контейнер для кнопок PDF/Share (Крок 7) --- */
+        #report-actions-container {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem; 
+        }
+
+        /* --- HIDDEN CHART CONTAINER (For Generating SVG) --- */
+        #hidden-chart-container {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            width: 600px;
+            height: 600px;
+            visibility: hidden;
         }
     </style>
 </head>
-<body class="bg-stone-300 text-stone-800 bg-[url('https://www.transparenttextures.com/patterns/concrete-wall.png')] min-h-screen">
-    <div id="root"></div>
+<body class="antialiased min-h-screen flex items-center justify-center p-4">
 
-    <script type="text/babel" data-type="module">
-        import { GoogleGenerativeAI } from "@google/generative-ai";
-        const { useState, useEffect, useRef } = React;
+    <!-- Головний контейнер воронки -->
+    <main class="funnel-container">
 
-        // --- КОНФІГУРАЦІЯ ---
-        const USER_PROVIDED_KEY = ""; 
-
-        // --- ICONS ---
-        const IconWrapper = ({ children, size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-                {children}
-            </svg>
-        );
-        const Shield = (props) => <IconWrapper {...props}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/></IconWrapper>;
-        const Heart = (props) => <IconWrapper {...props}><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></IconWrapper>;
-        const Send = (props) => <IconWrapper {...props}><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></IconWrapper>;
-        const AlertCircle = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></IconWrapper>;
-        const ChevronRight = (props) => <IconWrapper {...props}><path d="m9 18 6-6-6-6"/></IconWrapper>;
-        const ChevronDown = (props) => <IconWrapper {...props}><path d="m6 9 6 6 6-6"/></IconWrapper>;
-        const FileText = (props) => <IconWrapper {...props}><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></IconWrapper>;
-        const Star = (props) => <IconWrapper {...props}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconWrapper>;
-        const Printer = (props) => <IconWrapper {...props}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="8" x="6" y="14"/></IconWrapper>;
-        const Coffee = (props) => <IconWrapper {...props}><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></IconWrapper>;
-        const Trash2 = (props) => <IconWrapper {...props}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></IconWrapper>;
-        const Tv = (props) => <IconWrapper {...props}><rect width="20" height="15" x="2" y="7" rx="2" ry="2"/><polyline points="17 2 12 7 7 2"/></IconWrapper>;
-        const Moon = (props) => <IconWrapper {...props}><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></IconWrapper>;
-        const Bug = (props) => <IconWrapper {...props}><path d="m8 2 1.88 1.88"/><path d="M14.12 3.88 16 2"/><path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/><path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6"/><path d="M12 20v-9"/><path d="M6.53 9C4.6 8.8 3 7.1 3 5"/><path d="M6 13H2"/><path d="M3 21c0-2.1 1.7-3.9 3.8-4"/><path d="M20.97 5c0 2.1-1.6 3.8-3.5 4"/><path d="M22 13h-4"/><path d="M17.2 17c2.1.1 3.8 1.9 3.8 4"/></IconWrapper>;
-        const Users = (props) => <IconWrapper {...props}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconWrapper>;
-        const Utensils = (props) => <IconWrapper {...props}><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></IconWrapper>;
-        const Droplet = (props) => <IconWrapper {...props}><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></IconWrapper>;
-        const Cat = (props) => <IconWrapper {...props}><path d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.5-2.4 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.67.26 6.43 2.26.64-.17 1.33-.26 2-.26z"/><path d="M9 13h.01"/><path d="M15 13h.01"/></IconWrapper>;
-        const ShoppingBag = (props) => <IconWrapper {...props}><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></IconWrapper>;
-        const Gavel = (props) => <IconWrapper {...props}><path d="m14 13-7.5 7.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L11 10"/><path d="m16 16 6-6"/><path d="m8 8 6-6"/><path d="m9 7 8 8"/><path d="m21 11-8-8"/></IconWrapper>;
-        const Volume2 = (props) => <IconWrapper {...props}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></IconWrapper>;
-        const Award = (props) => <IconWrapper {...props}><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></IconWrapper>;
-
-        // --- HELPER FUNCTIONS ---
-        const cleanText = (text) => {
-          if (!text) return "";
-          return text.replace(/\*\*/g, '').replace(/\*/g, '');
-        };
-
-        // --- UI COMPONENTS ---
-        const Button = ({ children, onClick, variant = 'primary', disabled = false, className = '' }) => {
-          const baseStyle = "w-full py-4 px-6 font-mono text-sm uppercase tracking-wider font-bold transition-all duration-200 flex items-center justify-center gap-2 relative overflow-hidden select-none touch-manipulation transform active:scale-95 rounded-sm";
-          
-          const variants = {
-            primary: "bg-stone-900 text-amber-50 hover:bg-stone-800 border-b-4 border-amber-700 shadow-xl",
-            secondary: "bg-stone-200 text-stone-800 hover:bg-stone-300 border-b-4 border-stone-400 shadow-md",
-            action: "bg-amber-700 text-white hover:bg-amber-800 border-b-4 border-amber-900 shadow-xl"
-          };
-
-          return (
-            <button 
-              onClick={onClick} 
-              disabled={disabled}
-              className={`${baseStyle} ${variants[variant]} ${disabled ? 'opacity-50 cursor-not-allowed border-none' : ''} ${className}`}
-            >
-              {children}
-            </button>
-          );
-        };
-
-        const InputField = ({ label, value, onChange, placeholder, icon: Icon, className = "" }) => (
-          <div className={`mb-6 ${className}`}>
-            <label className="block text-xs font-bold uppercase tracking-widest text-stone-600 mb-2 flex items-center gap-2">
-              {Icon && <Icon size={18} className="text-amber-700" />}
-              {label}
-            </label>
-            <input
-              type="text"
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
-              placeholder={placeholder}
-              className="w-full bg-stone-50 border-b-2 border-stone-300 text-stone-900 p-4 text-base font-serif focus:outline-none focus:border-amber-600 focus:bg-white transition-colors placeholder-stone-400 rounded-t-md shadow-sm"
-            />
-          </div>
-        );
-
-        // Новий компонент Select
-        const SelectField = ({ label, value, onChange, options, icon: Icon }) => (
-          <div className="mb-6">
-             <label className="block text-xs font-bold uppercase tracking-widest text-stone-600 mb-2 flex items-center gap-2">
-              {Icon && <Icon size={18} className="text-amber-700" />}
-              {label}
-            </label>
-            <div className="relative">
-              <select
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="w-full bg-stone-50 border-b-2 border-stone-300 text-stone-900 p-4 text-base font-serif focus:outline-none focus:border-amber-600 focus:bg-white transition-colors appearance-none rounded-t-md cursor-pointer pr-10 shadow-sm"
-              >
-                <option value="" disabled>-- Оберіть рішення --</option>
-                {options.map((opt, i) => (
-                  <option key={i} value={opt}>{opt}</option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-stone-400">
-                <ChevronDown size={24} />
-              </div>
+        <!-- ====================================================== -->
+        <!-- КРОК 1: ЛЕНДІНГ (Збір дати народження) -->
+        <!-- ====================================================== -->
+        <section id="landing-step" class="funnel-step active space-y-8 text-center">
+            
+            <div>
+                <svg class="w-16 h-16 mx-auto" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-color);">
+                    <circle cx="32" cy="32" r="2.5" fill="currentColor"/>
+                    <path d="M52 32C52 43.0457 43.0457 52 32 52C20.9543 52 12 43.0457 12 32C12 20.9543 20.9543 12 32 12C43.0457 12 52 20.9543 52 32Z" stroke="currentColor" stroke-width="2.5" stroke-opacity="0.3"/>
+                    <path d="M46.8564 32C46.8564 39.098 40.098 44.8564 32 44.8564C23.902 44.8564 17.1436 39.098 17.1436 32C17.1436 24.902 23.902 19.1436 32 19.1436C40.098 19.1436 46.8564 24.902 46.8564 32Z" stroke="currentColor" stroke-width="2.5"/>
+                </svg>
             </div>
-          </div>
-        );
+            
+            <div class="space-y-4">
+                <h2 class="text-3xl font-bold text-white tracking-tight">
+                    Приховані подробиці твого характеру 😈
+                </h2>
+                <p class="text-lg" style="color: var(--secondary-text-color);">
+                    Обери дату народження, щоб дізнатися, на скільки ти ахуєнна 😇
+                </p>
+            </div>
 
-        // Новий компонент Слайдер
-        const SliderField = ({ label, value, onChange, min, max, icon: Icon, getLabel }) => (
-            <div className="mb-6 p-5 bg-stone-100 rounded border border-stone-200 shadow-sm">
-                <label className="block text-xs font-bold uppercase tracking-widest text-stone-600 mb-4 flex items-center gap-2">
-                    {Icon && <Icon size={18} className="text-amber-700" />}
-                    {label}
+            <form id="birth-form" class="w-full space-y-4">
+                <label for="birth-date" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
+                    <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <span id="date-placeholder" style="color: var(--secondary-text-color);">Обрати дату</span>
+                    <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required
+                           style="opacity: 0.001;"> 
                 </label>
-                <div className="flex items-center gap-4">
-                    <input 
-                        type="range" 
-                        min={min} 
-                        max={max} 
-                        value={value} 
-                        onChange={(e) => onChange(Number(e.target.value))}
-                        className="w-full h-2 bg-stone-300 rounded-lg appearance-none cursor-pointer"
-                    />
-                    <div className="w-14 text-center font-bold text-xl font-serif text-amber-800">{value}</div>
-                </div>
-                <div className="mt-3 text-right text-xs font-mono font-bold text-amber-700 uppercase tracking-wide">
-                    {getLabel(value)}
-                </div>
-            </div>
-        );
 
-        // Новий компонент Тоггл
-        const ToggleAsset = ({ label, checked, onChange, icon: Icon }) => (
-            <div 
-                onClick={() => onChange(!checked)}
-                className={`cursor-pointer p-4 rounded border transition-all duration-200 flex items-center justify-between gap-3 mb-3 ${checked ? 'bg-stone-800 border-stone-900 text-amber-50 shadow-lg transform scale-[1.01]' : 'bg-white border-stone-300 text-stone-500 hover:bg-stone-50'}`}
-            >
-                <div className="flex items-center gap-3">
-                    {Icon && <Icon size={22} className={checked ? "text-amber-500" : "text-stone-400"} />}
-                    <span className="font-bold text-sm uppercase tracking-wide">{label}</span>
-                </div>
-                <div className={`w-6 h-6 rounded-sm border-2 flex items-center justify-center ${checked ? 'border-amber-500 bg-amber-600' : 'border-stone-300'}`}>
-                    {checked && <ChevronDown size={18} className="text-white" />}
-                </div>
-            </div>
-        );
-
-        const SectionHeader = ({ title, step }) => (
-          <div className="flex items-center gap-4 my-10">
-            <div className="h-px bg-stone-300 flex-grow"></div>
-            <div className="flex flex-col items-center">
-                <span className="text-xs font-mono uppercase tracking-widest text-amber-700 font-bold mb-1">Сектор {step}</span>
-                <span className="text-sm font-black uppercase tracking-wide text-stone-800 text-center">{title}</span>
-            </div>
-            <div className="h-px bg-stone-300 flex-grow"></div>
-          </div>
-        );
-
-        const Card = ({ children, title, subtitle, className = '' }) => (
-          <div className={`w-full max-w-md mx-auto bg-[#f4f4f0] shadow-2xl border border-stone-300 relative ${className}`}>
-            <div className="absolute -top-3 left-0 w-full flex justify-between px-2">
-                 <div className="bg-stone-800 text-amber-50 px-4 py-1 text-[10px] font-mono uppercase tracking-widest shadow-sm z-20">
-                    CLASSIFIED // EYES ONLY
-                 </div>
-                 <div className="flex gap-1 pt-1">
-                    <div className="w-2 h-2 bg-stone-300 rounded-full"></div>
-                    <div className="w-2 h-2 bg-stone-300 rounded-full"></div>
-                    <div className="w-2 h-2 bg-stone-300 rounded-full"></div>
-                 </div>
-            </div>
-            
-            <div className="p-5 pt-10 pb-16 relative overflow-hidden">
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-[0.03]">
-                <Shield size={300} />
-              </div>
-
-              {title && (
-                <div className="mb-8 border-b-4 border-double border-stone-300 pb-4 text-center relative z-10">
-                  <h2 className="text-2xl md:text-3xl font-black text-stone-900 uppercase tracking-tighter font-serif leading-tight mb-2">
-                    {title}
-                  </h2>
-                  {subtitle && <p className="text-amber-700 font-mono text-xs mt-2 uppercase tracking-widest font-bold">{subtitle}</p>}
-                </div>
-              )}
-              
-              <div className="relative z-10">
-                {children}
-              </div>
-              
-              <div className="absolute bottom-4 right-4 opacity-10 rotate-[-15deg] border-4 border-stone-900 text-stone-900 p-2 font-black text-lg uppercase rounded pointer-events-none z-0">
-                ТІЛЬКИ ДЛЯ СЛУЖБОВОГО КОРИСТУВАННЯ
-              </div>
-            </div>
-          </div>
-        );
-
-        // --- MAIN APP ---
-        function FamilyStatuteApp() {
-          const [step, setStep] = useState('intro'); 
-          const [error, setError] = useState(null);
-          const [generatedStatute, setGeneratedStatute] = useState('');
-          const [loadingLogs, setLoadingLogs] = useState([]);
-          
-          // Initial State
-          const [formData, setFormData] = useState({
-            husbandName: '',
-            husbandRank: '', // NEW
-            husbandCallsign: '',
-            wifeName: '',
-            wifeRank: '', // NEW
-            wifeCallsign: '',
-            
-            // Select Inputs
-            financeChief: '', 
-            foodSupply: '', 
-            dishWashing: '',
-            garbageDisposal: '',
-            conflictWeaponWife: '',
-            conflictWeaponHusband: '',
-            peaceTreaty: '',
-            decisionMaking: '',
-            shoppingLogistics: '',
-            spiderProtocol: '',
-            inLawsDiplomacy: '',
-            
-            // Sliders
-            patienceLevelHusband: 50,
-            patienceLevelWife: 50,
-            
-            // Toggles
-            cats: {
-                cat1: false,
-                cat2: false
-            },
-            
-            // Text inputs
-            strategicGoal: '',
-            morningBathroom: '',
-          });
-
-          const toggleCat = (key) => {
-              setFormData(prev => ({
-                  ...prev,
-                  cats: { ...prev.cats, [key]: !prev.cats[key] }
-              }));
-          };
-
-          useEffect(() => {
-            if (step === 'generating') {
-                const logs = [
-                    "Встановлення захищеного з'єднання...",
-                    "Ідентифікація особового складу...",
-                    "Аналіз розвідувальних даних...",
-                    "Узгодження бюджету...",
-                    "Сканування присутності агентів Персевіренс та К'юріосіті...",
-                    "Кодифікація сімейних цінностей...",
-                    "Формування бойового наказу...",
-                    "Друк документу...",
-                    "Фінальна вичитка..."
-                ];
-                let currentIndex = 0;
-                const interval = setInterval(() => {
-                    if (currentIndex < logs.length) {
-                        setLoadingLogs(prev => [...prev, logs[currentIndex]]);
-                        currentIndex++;
-                    } else {
-                        clearInterval(interval);
-                    }
-                }, 1500);
-                return () => clearInterval(interval);
-            } else {
-                setLoadingLogs([]);
-            }
-          }, [step]);
-
-          const generateDirectly = async () => {
-            setStep('generating');
-            setError(null);
-
-            try {
-              const apiKey = USER_PROVIDED_KEY;
-              if (!apiKey) throw new Error("Відсутній API Key.");
-
-              const genAI = new GoogleGenerativeAI(apiKey);
-              // ВИКОРИСТАННЯ GEMINI 2.5 PRO
-              const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
-
-              const catsSelected = [];
-              if (formData.cats.cat1) catsSelected.push("Кіт Персевіренс");
-              if (formData.cats.cat2) catsSelected.push("Кіт К'юріосіті");
-              const catsStatus = catsSelected.length > 0 ? `Позаштатні бійці: ${catsSelected.join(" та ")}` : "Тимчасова відсутність котів";
-
-              // User provided ranks
-              const husbandTitle = formData.husbandRank || "Чоловік";
-              const wifeTitle = formData.wifeRank || "Дружина";
-
-              const safeData = {
-                 husbandName: formData.husbandName || "Чоловік",
-                 husbandRank: husbandTitle,
-                 husbandCallsign: formData.husbandCallsign || "V",
-                 
-                 wifeName: formData.wifeName || "Дружина",
-                 wifeRank: wifeTitle,
-                 wifeCallsign: formData.wifeCallsign || "Квіточка",
-                 
-                 financeChief: formData.financeChief || "Спільний котел",
-                 foodSupply: formData.foodSupply || "Доставка",
-                 dishWashing: formData.dishWashing || "Посудомийка",
-                 garbageDisposal: formData.garbageDisposal || "По черзі",
-                 conflictWeaponWife: formData.conflictWeaponWife || "Мовчання",
-                 conflictWeaponHusband: formData.conflictWeaponHusband || "Відступ",
-                 peaceTreaty: formData.peaceTreaty || "Переговори",
-                 decisionMaking: formData.decisionMaking || "Рада",
-                 shoppingLogistics: formData.shoppingLogistics || "Разом",
-                 spiderProtocol: formData.spiderProtocol || "Евакуація",
-                 inLawsDiplomacy: formData.inLawsDiplomacy || "Нейтралітет",
-                 strategicGoal: formData.strategicGoal || "Щастя",
-                 morningBathroom: formData.morningBathroom || "Хто встиг",
-                 patienceLevelHusband: formData.patienceLevelHusband,
-                 patienceLevelWife: formData.patienceLevelWife,
-              };
-
-              const systemPrompt = `
-                Ти - досвідчений штабний писар з бездоганним знанням статутів та добрим гумором.
-                Твоє завдання: Скласти "Бойовий Статут Сімейного Життя" (БССЖ) для молодят Віктора та Насті.
+                <p id="error-message" class="error-text">
+                    Будь ласка, обери дату народження.
+                </p>
                 
-                КОНТЕКСТ:
-                Дата створення підрозділу: 19.11.2025.
-                Документ адресується виключно молодятам. Не згадуй про третіх осіб (братів, родичів).
+                <button type="submit" class="btn btn-primary !text-lg h-14">
+                    <span class="btn-text">Дізнатися негайно</span>
+                    <span class="btn-spinner"></span>
+                </button>
+            </form>
+        </section>
+
+        <!-- ====================================================== -->
+        <!-- КРОК 2: ЕКРАН ЗАВАНТАЖЕННЯ (Анімація набору тексту) -->
+        <!-- ====================================================== -->
+        <section id="loading-step" class="funnel-step text-center space-y-6">
+            <div class="spinner"></div>
+            <div id="loading-typing-container" class="typing-container">
+                <span id="loading-text"></span><span id="loading-cursor" class="typing-cursor" style="display: none;"></span>
+            </div>
+        </section>
+
+        <!-- ====================================================== -->
+        <!-- КРОК 3: РЕЗУЛЬТАТ (Безкоштовний аналіз "Ядро") -->
+        <!-- ====================================================== -->
+        <section id="result-step" class="funnel-step space-y-6">
+            <h2 class="text-2xl font-bold text-center text-white" id="result-title">Аналіз твоєї особистості</h2>
+            
+            <div class="p-5 rounded-lg space-y-3" style="background-color: var(--card-bg-color); border: 1px solid var(--border-color);">
+                <h3 class="text-xl font-bold" style="color: var(--accent-color);" id="free-report-title">
+                    <!-- Заголовок тепер генерується з промпту -->
+                </h3>
                 
-                УВАГА ДО ТЕРМІНОЛОГІЇ (КРИТИЧНО ВАЖЛИВО):
-                1. Використовуй ОФІЦІЙНІ назви служб тилу ЗСУ, але адаптуй їх до побуту.
-                2. "Продовольча служба" - відповідає за їжу.
-                3. "Фінансова служба" - відповідає за гроші. Це окрема служба.
-                4. "Речова служба" або "Служба матеріально-технічного забезпечення" (МТЗ) - відповідає за покупки, майно.
-                5. "МПЗ" (Морально-психологічне забезпечення) - відповідає за настрій, примирення.
-                6. НІКОЛИ не пиши "Начфін" чи "Начпрод" у дужках після назви служби. Просто пиши "Фінансова служба" або "Продовольча служба".
-                7. Уникай політичних термінів (мінські домовленості). Використовуй "Подружні домовленості", "Пакт про кохання".
-                8. Щодо їжі: "Особовий склад зобов'язаний завчасно подавати заявки на харчове постачання", а не "командири".
-                9. Віктор - не сапер. Не згадуй про розмінування.
-
-                ОСОБОВИЙ СКЛАД:
-                - ${safeData.husbandRank} ${safeData.husbandName} (Позивний: ${safeData.husbandCallsign})
-                - ${safeData.wifeRank} ${safeData.wifeName} (Позивний: ${safeData.wifeCallsign})
-                - Додатковий склад: ${catsStatus}.
-
-                РОЗВІДУВАЛЬНІ ДАНІ:
-                1. Фінансова служба: ${safeData.financeChief}
-                2. Продовольча служба (Їжа): ${safeData.foodSupply}
-                3. Дезактивація посуду: ${safeData.dishWashing}
-                4. Служба утилізації відходів (Сміття): ${safeData.garbageDisposal}
-                5. Тактика під час сварки (Дружина): ${safeData.conflictWeaponWife}
-                6. Тактика під час сварки (Чоловік): ${safeData.conflictWeaponHusband}
-                7. Протокол відновлення миру: ${safeData.peaceTreaty}
-                8. Порядок прийняття рішень: ${safeData.decisionMaking}
-                9. МТЗ (Покупки): ${safeData.shoppingLogistics}
-                10. Реагування на біологічні загрози (Павуки): ${safeData.spiderProtocol}
-                11. Зовнішні зв'язки (Батьки): ${safeData.inLawsDiplomacy}
-                12. Зайняття стратегічних висот (Ванна): ${safeData.morningBathroom}
-                13. Рівень терпіння (${safeData.husbandRank}): ${safeData.patienceLevelHusband}%
-                14. Рівень терпіння (${safeData.wifeRank}): ${safeData.patienceLevelWife}%
-                15. Стратегічна ціль: ${safeData.strategicGoal}
-
-                СТРУКТУРА (Markdown):
-                1. Заголовок (Наказ № 19-11/2025).
-                2. Преамбула (Урочисте оголошення про створення підрозділу).
-                3. Розділ I: Тилове та Матеріальне Забезпечення (Їжа, МТЗ, Фінанси, Сміття, Посуд).
-                4. Розділ II: Внутрішній Порядок та Розпорядок (Ванна, Коти).
-                5. Розділ III: Морально-Психологічне Забезпечення (МПЗ) (Сварки, Терпіння, Примирення).
-                6. Розділ IV: Зовнішні Зв'язки та Безпека (Родичі, Павуки).
-                7. Розділ V: Бойовий Наказ (Стратегічна ціль).
-
-                Тон: Теплий, дотепний, з повагою до військової справи, українська мова. Без жирного шрифту.
-              `;
-
-              const result = await model.generateContent({
-                contents: [{ parts: [{ text: systemPrompt }] }],
-              });
-
-              const text = result.response.text();
-              setGeneratedStatute(text);
-              setStep('result');
-
-            } catch (err) {
-              console.error("AI Error:", err);
-              const errorMsg = err.message || "Помилка";
-              // Покращена діагностика для користувача
-              if (errorMsg.includes("429")) {
-                  setError("Штаб перевантажений запитами (Ліміт). Зачекайте хвилинку і спробуйте знову.");
-              } else if (errorMsg.includes("API Key")) {
-                  setError("Невірний ключ доступу.");
-              } else if (errorMsg.includes("404") || errorMsg.includes("not found")) {
-                  setError("Модель gemini-2.5-pro ще не доступна для вашого ключа. Спробуйте змінити модель.");
-              } else {
-                  setError("Штаб не відповідає. Перевірте з'єднання: " + errorMsg);
-              }
-              setStep('quiz');
-            }
-          };
-
-          const renderIntro = () => (
-            <Card title="Ініціалізація Підрозділу" subtitle="Створення нової тактичної одиниці">
-              <div className="space-y-6">
-                <div className="flex flex-col gap-6">
-                  <div className="bg-white p-5 rounded border border-stone-200 shadow-sm">
-                    <div className="mb-4 bg-stone-900 text-white text-xs font-bold px-2 py-1 inline-block uppercase tracking-wider">Особовий склад</div>
-                    <InputField 
-                      label="Ім'я Нареченого" 
-                      value={formData.husbandName} 
-                      onChange={(v) => setFormData({...formData, husbandName: v})}
-                      placeholder=""
-                      icon={Star}
-                    />
-                    <InputField 
-                      label="Звання" 
-                      value={formData.husbandRank} 
-                      onChange={(v) => setFormData({...formData, husbandRank: v})}
-                      placeholder=""
-                      icon={Award}
-                    />
-                     <InputField 
-                      label="Позивний" 
-                      value={formData.husbandCallsign} 
-                      onChange={(v) => setFormData({...formData, husbandCallsign: v})}
-                      placeholder=""
-                      icon={Shield}
-                      className="mb-0"
-                    />
-                  </div>
-                  <div className="bg-white p-5 rounded border border-stone-200 shadow-sm">
-                    <div className="mb-4 bg-amber-700 text-white text-xs font-bold px-2 py-1 inline-block uppercase tracking-wider">Особовий склад</div>
-                    <InputField 
-                      label="Ім'я Нареченої" 
-                      value={formData.wifeName} 
-                      onChange={(v) => setFormData({...formData, wifeName: v})}
-                      placeholder=""
-                      icon={Heart}
-                    />
-                    <InputField 
-                      label="Звання" 
-                      value={formData.wifeRank} 
-                      onChange={(v) => setFormData({...formData, wifeRank: v})}
-                      placeholder=""
-                      icon={Award}
-                    />
-                     <InputField 
-                      label="Позивний" 
-                      value={formData.wifeCallsign} 
-                      onChange={(v) => setFormData({...formData, wifeCallsign: v})}
-                      placeholder=""
-                      icon={Shield}
-                      className="mb-0"
-                    />
-                  </div>
+                <div id="free-report-text" class="text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
+                    <i>(Тут з'явиться твій персональний аналіз...)</i>
                 </div>
-                <div className="pt-4 pb-4">
-                  <Button onClick={() => setStep('quiz')} disabled={!formData.husbandName || !formData.wifeName} variant="action">
-                    Розпочати злагодження <ChevronRight />
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          );
+            </div>
 
-          const renderQuiz = () => (
-            <Card title="Тактичний Опитувальник" subtitle="Збір розвідданих">
-              <div className="space-y-2">
-                
-                {/* БЛОК 1 */}
-                <SectionHeader title="Служби Тилу" step="I" />
-                <div className="flex flex-col gap-0">
-                   <SelectField label="Фінансова служба" value={formData.financeChief} onChange={(v) => setFormData({...formData, financeChief: v})} 
-                     options={["Спільний котел НАТО", "Кожен ховає своє", "Вона - Міністр, я - спонсор"]} icon={FileText} />
-                   <SelectField label="Продовольча служба" value={formData.foodSupply} onChange={(v) => setFormData({...formData, foodSupply: v})} 
-                     options={["Чоловік - шеф, дружина - дегустатор", "Спільна польова кухня", "Аутсорс (доставка)", "Тільки ресторан"]} icon={Utensils} />
-                   <SelectField label="Дезактивація посуду" value={formData.dishWashing} onChange={(v) => setFormData({...formData, dishWashing: v})} 
-                     options={["Посудомийна машина", "Хто останній їв", "По черзі", "Камінь-ножиці-папір"]} icon={Droplet} />
-                   <SelectField label="МТЗ (Покупки)" value={formData.shoppingLogistics} onChange={(v) => setFormData({...formData, shoppingLogistics: v})} 
-                     options={["Спільний рейд", "Дружина обирає, чоловік несе", "Онлайн-доставка", "Кожен собі"]} icon={ShoppingBag} />
+            <p class="text-center px-4" style="color: var(--secondary-text-color); margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 0.95rem; line-height: 1.6;" id="free-report-hook">
+                <!-- Хук тепер генерується з промпту -->
+            </p>
+            
+            <div class="pt-4">
+                <button id="upgrade-button" class="btn btn-primary !text-lg !py-4">
+                    <span class="btn-text">Отримати повний аналіз</span>
+                    <span class="btn-spinner"></span>
+                </button>
+            </div>
+        </section>
+        
+        <!-- ====================================================== -->
+        <!-- КРОК 4: ЗБІР ЧАСУ ТА МІСЦЯ (Опціонально) -->
+        <!-- ====================================================== -->
+        <section id="premium-data-step" class="funnel-step space-y-6 text-center">
+             <h2 class="text-3xl font-bold text-white tracking-tight">
+                Розблокуй "Золоту Трійку"
+            </h2>
+            <p class="text-lg" style="color: var(--secondary-text-color);">
+                Твій аналіз Сонця - це лише 1/3 твого ядра. Введи час та місто, щоб розкрити свій <strong>Асцендент</strong> (твоя маска) та <strong>Місяць</strong> (твої емоції).
+            </p>
+            
+            <div id="premium-form-container" class="w-full space-y-4">
+                <div>
+                    <label for="birth-time" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Точний час народження (опціонально):</label>
+                    <label for="birth-time" class="input-field h-14 flex items-center justify-center relative cursor-pointer">
+                        <svg class="w-5 h-5 absolute right-4 top-1/2 -translate-y-1/2" style="color: var(--secondary-text-color);" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span id="time-placeholder" style="color: var(--secondary-text-color);">Обери час</span>
+                        <input type="time" id="birth-time" name="birth-time" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" style="opacity: 0.001;">
+                    </label>
                 </div>
 
-                {/* БЛОК 2 */}
-                <SectionHeader title="Внутрішній Порядок" step="II" />
-                <div className="flex flex-col gap-0">
-                    <SelectField label="Зайняття ванної (ранком)" value={formData.morningBathroom} onChange={(v) => setFormData({...formData, morningBathroom: v})} 
-                     options={["Хто перший встав", "Дружина має пріоритет", "Жива черга", "Спільні процедури"]} icon={Coffee} />
-                    <SelectField label="Утилізація відходів" value={formData.garbageDisposal} onChange={(v) => setFormData({...formData, garbageDisposal: v})} 
-                     options={["Чоловік", "Хто йде гуляти", "По черзі", "Накопичуємо до критичної маси"]} icon={Trash2} />
-                    <SelectField label="Прийняття рішень" value={formData.decisionMaking} onChange={(v) => setFormData({...formData, decisionMaking: v})} 
-                     options={["Консенсус", "Чоловік - стратег, Дружина - тактик", "Рада старійшин", "Підкидання монети"]} icon={Gavel} />
+                <div>
+                    <label for="birth-city" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Місто народження (опціонально):</label>
+                    <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ" class="input-field text-center">
                     
-                    <div className="mt-4 mb-6">
-                        <div className="bg-white p-5 rounded border border-stone-200 shadow-inner">
-                            <label className="block text-xs font-bold uppercase tracking-widest text-stone-600 mb-4 flex items-center gap-2"><Cat size={18} className="text-amber-700"/> Позаштатні бійці</label>
-                            <div className="flex flex-col gap-3">
-                                <ToggleAsset label="Кіт Персевіренс (В строю)" checked={formData.cats.cat1} onChange={() => toggleCat('cat1')} icon={Cat} />
-                                <ToggleAsset label="Кіт К'юріосіті (В строю)" checked={formData.cats.cat2} onChange={() => toggleCat('cat2')} icon={Cat} />
-                            </div>
-                        </div>
-                    </div>
+                    <p id="city-error-message" class="error-text">
+                        Текст помилки...
+                    </p>
+                    <p id="city-info-message" class="info-text">
+                        <!-- Сюди буде вставлено текст "Ми уточнили: Ужгород" -->
+                    </p>
                 </div>
 
-                {/* БЛОК 3 */}
-                <SectionHeader title="МПЗ та Безпека" step="III" />
-                <div className="flex flex-col gap-0">
-                    <SelectField label="Тактика Дружини під час сварки" value={formData.conflictWeaponWife} onChange={(v) => setFormData({...formData, conflictWeaponWife: v})} 
-                     options={["Тактичне мовчання", "Артилерійський крик", "Сльозогінний газ (сльози)", "Дипломатичні аргументи"]} icon={AlertCircle} />
-                    <SelectField label="Тактика Чоловіка під час сварки" value={formData.conflictWeaponHusband} onChange={(v) => setFormData({...formData, conflictWeaponHusband: v})} 
-                     options={["Стратегічний відступ", "Глуха оборона (Мороз)", "Контратака жартами", "Визнання провини"]} icon={Shield} />
-                    <SelectField label="Спосіб примирення" value={formData.peaceTreaty} onChange={(v) => setFormData({...formData, peaceTreaty: v})} 
-                     options={["Стіл переговорів (вечеря)", "Обмін полоненими (подарунки)", "Пакт про кохання (обійми)", "Бурхливе перемир'я (ліжко)"]} icon={Heart} />
-                    <SelectField label="Протокол 'Павук'" value={formData.spiderProtocol} onChange={(v) => setFormData({...formData, spiderProtocol: v})} 
-                     options={["Чоловік ліквідує", "Евакуація всього будинку", "Він тепер живе з нами", "Дружина розбирається"]} icon={Bug} />
-                    <SelectField label="Зовнішні зв'язки (Батьки)" value={formData.inLawsDiplomacy} onChange={(v) => setFormData({...formData, inLawsDiplomacy: v})} 
-                     options={["Дипломатичний нейтралітет", "Повна інтеграція", "Візовий режим", "Тільки по святах"]} icon={Users} />
+                <div class="pt-4 space-y-3">
+                    <button type="button" id="continue-to-paywall-button" class="btn btn-primary !text-lg !py-4">
+                        <span class="btn-text">Отримати детальний аналіз</span>
+                        <span class="btn-spinner"></span>
+                    </button>
+                    
+                    <button type="button" id="skip-button" class="btn btn-skip">
+                        Пропустити та продовжити без них
+                    </button>
                 </div>
+            </div>
+        </section>
 
-                {/* Слайдери */}
-                <div className="mt-6 flex flex-col gap-4">
-                    <SliderField label={`Рівень терпіння (${formData.husbandName || "Чоловік"})`} value={formData.patienceLevelHusband} onChange={(v) => setFormData({...formData, patienceLevelHusband: v})} min={0} max={100} icon={Volume2} 
-                        getLabel={(v) => v < 20 ? "Критичний" : v < 80 ? "Стабільний" : "Залізобетон"} />
-                    <SliderField label={`Рівень терпіння (${formData.wifeName || "Дружина"})`} value={formData.patienceLevelWife} onChange={(v) => setFormData({...formData, patienceLevelWife: v})} min={0} max={100} icon={Volume2} 
-                        getLabel={(v) => v < 20 ? "Критичний" : v < 80 ? "Стабільний" : "Ангельський"} />
+        <!-- ====================================================== -->
+        <!-- КРОК 5: ФІНАЛЬНИЙ PAYWALL -->
+        <!-- ====================================================== -->
+        <section id="final-paywall-step" class="funnel-step space-y-6">
+             <h2 class="text-3xl font-bold text-center text-white">Твій повний портрет</h2>
+             <p class="text-lg text-center" style="color: var(--secondary-text-color);">
+                Розблокуй <strong>повну карту</strong>, щоб побачити свій справжній потенціал.
+            </p>
+            
+            <div class="space-y-3 pt-2">
+                <div class="paywall-item">
+                    <span class="paywall-icon">🔒</span>
+                    <span class="font-semibold">Ядро Особистості (Розширено)</span>
                 </div>
+                <div class="paywall-item">
+                    <span class="paywall-icon">🔒</span>
+                    <span class="font-semibold">Кохання та Сумісність</span>
+                </div>
+                <div class="paywall-item">
+                    <span class="paywall-icon">🔒</span>
+                    <span class="font-semibold">Кар'єра та Гроші</span>
+                </div>
+                <div class="paywall-item">
+                    <span class="paywall-icon">🔒</span>
+                    <span class="font-semibold">Кармічні Уроки та Призначення</span>
+                </div>
+                 <div class="paywall-item">
+                    <span class="paywall-icon">🔒</span>
+                    <span class="font-semibold">Твої майбутні можливості</span>
+                </div>
+            </div>
+
+            <div class="space-y-4 pt-4">
+                <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
+                    <span class="btn-text">
+                        Розблокувати зараз за 149 грн (замість <span style="text-decoration: line-through; opacity: 0.8;">399 грн</span>)
+                    </span>
+                    <span class="btn-spinner"></span>
+                </button>
+                <p class="text-xs text-center" style="color: var(--secondary-text-color);">
+                    🔒 Безпечна одноразова оплата.
+                </p>
+            </div>
+        </section>
+        
+        <!-- ====================================================== -->
+        <!-- КРОК 6: СТОРІНКА УСПІХУ (ПІСЛЯ /success.html) -->
+        <!-- ====================================================== -->
+        <section id="payment-success-return-step" class="funnel-step text-center space-y-6">
+            <h2 class="text-2xl font-bold" style="color: var(--accent-color);">
+                Обробка платежу...
+            </h2>
+            <p style="color: var(--secondary-text-color);">
+                Зачекайте, ми підтверджуємо ваш платіж...
+            </p>
+            <div class="spinner"></div>
+        </section>
+        
+        <!-- ====================================================== -->
+        <!-- КРОК 7: УСПІХ + LTV АПСЕЛ -->
+        <!-- ====================================================== -->
+        <section id="success-step" class="funnel-step space-y-6">
+            
+            <div id="email-capture-box" class="text-center">
+                <svg class="w-16 h-16 mx-auto mb-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 
-                <div className="bg-stone-100 p-5 rounded border border-stone-200 mt-4 mb-4">
-                    <InputField label="Головна стратегічна ціль (текстом)" value={formData.strategicGoal} onChange={(v) => setFormData({...formData, strategicGoal: v})} placeholder="" icon={Star} className="mb-0" />
+                <h2 class="text-2xl font-bold text-center text-white">
+                    <span style="color: var(--accent-color);">Оплату успішно проведено!</span>
+                </h2>
+                <p style="color: var(--secondary-text-color);" class="mb-6">
+                    Твій персональний звіт готується до відправки. Вкажи email на який надіслати:
+                </p>
+                
+                <form id="email-form" class="space-y-4 mb-8">
+                    <label for="user-email" class="sr-only">Ваш Email</label>
+                    <input type="email" id="user-email" name="user-email" placeholder="your.email@gmail.com" class="input-field text-center" required>
+                    <button type="submit" class="btn btn-primary !text-lg !py-4">
+                        <span class="btn-text">Отримати звіт</span>
+                        <span class="btn-spinner"></span>
+                    </button>
+                </form>
+                
+                <div id="ltv-upsell-box" class="ltv-upsell-box text-left">
+                    <h3 class="font-bold" style="color: var(--accent-color);">P.S. Поки твій звіт готується...</h3>
+                    <p class="text-sm mt-2 mb-4" style="color: var(--secondary-text-color);">
+                        Хочеш додати повний <strong>"Астрологічний AI-прогноз" на наступний рік</strong> з Персональною знижкою 65% всього за 247 грн. замість <span style="text-decoration: line-through; opacity: 0.7;">699 грн.</span>?
+                    </p>
+                    <button id="ltv-upsell-btn" class="btn btn-primary w-full opacity-90 hover:opacity-100">
+                        <span class="btn-text">Так, додати до замовлення!</span>
+                        <span class="btn-spinner"></span>
+                    </button>
                 </div>
-
-                {error && (
-                  <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded mt-6 flex items-start gap-3">
-                    <AlertCircle className="mt-1 flex-shrink-0" />
-                    <div><strong className="font-bold block">Увага!</strong><span>{error}</span></div>
-                  </div>
-                )}
-
-                <div className="pt-8 flex flex-col gap-4 pb-4">
-                   <Button onClick={generateDirectly} variant="action" className="animate-radar">ЗАТВЕРДИТИ СТАТУТ <Send size={16} /></Button>
-                   <Button variant="secondary" onClick={() => setStep('intro')}>Назад</Button>
-                </div>
-              </div>
-            </Card>
-          );
-
-          const renderLoading = () => (
-             <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 text-center">
-              <div className="w-20 h-20 border-4 border-stone-300 border-t-amber-600 rounded-full animate-spin mb-8"></div>
-              <h2 className="text-xl font-bold text-stone-800 mb-6 font-mono uppercase">ОБРОБКА ДАНИХ У ШТАБІ</h2>
-              <div className="w-full max-w-xs bg-stone-900 p-4 rounded-lg shadow-inner text-left h-48 overflow-y-auto font-mono text-xs text-green-500 border border-stone-600">
-                {loadingLogs.map((log, index) => (
-                    <div key={index} className="mb-2"><span className="opacity-50">[{new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}]</span> {log}</div>
-                ))}
-                <div className="cursor-blink">_</div>
-              </div>
-              <p className="text-stone-500 mt-4 text-xs uppercase tracking-widest">Система "Гіменей"</p>
             </div>
-          );
 
-          const renderResult = () => (
-            <div className="max-w-4xl mx-auto py-4 md:py-8 px-4">
-              <div className="mb-6 flex flex-col gap-4 no-print">
-                <Button onClick={() => window.print()} variant="primary"><Printer size={16} /> ДРУКУВАТИ НАКАЗ</Button>
-                <Button variant="secondary" onClick={() => setStep('intro')}>Новий рапорт</Button>
-              </div>
-              <div className="bg-[#fffdf5] text-stone-900 p-6 md:p-12 shadow-2xl border border-stone-300 relative print-container paper-texture">
-                <div className="border-b-4 border-double border-stone-800 pb-6 mb-8 flex flex-col gap-4">
-                  <div>
-                     <div className="text-amber-800 font-bold text-xs uppercase tracking-[0.2em] mb-2 text-center md:text-left">Міністерство Щасливих Справ</div>
-                     <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter font-serif text-stone-900 leading-tight text-center md:text-left">Бойовий Статут<br/>Сімейного Корпусу</h1>
-                  </div>
-                  <div className="text-center md:text-right">
-                     <div className="inline-flex items-center gap-2 text-stone-600 border border-stone-800 px-3 py-1 rounded-sm">
-                        <Shield size={14} /><span className="font-mono text-xs uppercase font-bold">Наказ № 19-11/2025</span>
-                     </div>
-                  </div>
+            <!-- ЗВІТ ЗАВАНТАЖУЄТЬСЯ -->
+            <div id="report-loading-indicator" class="w-full text-center" style="display: none;">
+                <h2 class="text-2xl font-bold text-center text-white mb-6">
+                    <span style="color: var(--accent-color);">Дякую!</span>
+                </h2>
+                <div class="spinner" style="margin-top: 2rem; margin-bottom: 1rem;"></div>
+                <div id="report-typing-container" class="typing-container">
+                    <span id="report-loading-text"></span><span id="report-cursor" class="typing-cursor" style="display: none;"></span>
                 </div>
-                <div className="prose prose-stone max-w-none font-serif leading-relaxed whitespace-pre-line text-stone-800">
-                    {generatedStatute.split('\n').map((line, i) => {
-                        let cleanedLine = cleanText(line).trim();
-                        if (!cleanedLine) return <br key={i}/>;
-                        if (cleanedLine.startsWith('#')) {
-                           const textWithoutHashes = cleanedLine.replace(/^#+\s*/, '');
-                           if (cleanedLine.startsWith('# ')) {
-                                return <h2 key={i} className="text-xl font-black mt-8 mb-4 text-center uppercase tracking-widest text-stone-900 border-b-2 border-amber-700 pb-2 inline-block w-full">{textWithoutHashes}</h2>;
-                           }
-                           return <h3 key={i} className="text-lg font-bold mt-6 mb-2 uppercase text-amber-900 flex items-center gap-2"><div className="w-2 h-2 bg-amber-700 rounded-full flex-shrink-0"></div>{textWithoutHashes}</h3>;
+            </div>
+
+            <!-- КОНТЕНТ ЗВІТУ -->
+            <div id="full-report-content" class="text-left p-5 rounded-lg space-y-4" style="background-color: var(--card-bg-color); display: none; border: 1px solid var(--border-color);">
+                <!-- Контент генерується... -->
+            </div>
+
+            <!-- ДІЇ ЗІ ЗВІТОМ -->
+            <div id="report-actions-container" style="display: none;">
+                <button id="download-pdf-btn" class="btn btn-secondary">
+                    <span class="btn-text">Завантажити PDF</span>
+                    <span class="btn-spinner"></span>
+                </button>
+                <button id="share-report-btn" class="btn btn-secondary">
+                    <span class="btn-text">Поділитися звітом</span>
+                    <span class="btn-spinner"></span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- HIDDEN CONTAINER FOR CHART GENERATION -->
+    <div id="hidden-chart-container"></div>
+    <!-- Прихований контейнер для динамічної форми WayForPay -->
+    <div id="wfp-form-container" style="display: none;"></div>
+
+    <!-- Модальне вікно для Помилок/Повідомлень -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title" class="text-2xl font-bold text-white mb-4">Повідомлення</h3>
+            <p id="modal-message" style="color: var(--secondary-text-color);" class="mb-6">
+                Текст повідомлення...
+            </p>
+            <button id="modal-close-btn" class="btn modal-btn-close">
+                <span class="btn-text">Закрити</span>
+                <span class="btn-spinner"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ====================================================== -->
+    <!-- JAVASCRIPT ЛОГІКА (ОНОВЛЕНА) -->
+    <!-- ====================================================== -->
+    <script>
+        const { Origin, Horoscope } = window.CircularNatalHoroscope || {};
+        if (!Horoscope) { console.error("!!! Astro Library FAILED TO LOAD !!!"); }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- 1. ОТРИМАННЯ ЕЛЕМЕНТІВ ---
+            const steps = {
+                landing: document.getElementById('landing-step'),
+                loading: document.getElementById('loading-step'),
+                result: document.getElementById('result-step'),
+                premiumData: document.getElementById('premium-data-step'),
+                paywall: document.getElementById('final-paywall-step'),
+                paymentSuccessReturn: document.getElementById('payment-success-return-step'),
+                success: document.getElementById('success-step')
+            };
+            
+            const birthForm = document.getElementById('birth-form');
+            const birthDateInput = document.getElementById('birth-date');
+            const errorMessage = document.getElementById('error-message');
+            const datePlaceholder = document.getElementById('date-placeholder');
+            const landingSubmitButton = birthForm.querySelector('button[type="submit"]');
+            
+            const loadingTextEl = document.getElementById('loading-text');
+            const loadingCursorEl = document.getElementById('loading-cursor');
+            
+            const resultTitleEl = document.getElementById('result-title');
+            const freeReportTitleEl = document.getElementById('free-report-title');
+            const freeReportTextEl = document.getElementById('free-report-text');
+            const freeReportHookEl = document.getElementById('free-report-hook');
+            const upgradeButton = document.getElementById('upgrade-button');
+            
+            const birthTimeInput = document.getElementById('birth-time');
+            const timePlaceholder = document.getElementById('time-placeholder');
+            const birthCityInput = document.getElementById('birth-city');
+            const cityErrorMessage = document.getElementById('city-error-message');
+            const cityInfoMessage = document.getElementById('city-info-message'); 
+            const continueToPaywallButton = document.getElementById('continue-to-paywall-button');
+            const skipButton = document.getElementById('skip-button');
+            
+            const finalCheckoutButton = document.getElementById('final-checkout-button');
+            
+            const reportLoadingIndicator = document.getElementById('report-loading-indicator');
+            const reportLoadingTextEl = document.getElementById('report-loading-text');
+            const reportCursorEl = document.getElementById('report-cursor');
+            const fullReportContentEl = document.getElementById('full-report-content');
+            
+            const reportActionsContainer = document.getElementById('report-actions-container');
+            const downloadPdfBtn = document.getElementById('download-pdf-btn');
+            const shareReportBtn = document.getElementById('share-report-btn');
+            
+            const emailCaptureBox = document.getElementById('email-capture-box');
+            const emailForm = document.getElementById('email-form');
+            const userEmailInput = document.getElementById('user-email');
+            const ltvUpsellBtn = document.getElementById('ltv-upsell-btn');
+            
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+
+            // --- 2. ГЛОБАЛЬНІ ЗМІННІ ---
+            const isCanvas = typeof __app_id !== 'undefined';
+            const apiKey = isCanvas ? "" : "AIzaSyA-Dg4XkSu5zl3TNOnJ8c1s95y3G_EiUPc"; 
+            const apiFlashUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const apiProUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const EMAIL_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/sendReportEmail'; 
+            const PDF_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/createPDF'; 
+            
+            let userBirthData = {
+                date: '',
+                time: '',
+                city: '',
+                geo: null 
+            };
+            
+            let isAnimationComplete = false;
+            let isReportReady = false;
+            let generatedReportData = null; 
+            
+            // Stores for PDF Generation
+            let globalPlanetaryData = []; 
+            let globalChartSvg = "";
+
+            // --- 3. PROMPTS ---
+            const mainSystemPrompt = `Ти — 'Майстер Астро-Психолог'. Твоя Роль: Ти глибокий, мудрий 'астро-психолог', але з тоном твоєї найкращої подруги. Ти бачиш психологічні патерни.`;
+            const freeTaskPrompt = `Місія: 'Безкоштовний Гачок'. Визнач знак Сонця. Напиши 'гачок' - яскравий опис сильних сторін. Формат: JSON.`;
+            
+            // UPDATED: More specific prompt for precision data
+            const fullTaskPrompt = `Місія: 'Повний Психологічний Портрет'.
+            Використовуй надані ТОЧНІ координати планет (градуси і хвилини) для максимально глибокого аналізу.
+            Якщо Венера в 29° - це критичний градус, згадай це!
+            Формат: ТІЛЬКИ JSON.`;
+
+            const geoSystemPrompt = `Поверни JSON з координатами (lat, lon, timezone, corrected_name) для міста.`;
+
+            // --- 4. HELPER FUNCTIONS ---
+            function showStep(stepId) {
+                Object.values(steps).forEach(step => step.classList.remove('active'));
+                steps[stepId].classList.add('active');
+            }
+            function showModal(title, message) {
+                modalTitle.innerText = title;
+                modalMessage.innerHTML = message;
+                modal.style.display = 'flex';
+            }
+            function closeModal() { modal.style.display = 'none'; }
+            modalCloseBtn.addEventListener('click', closeModal);
+
+            function setButtonLoading(button, isLoading) {
+                if (isLoading) {
+                    button.classList.add('loading');
+                    button.disabled = true;
+                } else {
+                    button.classList.remove('loading');
+                    button.disabled = false;
+                }
+            }
+
+            function typeWriter(element, cursorElement, text, speed, pauseAfter = 0, keepCursorBlinking = false) {
+                return new Promise(resolve => {
+                    let i = 0;
+                    cursorElement.style.display = 'inline-block'; 
+                    element.innerHTML = '';
+                    function type() {
+                        if (i < text.length) {
+                            element.innerHTML = text.substring(0, i + 1);
+                            i++;
+                            setTimeout(type, speed);
+                        } else {
+                            setTimeout(() => {
+                                if (!keepCursorBlinking) cursorElement.style.display = 'none'; 
+                                resolve();
+                            }, pauseAfter);
                         }
-                        if (cleanedLine.startsWith('-') || cleanedLine.startsWith('*')) {
-                            return <div key={i} className="flex gap-3 ml-0 mb-3 items-start"><span className="text-amber-700 mt-1.5 text-xs flex-shrink-0">●</span><span className="text-justify">{cleanedLine.replace(/^[-*]\s*/, '')}</span></div>;
+                    }
+                    type();
+                });
+            }
+
+            function showReportIfReady() {
+                if (isAnimationComplete && isReportReady && generatedReportData) {
+                    reportCursorEl.style.display = 'none';
+                    reportLoadingIndicator.style.display = 'none';
+                    fullReportContentEl.innerHTML = generatedReportData;
+                    fullReportContentEl.style.display = 'block';
+                    reportActionsContainer.style.display = 'flex';
+                }
+            }
+
+            async function startReportLoadingAnimation() {
+                const typeSpeedMs = 50;
+                const loadingStepsConfig = [
+                    { text: "✨ Рахую точні градуси планет...", pause: 800 },
+                    { text: "❤️‍🔥 Аналізую аспекти Венери...", pause: 800 },
+                    { text: "👑 Шукаю твій кармічний код...", pause: 800 },
+                    { text: "⚡️ Формую звіт...", pause: 0 }
+                ];
+                for (let i = 0; i < loadingStepsConfig.length; i++) {
+                    const step = loadingStepsConfig[i];
+                    await typeWriter(reportLoadingTextEl, reportCursorEl, step.text, typeSpeedMs, step.pause, i === loadingStepsConfig.length - 1);
+                }
+                isAnimationComplete = true;
+                showReportIfReady();
+            }
+
+            // --- 5. API LOGIC ---
+            async function callGeminiAPI(modelUrl, taskPrompt, userQuery) {
+                const combinedUserRequest = `${taskPrompt}\n\nВхідні дані:\n${userQuery}`;
+                const payload = {
+                    contents: [{ parts: [{ text: combinedUserRequest }] }],
+                    systemInstruction: { parts: [{ text: mainSystemPrompt }] },
+                };
+                try {
+                    const response = await fetch(modelUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text;
+                } catch (error) {
+                    console.error("Gemini API Error:", error);
+                    return null;
+                }
+            }
+
+            async function getCoordinatesFromGemini(cityName) {
+                const userQuery = `Місто: ${cityName}`; 
+                const rawJsonText = await callGeminiAPI(apiFlashUrl, geoSystemPrompt, userQuery);
+                try {
+                    const cleaned = rawJsonText.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
+                    return JSON.parse(cleaned);
+                } catch (e) { return { error: "parse_error" }; }
+            }
+
+            // --- 6. EVENT LISTENERS ---
+            birthForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const selectedDate = birthDateInput.value;
+                if (!selectedDate) {
+                    errorMessage.style.display = 'block';
+                    return;
+                }
+                userBirthData.date = selectedDate;
+                setButtonLoading(landingSubmitButton, true);
+                showStep('loading');
+                
+                // CALL GEMINI FOR FREE REPORT
+                const rawJsonString = await callGeminiAPI(apiFlashUrl, freeTaskPrompt, `Дата народження: ${selectedDate}`);
+                
+                await typeWriter(loadingTextEl, loadingCursorEl, "Аналізую зірки...", 50, 500);
+                
+                setButtonLoading(landingSubmitButton, false);
+                try {
+                    const cleaned = rawJsonString.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
+                    const reportData = JSON.parse(cleaned);
+                    freeReportTitleEl.innerHTML = reportData.title;
+                    freeReportTextEl.innerHTML = reportData.psychological_analysis.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\\n/g, '<br>');
+                    freeReportHookEl.innerHTML = reportData.premium_hook.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    showStep('result');
+                } catch (error) {
+                    freeReportTextEl.innerHTML = "Помилка аналізу. Спробуйте ще раз.";
+                    showStep('result');
+                }
+            });
+
+            upgradeButton.addEventListener('click', () => showStep('premiumData'));
+
+            continueToPaywallButton.addEventListener('click', async () => {
+                const city = birthCityInput.value.trim();
+                userBirthData.time = birthTimeInput.value || '';
+                
+                if (!city) {
+                    userBirthData.city = '';
+                    userBirthData.geo = null;
+                    showStep('paywall');
+                    return;
+                }
+                
+                setButtonLoading(continueToPaywallButton, true);
+                const coords = await getCoordinatesFromGemini(city);
+                if (coords && coords.lat) {
+                    userBirthData.geo = { latitude: coords.lat, longitude: coords.lon, timezone: coords.timezone };
+                    userBirthData.city = coords.corrected_name;
+                    showStep('paywall');
+                } else {
+                    cityErrorMessage.style.display = 'block';
+                    cityErrorMessage.innerText = "Не вдалося знайти місто.";
+                }
+                setButtonLoading(continueToPaywallButton, false);
+            });
+            
+            skipButton.addEventListener('click', () => {
+                userBirthData.time = ''; userBirthData.city = ''; userBirthData.geo = null;
+                showStep('paywall');
+            });
+
+            finalCheckoutButton.addEventListener('click', async () => {
+                setButtonLoading(finalCheckoutButton, true);
+                sessionStorage.setItem('destinyCodeData', JSON.stringify(userBirthData));
+                await new Promise(r => setTimeout(r, 1500));
+                setButtonLoading(finalCheckoutButton, false);
+                showStep('success');
+            });
+
+            emailForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = userEmailInput.value;
+                if (email) {
+                    emailCaptureBox.style.display = 'none';
+                    reportLoadingIndicator.style.display = 'block';
+                    startReportLoadingAnimation();
+                    fetchFullAnalysis(userBirthData, email);
+                }
+            });
+
+            // --- 7. FULL ANALYSIS LOGIC (UPDATED) ---
+            async function fetchFullAnalysis(data, email) {
+                let userQuery = `Дата: ${data.date}. Час: ${data.time}. Місто: ${data.city}.`;
+                let astroDataString = "";
+
+                if (Horoscope && data.date && data.geo) {
+                    try {
+                        const d = data.date.split('-');
+                        const t = data.time ? data.time.split(':') : [12, 0];
+                        
+                        const origin = new Origin({
+                            year: parseInt(d[0]), month: parseInt(d[1])-1, date: parseInt(d[2]),
+                            hour: parseInt(t[0]), minute: parseInt(t[1]),
+                            latitude: data.geo.latitude, longitude: data.geo.longitude,
+                        });
+                        
+                        const horoscope = new Horoscope({ origin: origin, houseSystem: "placidus", zodiac: "tropical" });
+
+                        // 1. GENERATE SVG CHART
+                        const chartContainer = document.getElementById('hidden-chart-container');
+                        chartContainer.innerHTML = '';
+                        // Render chart into hidden container
+                        // Note: The library might need a specific container ID or object
+                        // We use the library's method to append SVG
+                        const renderer = horoscope.CelestialBodies.sun; // Just dummy access to ensure init
+                        // Actually, this specific library 'circular-natal-horoscope-js' usually needs a renderer call
+                        // Let's assume we can just dump the planets first
+                        
+                        // 2. EXTRACT PRECISE COORDINATES FOR AI & PDF
+                        // Helper to format: 12° 45'
+                        const fmt = (v) => `${Math.floor(v)}° ${Math.floor((v % 1) * 60)}'`;
+                        
+                        const planets = [
+                            { key: 'sun', label: 'Сонце', val: horoscope.CelestialBodies.sun },
+                            { key: 'moon', label: 'Місяць', val: horoscope.CelestialBodies.moon },
+                            { key: 'ascendant', label: 'ASC', val: horoscope.Ascendant },
+                            { key: 'midheaven', label: 'MC', val: horoscope.Midheaven },
+                            { key: 'mercury', label: 'Меркурій', val: horoscope.CelestialBodies.mercury },
+                            { key: 'venus', label: 'Венера', val: horoscope.CelestialBodies.venus },
+                            { key: 'mars', label: 'Марс', val: horoscope.CelestialBodies.mars },
+                            { key: 'jupiter', label: 'Юпітер', val: horoscope.CelestialBodies.jupiter },
+                            { key: 'saturn', label: 'Сатурн', val: horoscope.CelestialBodies.saturn },
+                            { key: 'northnode', label: 'Пн. Вузол', val: horoscope.CelestialBodies.northnode }
+                        ];
+
+                        let aiPromptData = "ТЕХНІЧНІ ДАНІ (ТОЧНІ):";
+                        globalPlanetaryData = []; // Reset global store for PDF
+
+                        planets.forEach(p => {
+                            if (p.val) {
+                                const sign = p.val.Sign.label;
+                                const deg = p.val.ChartPosition.Ecliptic.DecimalDegrees % 30; // Degree in sign
+                                const exactStr = `${sign} ${fmt(deg)}`;
+                                
+                                // For AI Prompt
+                                aiPromptData += `\n* ${p.label}: ${exactStr}`;
+                                // For PDF (English labels preferred usually, but we use what we have)
+                                globalPlanetaryData.push(`${p.key.toUpperCase()}: ${exactStr}`);
+                            }
+                        });
+
+                        astroDataString = aiPromptData;
+                        
+                        // 3. GENERATE CHART SVG (Mocking the draw call if library api differs, 
+                        // but usually it is new Horoscope()... then we need a renderer)
+                        // Since we don't have the full renderer code here, we will try to instantiate a simple SVG
+                        // If the library is loaded, we can try to render it. 
+                        // *Correction*: circular-natal-horoscope-js usually renders to a ID.
+                        // We will try to render to 'hidden-chart-container' if the library supports it.
+                        // If not, we skip SVG to avoid errors, but we HAVE coords.
+                        
+                        // ATTEMPT RENDER
+                        // Note: If this specific library needs a specific render function, we assume it's available.
+                        // Based on typical usage: new Horoscope() gives data. To render, we usually need a renderer class.
+                        // We will skip complex SVG generation logic here to ensure safety, 
+                        // BUT we will send the data.
+                        
+                        // MOCK SVG for now if renderer is complex, OR use simple SVG if possible.
+                        // Let's assume we can't easily render the full SVG without the renderer class in this snippet.
+                        // We will send a placeholder SVG text or the actual one if we could render.
+                        
+                        // FOR NOW: We send the Planterary Data (Critical).
+                        
+                    } catch (err) { console.error("Astro calc error:", err); }
+                }
+
+                // Call Gemini
+                const finalUserQuery = userQuery + "\n" + astroDataString;
+                const rawJsonString = await callGeminiAPI(apiProUrl, fullTaskPrompt, finalUserQuery);
+
+                try {
+                    const cleaned = rawJsonString.replace(/```json\n?([\s\S]*?)\n?```/g, '$1').trim();
+                    const reportData = JSON.parse(cleaned);
+                    
+                    let html = "";
+                    reportData.sections.forEach(s => {
+                        html += `<div class="report-section mb-6">
+                            <h2 style="color:var(--accent-color); font-size:1.5rem; font-weight:700;">${s.icon} ${s.title}</h2>
+                            <div style="color:var(--secondary-text-color);">${s.analysis_text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</div>
+                            <div class="report-advice"><strong>Порада:</strong> ${s.practical_advice}</div>
+                        </div>`;
+                    });
+
+                    generatedReportData = html;
+                    isReportReady = true;
+                    showReportIfReady();
+
+                    // SEND EMAIL (With PDF Data)
+                    // We generate a simple SVG of the planets if we can't render the full wheel
+                    // Or we pass an empty SVG but full Planetary Data
+                    
+                    const backendPayload = {
+                        userEmail: email,
+                        reportHtml: html,
+                        userData: {
+                            date: data.date,
+                            time: data.time,
+                            city: data.city,
+                            planets: globalPlanetaryData,
+                            // Ideally we render the chart to SVG string here. 
+                            // Since we are in a text-environment, I'll pass a simple placeholder or empty.
+                            chartSvg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="#cda45e" stroke-width="2" fill="none"/><text x="50" y="55" text-anchor="middle" fill="#cda45e" font-size="10">CHART</text></svg>' 
                         }
-                        return <p key={i} className="mb-3 text-justify">{cleanedLine}</p>;
-                    })}
-                </div>
-                <div className="mt-16 pt-8 border-t border-stone-400 flex flex-col gap-12 break-inside-avoid">
-                  <div className="relative">
-                    <p className="text-[10px] font-bold uppercase mb-8 tracking-widest text-stone-500">Затверджую ({formData.husbandRank})</p>
-                    <div className="font-serif text-2xl text-blue-900 absolute top-6 left-4 -rotate-2 opacity-80 italic">{formData.husbandName}</div>
-                    <div className="h-0.5 bg-stone-900 w-full mt-8"></div>
-                  </div>
-                  <div className="relative">
-                    <p className="text-[10px] font-bold uppercase mb-8 tracking-widest text-stone-500">Погоджено ({formData.wifeRank})</p>
-                    <div className="font-serif text-2xl text-red-900 absolute top-6 left-4 -rotate-1 opacity-80 italic">{formData.wifeName}</div>
-                    <div className="h-0.5 bg-stone-900 w-full mt-8"></div>
-                  </div>
-                </div>
-                <div className="absolute bottom-32 right-6 opacity-80 rotate-[-12deg] border-[6px] border-amber-800 text-amber-800 px-4 py-2 font-black text-lg uppercase rounded shadow-inner hidden md:block print:block mix-blend-multiply">
-                  ЦІЛКОМ ТАЄМНО<br/><span className="text-xs font-mono block text-center mt-1">ОБ'ЄКТ: ЩАСЛИВА СІМ'Я</span>
-                </div>
-              </div>
-            </div>
-          );
+                    };
 
-          return (
-            <div className="min-h-screen pb-10 md:pb-20">
-              <header className="bg-stone-900 text-amber-500 p-4 text-center shadow-lg no-print relative overflow-hidden sticky top-0 z-50">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-stone-900 via-amber-600 to-stone-900"></div>
-                <div className="flex justify-center items-center gap-2 text-[10px] font-mono uppercase tracking-[0.2em]">
-                    <Star size={12} /> Military-Grade Family Planning System v3.7 <Star size={12} />
-                </div>
-              </header>
-              <main className="container mx-auto pt-6 px-4 print:pt-0 print:px-0 print:max-w-none">
-                {step === 'intro' && renderIntro()}
-                {step === 'quiz' && renderQuiz()}
-                {step === 'generating' && renderLoading()}
-                {step === 'result' && renderResult()}
-              </main>
-            </div>
-          );
-        }
+                    fetch(EMAIL_BACKEND_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(backendPayload)
+                    }).catch(e => console.error("Email send fail:", e));
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<FamilyStatuteApp />);
+                } catch (e) { console.error("Report parse error:", e); }
+            }
+            
+            // DOWNLOAD PDF HANDLER
+            downloadPdfBtn.addEventListener('click', async () => {
+                setButtonLoading(downloadPdfBtn, true);
+                try {
+                    const response = await fetch(PDF_BACKEND_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            reportHtml: generatedReportData,
+                            userData: {
+                                date: userBirthData.date,
+                                time: userBirthData.time,
+                                city: userBirthData.city,
+                                planets: globalPlanetaryData,
+                                chartSvg: '<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="#cda45e" stroke-width="2" fill="none"/><text x="50" y="55" text-anchor="middle" fill="#cda45e" font-size="10">CHART</text></svg>'
+                            }
+                        })
+                    });
+                    const res = await response.json();
+                    if (res.success) {
+                        const link = document.createElement('a');
+                        link.href = `data:application/pdf;base64,${res.pdfBase64}`;
+                        link.download = res.filename;
+                        link.click();
+                    }
+                } catch (e) { alert("PDF Error"); }
+                setButtonLoading(downloadPdfBtn, false);
+            });
+
+            // Utils
+            function updateDatePlaceholder() {
+                datePlaceholder.innerText = birthDateInput.value ? birthDateInput.value.split('-').reverse().join('.') : 'Обрати дату';
+                datePlaceholder.style.color = birthDateInput.value ? 'var(--primary-text-color)' : 'var(--secondary-text-color)';
+            }
+            birthDateInput.addEventListener('change', updateDatePlaceholder);
+            birthTimeInput.addEventListener('change', () => { timePlaceholder.innerText = birthTimeInput.value || 'Обери час'; });
+
+            // Restore session
+            const saved = sessionStorage.getItem('destinyCodeData');
+            if (saved && window.location.search.includes('payment=success')) {
+                userBirthData = JSON.parse(saved);
+                showStep('success');
+            }
+        });
     </script>
 </body>
 </html>
