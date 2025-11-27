@@ -332,21 +332,7 @@
             gap: 0.75rem; 
         }
         
-        /* === FIX FOR SVG RENDERING (OFF-SCREEN) === 
-           Використовуємо абсолютне позиціонування за межами екрану.
-           Це дозволяє браузеру "бачити" елемент і рендерити його,
-           але користувач його не бачить. 'display: block' обов'язковий.
-        */
-        #chart-hidden-render {
-            position: absolute;
-            top: -9999px;
-            left: -9999px;
-            width: 600px;
-            height: 600px;
-            display: block; 
-            z-index: -9999;
-            background: transparent;
-        }
+        /* Видалено #chart-hidden-render, так як ми не рендеримо SVG */
     </style>
 </head>
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
@@ -639,8 +625,8 @@
         // ВАЖЛИВО: Деструктуризуємо також Renderer для малювання SVG
         const { Origin, Horoscope, Renderer } = window.CircularNatalHoroscope || {};
 
-        if (!Horoscope || !Renderer) {
-            console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD OR RENDERER MISSING !!!");
+        if (!Horoscope) {
+            console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD !!!");
             console.log("Library object:", window.CircularNatalHoroscope);
         } else {
             console.log("Astro Library (CircularNatalHoroscopeJS) loaded successfully.");
@@ -705,7 +691,7 @@
             const ltvUpsellBtn = document.getElementById('ltv-upsell-btn');
 
             const wfpFormContainer = document.getElementById('wfp-form-container');
-            const chartHiddenRender = document.getElementById('chart-hidden-render'); // Елемент для рендеру SVG
+            // const chartHiddenRender... ВИДАЛЕНО
 
             const modal = document.getElementById('modal');
             const modalTitle = document.getElementById('modal-title');
@@ -737,7 +723,7 @@
                 city: '',
                 geo: null,
                 // Нові поля для PDF
-                chartSvg: null,
+                chartSvg: null, // Примусово NULL, бо ми відключили рендеринг
                 planets: [] 
             };
             
@@ -1293,19 +1279,14 @@
                     return;
                 }
                 
-                // === DEBUG ALERT: ВИДАЛИТИ ПІСЛЯ ТЕСТУ ===
-                // Перевіряємо, чи є дані перед відправкою
-                const chartStatus = userBirthData.chartSvg ? "✅ Карта Є" : "❌ Карти Немає (Renderer?)";
-                const planetsStatus = (userBirthData.planets && userBirthData.planets.length > 0) 
-                    ? `✅ Планет: ${userBirthData.planets.length}` 
-                    : "❌ Планет Немає";
-                
-                console.log(`DEBUG Check: ${chartStatus}, ${planetsStatus}`);
-                // ПОПЕРЕДЖЕННЯ ДЛЯ ТЕСТУВАННЯ
-                if (!userBirthData.chartSvg || !userBirthData.planets || userBirthData.planets.length === 0) {
-                     // Можна розкоментувати для дебагу, якщо потрібно
-                     // alert(`УВАГА! Проблема з даними: \n${chartStatus}\n${planetsStatus}\n\nСпробуйте оновити сторінку.`);
+                // === DEBUG ALERT: Повідомлення про знайдені планети ===
+                let planetsMsg = "Планети не знайдено.";
+                if (userBirthData.planets && userBirthData.planets.length > 0) {
+                    planetsMsg = "✅ Знайдено планет: " + userBirthData.planets.length + "\n\n" + userBirthData.planets.join("\n");
                 }
+                
+                // Показуємо користувачу результат розрахунку перед генерацією PDF
+                alert(`РЕЗУЛЬТАТ РОЗРАХУНКУ:\n${planetsMsg}`);
                 // ==========================================
 
                 try {
@@ -1439,7 +1420,7 @@
                 if (data.city) userQuery += ` Місто: ${data.city}.`;
                 
                 let astroDataString = "";
-                let horoscope = null; // Зберігаємо тут для доступу в блоці Renderer
+                let horoscope = null; 
                 
                 // === ЕТАП 1: РОЗРАХУНОК ГОРОСКОПУ (МАТЕМАТИКА) ===
                 if (Horoscope && data.date && data.geo) {  
@@ -1502,18 +1483,29 @@
                         });
                         
                         userBirthData.planets = planetsList;
+                        console.table(planetsList); // <--- ДОДАНО ДЛЯ КОНСОЛІ
                         console.log(`✅ Planets list generated: ${planetsList.length} planets.`);
                         
                         // Формуємо рядок для AI
+                        // V2.18: Adding precise coordinates (degrees + minutes) for better AI interpretation
+                        const precisePlanetsText = planetsList.join('\n');
+                        
                         astroDataString = `
                         == Технічні Астрологічні Дані (для аналізу) ==
-                        * Сонце: ${horoscope.CelestialBodies.sun.Sign.label} (у ${horoscope.CelestialBodies.sun.House.label} Домі)
-                        * Місяць: ${horoscope.CelestialBodies.moon.Sign.label} (у ${horoscope.CelestialBodies.moon.House.label} Домі)
-                        * Асцендент (ASC): ${horoscope.Ascendant.Sign.label}
-                        * Середина Неба (MC): ${horoscope.Midheaven.Sign.label}
-                        * Венера: ${horoscope.CelestialBodies.venus.Sign.label} (у ${horoscope.CelestialBodies.venus.House.label} Домі)
-                        * Марс: ${horoscope.CelestialBodies.mars.Sign.label} (у ${horoscope.CelestialBodies.mars.House.label} Домі)
-                        * Північний Вузол: ${horoscope.CelestialBodies.northnode.Sign.label} (у ${horoscope.CelestialBodies.northnode.House.label} Домі)
+                        ВАЖЛИВО: Використовуй точні градуси для глибокої інтерпретації (аспекти, критичні градуси).
+                        
+                        [Точні Координати]
+                        ${precisePlanetsText}
+                        
+                        [Розподіл по Домах]
+                        * Сонце: ${horoscope.CelestialBodies.sun.House.label} Дім
+                        * Місяць: ${horoscope.CelestialBodies.moon.House.label} Дім
+                        * Венера: ${horoscope.CelestialBodies.venus.House.label} Дім
+                        * Марс: ${horoscope.CelestialBodies.mars.House.label} Дім
+                        * Асцендент: ${horoscope.Ascendant.Sign.label}
+                        * Midheaven: ${horoscope.Midheaven.Sign.label}
+                        * Північний Вузол: ${horoscope.CelestialBodies.northnode.House.label} Дім
+                        
                         == Кінець Технічних Даних ==
                         `;
                     } catch (err) {
@@ -1521,32 +1513,8 @@
                     }
                 }
 
-                // === ЕТАП 3: МАЛЮВАННЯ КАРТИ (РИЗИКОВАНИЙ БЛОК) ===
-                // Цей блок ізольований. Якщо він впаде, решта даних (планети) вже збережені.
-                if (horoscope && Renderer && chartHiddenRender) {
-                    try {
-                        console.log("🎨 Starting SVG Rendering...");
-                        chartHiddenRender.innerHTML = ''; // Очистка
-                        const renderer = new Renderer(horoscope);
-                        renderer.render(chartHiddenRender);
-                        
-                        // Перевірка результату
-                        const svgContent = chartHiddenRender.innerHTML;
-                        if (svgContent && svgContent.length > 100) {
-                            userBirthData.chartSvg = svgContent;
-                            console.log("✅ Chart SVG generated successfully. Length:", svgContent.length);
-                        } else {
-                            console.warn("⚠️ Renderer finished but output is empty.");
-                            userBirthData.chartSvg = null;
-                        }
-                    } catch (renderErr) {
-                        console.error("❌ Renderer CRASHED:", renderErr);
-                        userBirthData.chartSvg = null; 
-                    }
-                } else {
-                    if (horoscope && !Renderer) console.warn("⚠️ Renderer not available.");
-                    if (horoscope && !chartHiddenRender) console.warn("⚠️ Hidden Div missing.");
-                }
+                // === ЕТАП 3: МАЛЮВАННЯ КАРТИ (ВИМКНЕНО) ===
+                userBirthData.chartSvg = null; // Примусово відключаємо
                 
                 const finalUserQuery = userQuery + astroDataString;
                 
