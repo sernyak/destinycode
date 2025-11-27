@@ -332,17 +332,21 @@
             gap: 0.75rem; 
         }
         
-        /* Прихований контейнер для рендерингу SVG */
+        /* === FIX FOR SVG RENDERING === 
+           Використовуємо fixed + opacity:0 замість hidden/display:none.
+           Це гарантує, що браузер "малює" елемент (розраховує розміри), 
+           але користувач його не бачить.
+        */
         #chart-hidden-render {
-            position: absolute;
-            top: -9999px;
-            left: -9999px;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 600px;
             height: 600px;
-            visibility: hidden;
-            /* Важливо: display block, інакше SVG може не намалюватись */
-            display: block; 
-            z-index: -1;
+            opacity: 0;
+            pointer-events: none;
+            z-index: -9999;
+            display: block;
         }
     </style>
 </head>
@@ -1436,14 +1440,16 @@
                 if (data.city) userQuery += ` Місто: ${data.city}.`;
                 
                 let astroDataString = "";
+                let horoscope = null; // Зберігаємо тут для доступу в блоці Renderer
                 
-                // === КРИТИЧНЕ ОНОВЛЕННЯ ДЛЯ SVG ТА ГРАДУСІВ ===
+                // === ЕТАП 1: РОЗРАХУНОК ГОРОСКОПУ (МАТЕМАТИКА) ===
                 if (Horoscope && data.date && data.geo) {  
                     try {
+                        console.log("🔮 Starting Horoscope Calculation...");
                         const dateParts = data.date.split('-');
                         const year = parseInt(dateParts[0]);
-                        const month = parseInt(dateParts[1]) - 1; // JS month is 0-indexed
-                        const date = parseInt(dateParts[2]);
+                        const month = parseInt(dateParts[1]) - 1; 
+                        const dateNum = parseInt(dateParts[2]);
                         
                         let hour = 12, minute = 0;
                         if (data.time) {
@@ -1453,43 +1459,32 @@
                         }
                         
                         const origin = new Origin({
-                            year: year, month: month, date: date,
+                            year: year, month: month, date: dateNum,
                             hour: hour, minute: minute,
                             latitude: data.geo.latitude, 
                             longitude: data.geo.longitude,
                             timezone: data.geo.timezone
                         });
                         
-                        const horoscope = new Horoscope({
+                        horoscope = new Horoscope({
                             origin: origin, houseSystem: "placidus", zodiac: "tropical"
                         });
-                        
-                        // 1. ГЕНЕРАЦІЯ SVG (Рендеримо в прихований div)
-                        // Додана перевірка Renderer!
-                        if (Renderer && chartHiddenRender) {
-                            chartHiddenRender.innerHTML = ''; // Очистка
-                            try {
-                                const renderer = new Renderer(horoscope);
-                                renderer.render(chartHiddenRender);
-                                // Витягуємо SVG-рядок та зберігаємо в userBirthData
-                                const svgContent = chartHiddenRender.innerHTML;
-                                userBirthData.chartSvg = svgContent;
-                                console.log("✅ Chart SVG generated. Length:", svgContent.length);
-                            } catch (renderErr) {
-                                console.error("❌ Renderer failed:", renderErr);
-                                userBirthData.chartSvg = null; 
-                            }
-                        } else {
-                            console.warn("⚠️ Renderer not available or hidden div missing. SVG skipped.");
-                            userBirthData.chartSvg = null;
-                        }
+                        console.log("✅ Horoscope calculated successfully.");
 
-                        // 2. ГЕНЕРАЦІЯ СПИСКУ ПЛАНЕТ (Градуси)
+                    } catch (err) {
+                        console.error("❌ Failed to calculate horoscope (Math Error):", err);
+                    }
+                } else { 
+                    console.log("⚠️ Calculating report without GEO data (user skipped or validation failed).");
+                }
+
+                // === ЕТАП 2: ГЕНЕРАЦІЯ СПИСКУ ПЛАНЕТ (БЕЗПЕЧНИЙ БЛОК) ===
+                if (horoscope) {
+                    try {
                         const planetsList = [];
                         const bodies = horoscope.CelestialBodies;
-                        // Проходимо по основних планетах
+                        
                         ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'].forEach(key => {
-                             // В бібліотеці Ascendant/Midheaven можуть бути в окремих властивостях, перевіримо
                              let body = bodies[key];
                              if (!body && key === 'ascendant') body = horoscope.Ascendant;
                              if (!body && key === 'midheaven') body = horoscope.Midheaven;
@@ -1499,16 +1494,14 @@
                                  const degree = Math.floor(body.ChartPosition.Ecliptic.DecimalDegrees % 30);
                                  const minute = Math.floor((body.ChartPosition.Ecliptic.DecimalDegrees % 1) * 60);
                                  const label = key.charAt(0).toUpperCase() + key.slice(1);
-                                 planetsList.push(`${label}:${sign} ${degree}°${minute}'`); // !!! Прибрав пробіл перед двокрапкою для сумісності з Backend
+                                 planetsList.push(`${label}:${sign} ${degree}°${minute}'`); 
                              }
                         });
                         
-                        // ПРИМУСОВЕ ЗБЕРЕЖЕННЯ В ГЛОБАЛЬНУ ЗМІННУ
                         userBirthData.planets = planetsList;
-                        console.log("✅ Planets degrees generated:", planetsList.length);
-
-
-                        // 3. Формуємо рядок для AI (як і раніше)
+                        console.log(`✅ Planets list generated: ${planetsList.length} planets.`);
+                        
+                        // Формуємо рядок для AI
                         astroDataString = `
                         == Технічні Астрологічні Дані (для аналізу) ==
                         * Сонце: ${horoscope.CelestialBodies.sun.Sign.label} (у ${horoscope.CelestialBodies.sun.House.label} Домі)
@@ -1520,13 +1513,36 @@
                         * Північний Вузол: ${horoscope.CelestialBodies.northnode.Sign.label} (у ${horoscope.CelestialBodies.northnode.House.label} Домі)
                         == Кінець Технічних Даних ==
                         `;
-                        console.log("Astro data successfully generated for Gemini:", astroDataString);
-
                     } catch (err) {
-                        console.error("Failed to calculate full horoscope (Step 7):", err);
+                        console.error("❌ Failed to generate planet list/astro string:", err);
                     }
-                } else { 
-                    console.log("Calculating report without GEO data (user skipped or validation failed).");
+                }
+
+                // === ЕТАП 3: МАЛЮВАННЯ КАРТИ (РИЗИКОВАНИЙ БЛОК) ===
+                // Цей блок ізольований. Якщо він впаде, решта даних (планети) вже збережені.
+                if (horoscope && Renderer && chartHiddenRender) {
+                    try {
+                        console.log("🎨 Starting SVG Rendering...");
+                        chartHiddenRender.innerHTML = ''; // Очистка
+                        const renderer = new Renderer(horoscope);
+                        renderer.render(chartHiddenRender);
+                        
+                        // Перевірка результату
+                        const svgContent = chartHiddenRender.innerHTML;
+                        if (svgContent && svgContent.length > 100) {
+                            userBirthData.chartSvg = svgContent;
+                            console.log("✅ Chart SVG generated successfully. Length:", svgContent.length);
+                        } else {
+                            console.warn("⚠️ Renderer finished but output is empty.");
+                            userBirthData.chartSvg = null;
+                        }
+                    } catch (renderErr) {
+                        console.error("❌ Renderer CRASHED:", renderErr);
+                        userBirthData.chartSvg = null; 
+                    }
+                } else {
+                    if (horoscope && !Renderer) console.warn("⚠️ Renderer not available.");
+                    if (horoscope && !chartHiddenRender) console.warn("⚠️ Hidden Div missing.");
                 }
                 
                 const finalUserQuery = userQuery + astroDataString;
