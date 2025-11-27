@@ -328,8 +328,12 @@
 </head>
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
 
-    <!-- HIDDEN CONTAINER FOR CHART GENERATION -->
-    <div id="hidden-chart-container" style="position: absolute; left: -9999px; width: 600px; height: 600px; visibility: hidden;"></div>
+    <!-- 
+      FIXED CONTAINER FOR CHART GENERATION 
+      Changed from 'visibility: hidden' to opacity: 0 + fixed position.
+      This ensures the element has dimensions so the library can render.
+    -->
+    <div id="hidden-chart-container" style="position: fixed; top: 0; left: 0; z-index: -50; width: 600px; height: 600px; opacity: 0; pointer-events: none;"></div>
 
     <!-- Головний контейнер воронки -->
     <main class="funnel-container">
@@ -1295,7 +1299,8 @@
                 if (data.city) userQuery += ` Місто: ${data.city}.`;
                 
                 let astroDataString = "";
-                
+                let errorDetails = ""; // Track why chart fails
+
                 // === ASTRO CALCULATION & CHART GENERATION ===
                 if (Horoscope && data.date && data.geo) {  
                     try {
@@ -1326,7 +1331,6 @@
                         });
                         
                         // 1. GENERATE PLANETARY DATA STRINGS
-                        // Format: "Sun: Scorpio 12° 30'"
                         const planetsList = [];
                         const bodiesMap = {
                             "sun": "Sun", "moon": "Moon", "mercury": "Mercury", "venus": "Venus",
@@ -1334,57 +1338,51 @@
                             "neptune": "Neptune", "pluto": "Pluto", "northnode": "North Node", "ascendant": "Ascendant"
                         };
 
-                        // Helper to format degrees/minutes
                         const formatPos = (bodyObj) => {
-                             const sign = bodyObj.Sign.label; // e.g., "Aries"
+                             const sign = bodyObj.Sign.label; 
                              const deg = Math.floor(bodyObj.ChartPosition.Ecliptic.DecimalDegrees % 30);
                              const min = Math.floor((bodyObj.ChartPosition.Ecliptic.DecimalDegrees % 1) * 60);
                              return `${sign} ${deg}° ${min}'`;
                         };
 
-                        // Iterate main bodies
                         const mainBodies = ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "northnode"];
                         mainBodies.forEach(key => {
                             if (horoscope.CelestialBodies[key]) {
                                 planetsList.push(`${bodiesMap[key]}: ${formatPos(horoscope.CelestialBodies[key])}`);
                             }
                         });
-                        // Add ASC explicitly if available
                         if (horoscope.Ascendant) {
                              planetsList.push(`ASC: ${formatPos(horoscope.Ascendant)}`);
                         }
 
-                        // SAVE TO DATA OBJECT
                         userBirthData.planets = planetsList;
                         console.log("Generated Planets List:", planetsList);
 
-                        // 2. GENERATE SVG CHART
+                        // 2. GENERATE SVG CHART WITH DELAY FOR RENDER
                         const chartContainer = document.getElementById('hidden-chart-container');
-                        chartContainer.innerHTML = ''; // Clear previous
+                        chartContainer.innerHTML = ''; 
                         
-                        // Using the library to render to the hidden div
-                        // Note: library usage varies, but assuming standard 'circular-natal-horoscope-js' behavior:
-                        // It usually appends an SVG to the element passed in config.
                         const renderer = horoscope.createChart({
                             element: chartContainer,
                             width: 600,
                             height: 600,
-                            stroke: "#cda45e", // Base stroke color
+                            stroke: "#cda45e", 
                         });
                         
-                        // Extract the SVG string
+                        // WAIT for render (small delay ensures DOM update)
+                        await new Promise(r => setTimeout(r, 300));
+
                         const svgElement = chartContainer.querySelector('svg');
                         if (svgElement) {
-                             // Add custom class for styling in PDF/Backend
                              svgElement.classList.add('radical-chart-svg');
-                             // Force namespace for standalone usage if missing
                              if (!svgElement.getAttribute('xmlns')) {
                                  svgElement.setAttribute('xmlns', "http://www.w3.org/2000/svg");
                              }
                              userBirthData.chartSvg = svgElement.outerHTML;
-                             console.log("Chart SVG generated successfully.");
+                             console.log("Chart SVG generated successfully. Length:", userBirthData.chartSvg.length);
                         } else {
                             console.warn("Chart SVG generation returned no SVG element.");
+                            errorDetails += "SVG Element not found after render. ";
                         }
 
                         // 3. TEXT DATA FOR AI PROMPT
@@ -1399,13 +1397,15 @@
                         * Північний Вузол: ${horoscope.CelestialBodies.northnode.Sign.label} (у ${horoscope.CelestialBodies.northnode.House.label} Домі)
                         == Кінець Технічних Даних ==
                         `;
-                        console.log("Astro data successfully generated for Gemini:", astroDataString);
-
+                        
                     } catch (err) {
                         console.error("Failed to calculate full horoscope (Step 7):", err);
+                        errorDetails += `Calc Error: ${err.message}`;
                     }
                 } else { 
-                     console.log("Calculating report without GEO data (user skipped or validation failed).");
+                     console.log("Skipping chart calc: Missing Geo or Library.");
+                     if (!Horoscope) errorDetails += "Library Missing. ";
+                     if (!data.geo) errorDetails += "Geo Data Missing. ";
                 }
                 
                 const finalUserQuery = userQuery + astroDataString;
@@ -1421,7 +1421,6 @@
                     } else if (reportData && reportData.sections) {
                         
                         for (const section of reportData.sections) {
-                            
                             const formattedText = section.analysis_text
                                 .split('\n')
                                 .filter(line => line.trim().length > 0)
@@ -1437,11 +1436,9 @@
                                     <h2 style="font-size: 1.5rem; font-weight: 700; color: var(--accent-color); margin-top: 1.5rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
                                         ${section.icon || '✨'} ${section.title}
                                     </h2>
-                                    
                                     <div class="report-content-text text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
                                         ${formattedText}
                                     </div>
-                                    
                                     <div class="report-advice mt-4">
                                         <strong style="color: var(--accent-color);">Практична Порада:</strong>
                                         <p class="mt-2" style="color: var(--primary-text-color); opacity: 0.9;">${formattedAdvice}</p>
@@ -1457,6 +1454,11 @@
                     formattedReportHTML = `<p>На жаль, сталася помилка при обробці JSON-відповіді. Текст помилки: ${rawJsonString}</p>`;
                 }
                 
+                // === DEBUGGING OUTPUT IN REPORT IF CHART FAILED ===
+                if (!userBirthData.chartSvg) {
+                    formattedReportHTML += `<div style="color: red; margin-top: 20px; border: 1px solid red; padding: 10px;">DEBUG ERROR: Chart Not Generated. Reason: ${errorDetails || 'Unknown'}</div>`;
+                }
+
                 generatedReportData = formattedReportHTML;
                 console.log("Sync: Report FINISHED.");
                 isReportReady = true;
@@ -1470,7 +1472,7 @@
                           ? reportTitleMatch[1].replace(/<.*?>/g, '').trim().replace(/^[^\w]+/, '')
                         : 'Ваш звіт';
                     
-                    console.log(`Sending report to ${email} via backend (URL: ${EMAIL_BACKEND_URL})...`);
+                    console.log(`Sending report to ${email} via backend...`);
                     
                     const emailResponse = await fetch(EMAIL_BACKEND_URL, {
                         method: 'POST',
