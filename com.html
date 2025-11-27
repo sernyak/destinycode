@@ -764,6 +764,19 @@
                 el.onchange = () => el.parentElement.querySelector('span').innerText = el.value || 'Обрати';
             });
             
+            // --- RESTORED: DEFAULT DATE LOGIC ---
+            function setDefaultDateOnFirstFocus() {
+                if (birthDateInput.value === '') {  
+                    console.log("Setting default date to 1995-01-01 for convenience.");
+                    birthDateInput.value = '1995-01-01';
+                    // Update UI placeholder immediately
+                    birthDateInput.parentElement.querySelector('span').innerText = '1995-01-01';
+                }
+            }
+            birthDateInput.addEventListener('focus', setDefaultDateOnFirstFocus);
+            birthDateInput.addEventListener('click', setDefaultDateOnFirstFocus);
+            birthDateInput.addEventListener('touchstart', setDefaultDateOnFirstFocus);
+            
             // Check return
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('payment') === 'success') {
