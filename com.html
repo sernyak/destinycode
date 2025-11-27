@@ -332,21 +332,20 @@
             gap: 0.75rem; 
         }
         
-        /* === FIX FOR SVG RENDERING === 
-           Використовуємо fixed + opacity:0 замість hidden/display:none.
-           Це гарантує, що браузер "малює" елемент (розраховує розміри), 
-           але користувач його не бачить.
+        /* === FIX FOR SVG RENDERING (OFF-SCREEN) === 
+           Використовуємо абсолютне позиціонування за межами екрану.
+           Це дозволяє браузеру "бачити" елемент і рендерити його,
+           але користувач його не бачить. 'display: block' обов'язковий.
         */
         #chart-hidden-render {
-            position: fixed;
-            top: 0;
-            left: 0;
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
             width: 600px;
             height: 600px;
-            opacity: 0;
-            pointer-events: none;
+            display: block; 
             z-index: -9999;
-            display: block;
+            background: transparent;
         }
     </style>
 </head>
@@ -1302,15 +1301,15 @@
                     : "❌ Планет Немає";
                 
                 console.log(`DEBUG Check: ${chartStatus}, ${planetsStatus}`);
+                // ПОПЕРЕДЖЕННЯ ДЛЯ ТЕСТУВАННЯ
                 if (!userBirthData.chartSvg || !userBirthData.planets || userBirthData.planets.length === 0) {
-                     alert(`УВАГА! Проблема з даними: \n${chartStatus}\n${planetsStatus}\n\nСпробуйте оновити сторінку.`);
+                     // Можна розкоментувати для дебагу, якщо потрібно
+                     // alert(`УВАГА! Проблема з даними: \n${chartStatus}\n${planetsStatus}\n\nСпробуйте оновити сторінку.`);
                 }
                 // ==========================================
 
                 try {
-                    // 🔥 КРОК 1: Створюємо розширений HTML - ПРИБРАНО РУЧНЕ ДОДАВАННЯ!
-                    // Ми покладаємось на те, що BACKEND сам додасть карту і планети
-                    // використовуючи дані userData, які ми передаємо нижче.
+                    // 🔥 КРОК 1: Створюємо розширений HTML
                     let enrichedHtml = generatedReportData;
                     
                     // 🔥 КРОК 2: Збираємо CSS стилі
@@ -1458,11 +1457,15 @@
                             minute = parseInt(timeParts[1]);
                         }
                         
+                        // !!! ВАЖЛИВО: Явне перетворення типів для стабільності
                         const origin = new Origin({
-                            year: year, month: month, date: dateNum,
-                            hour: hour, minute: minute,
-                            latitude: data.geo.latitude, 
-                            longitude: data.geo.longitude,
+                            year: year, 
+                            month: month, 
+                            date: dateNum,
+                            hour: hour, 
+                            minute: minute,
+                            latitude: parseFloat(data.geo.latitude), 
+                            longitude: parseFloat(data.geo.longitude),
                             timezone: data.geo.timezone
                         });
                         
