@@ -10,6 +10,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Шрифт Playfair Display для заголовків PDF -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     
     <!-- Астро-бібліотека -->
     <script src="https://cdn.jsdelivr.net/npm/circular-natal-horoscope-js/dist/circular-natal-horoscope-js.browser.min.js"></script>
@@ -329,13 +331,23 @@
             flex-direction: column;
             gap: 0.75rem; 
         }
+        
+        /* Прихований контейнер для рендерингу SVG */
+        #chart-hidden-render {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            width: 600px;
+            height: 600px;
+            visibility: hidden;
+        }
     </style>
 </head>
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
 
     <!-- Головний контейнер воронки -->
     <main class="funnel-container">
-
+    
         <!-- ====================================================== -->
         <!-- КРОК 1: ЛЕНДІНГ (Збір дати народження) - ВЕРСІЯ З DEV.TXT -->
         <!-- ====================================================== -->
@@ -366,9 +378,8 @@
                     <span id="date-placeholder" style="color: var(--secondary-text-color);">Обрати дату</span>
                     <!-- ВАЖЛИВО: opacity: 0.001 щоб інпут був "присутній" для кліку, але невидимий -->
                     <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required
-                           style="opacity: 0.001;"> 
+                            style="opacity: 0.001;"> 
                 </label>
-
                 <p id="error-message" class="error-text">
                     Будь ласка, обери дату народження.
                 </p>
@@ -440,7 +451,6 @@
                         <input type="time" id="birth-time" name="birth-time" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" style="opacity: 0.001;">
                     </label>
                 </div>
-
                 <div>
                     <label for="birth-city" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Місто народження (опціонально):</label>
                     <input type="text" id="birth-city" name="birth-city" placeholder="Наприклад, Київ" class="input-field text-center">
@@ -537,7 +547,7 @@
                     <span style="color: var(--accent-color);">Оплату успішно проведено!</span>
                 </h2>
                 <p style="color: var(--secondary-text-color);" class="mb-6">
-                    <!-- v2.17.8: Оновлено текст (Скріншот 1) -->
+                    <!-- v2.17.8: Оновлено текст -->
                     Твій персональний звіт готується до відправки. Вкажи email на який надіслати:
                 </p>
                 
@@ -594,10 +604,13 @@
         </section>
 
     </main>
-
+    
     <!-- Прихований контейнер для динамічної форми WayForPay -->
     <div id="wfp-form-container" style="display: none;"></div>
     
+    <!-- === НОВЕ: Прихований контейнер для генерації SVG === -->
+    <div id="chart-hidden-render"></div>
+
     <!-- Модальне вікно для Помилок/Повідомлень -->
     <div id="modal" class="modal-overlay">
         <div class="modal-content">
@@ -613,12 +626,14 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.17.7 (Повернули Спінер) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.17.8 (Data Passing Update) -->
     <!-- ====================================================== -->
     <script>
         // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
-        const { Origin, Horoscope } = window.CircularNatalHoroscope || {};
-        if (!Horoscope) {
+        // ВАЖЛИВО: Деструктуризуємо також Renderer для малювання SVG
+        const { Origin, Horoscope, Renderer } = window.CircularNatalHoroscope || {};
+
+        if (!Horoscope || !Renderer) {
             console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD !!!");
         } else {
             console.log("Astro Library (CircularNatalHoroscopeJS) loaded successfully.");
@@ -668,7 +683,6 @@
             // === v2.17.7: ОНОВЛЕНІ ЕЛЕМЕНТИ ===
             const reportLoadingIndicator = document.getElementById('report-loading-indicator');
             // ==================================
-
             const reportTypingContainer = document.getElementById('report-typing-container');
             const reportLoadingTextEl = document.getElementById('report-loading-text');
             const reportCursorEl = document.getElementById('report-cursor');
@@ -684,6 +698,8 @@
             const ltvUpsellBtn = document.getElementById('ltv-upsell-btn');
 
             const wfpFormContainer = document.getElementById('wfp-form-container');
+            const chartHiddenRender = document.getElementById('chart-hidden-render'); // Елемент для рендеру SVG
+
             const modal = document.getElementById('modal');
             const modalTitle = document.getElementById('modal-title');
             const modalMessage = document.getElementById('modal-message');
@@ -703,6 +719,7 @@
             const EMAIL_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/sendReportEmail'; 
             const PDF_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/createPDF'; 
             // ==================================================
+            
             const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; // !! ЗАМІНИТИ КОЛИ ДОДАМО ОПЛАТУ !!
             const MERCHANT_LOGIN = 'destinycode_online'; // !! ЗАМІНИТИ !!
             const RETURN_URL = window.location.origin + window.location.pathname + '?payment=success'; 
@@ -711,7 +728,10 @@
                 date: '',
                 time: '',
                 city: '',
-                geo: null 
+                geo: null,
+                // Нові поля для PDF
+                chartSvg: null,
+                planets: [] 
             };
             
             let isAnimationComplete = false;
@@ -752,7 +772,6 @@
             }
             \`\`\`
             ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. Жодного тексту до чи після.`;
-
             // ========================================================
             
             const fullTaskPrompt = `Місія: 'Повний Психологічний Портрет' (Платний).
@@ -803,8 +822,7 @@
                 1. Відповідь має бути ЛИШЕ в форматі JSON. Жодних пояснень.
                 2. Часовий пояс має бути у форматі IANA (наприклад, Europe/Kyiv).
                 3. КРИТИЧНЕ ПРАВИЛО (АВТОВИПРАВЛЕННЯ): Вхідні дані (назва міста) можуть бути будь-якою мовою (українська, англійська, російська) та містити одруки (напр., "Ужгрод", "Львіф", "Harkiv", "Киев"). Ти *повинен* докласти максимум зусиль, щоб розпізнати та **автоматично виправити** ці одруки.
-                4. **Краще автоматично виправити одрук, ніж повернути помилку "not_found".**
-                5. Поле "corrected_name" **завжди** має містити фінальну, коректну назву міста, яку ти знайшов (напр., "Ужгород").
+                4. **Краще автоматично виправити одрук, ніж повернути помилку "not_found".** 5. Поле "corrected_name" **завжди** має містити фінальну, коректну назву міста, яку ти знайшов (напр., "Ужгород").
                 6. Якщо місто неможливо знайти (напр., 'asdfg') -> {"error": "not_found"}
                 7. Якщо місто неоднозначне (напр., 'Париж' без країни) -> {"error": "ambiguous"}
                 
@@ -848,8 +866,7 @@
                 }
             }
 
-            /** * v2.15: Нова, розумніша функція typeWriter
-             */
+            /** * v2.15: Нова, розумніша функція typeWriter  */
             function typeWriter(element, cursorElement, text, speed, pauseAfter = 0, keepCursorBlinking = false) {
                 return new Promise(resolve => {
                     let i = 0;
@@ -866,8 +883,8 @@
                                 if (!keepCursorBlinking) {
                                     cursorElement.style.display = 'none'; 
                                 }
-                                resolve(); 
-                             }, pauseAfter);
+                                resolve();  
+                            }, pauseAfter);
                         }
                     }
                     type();
@@ -892,9 +909,7 @@
                 }
             }
 
-            /**
-             * v2.17.7: ОНОВЛЕНО. Прибрано логіку таймбару, залишено лише анімацію тексту.
-             */
+            /** * v2.17.7: ОНОВЛЕНО. Прибрано логіку таймбару, залишено лише анімацію тексту.  */
             async function startReportLoadingAnimation() {
                 
                 const typeSpeedMs = 70; // Швидкість друкування
@@ -969,6 +984,7 @@
                         console.error("Gemini API Error (Server):", errorData);
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
+
                     } catch (error) {
                         console.error("Gemini API Error (Client):", error);
                         if (i === 2) {  
@@ -998,9 +1014,9 @@
                             error: null
                         };
                     } 
-                    if (coords && coords.error) {
-                          console.warn(`Geocoding failed for ${cityName}:`, coords.error);
-                          return { error: coords.error };
+                    if (coords && coords.error) {  
+                        console.warn(`Geocoding failed for ${cityName}:`, coords.error);
+                        return { error: coords.error };
                     }
                     
                     console.error(`Geocoding JSON parsing error for ${cityName}:`, coords);
@@ -1095,6 +1111,7 @@
             async function validateAndGoToPaywall() {
                 const time = birthTimeInput.value;
                 const city = birthCityInput.value.trim();
+
                 cityErrorMessage.style.display = 'none';
                 cityInfoMessage.style.display = 'none';
                 birthCityInput.classList.remove('input-error');
@@ -1134,13 +1151,14 @@
                     setButtonLoading(continueToPaywallButton, false);
                     setTimeout(() => {
                         showStep('paywall');
-                    }, infoText ? 1200 : 0); 
+                    }, infoText ? 1200 : 0);
 
                 } else if (coords && coords.error === 'ambiguous') {
                     cityErrorMessage.innerText = `Місто "${city}" знайдено в кількох місцях. Будь ласка, уточни, додавши країну (напр., 'Париж, Франція').`;
                     cityErrorMessage.style.display = 'block';
                     birthCityInput.classList.add('input-error');
                     setButtonLoading(continueToPaywallButton, false);
+
                 } else {
                     cityErrorMessage.innerText = `Не можемо знайти місто "${city}". Перевірте, будь ласка, назву.`;
                     cityErrorMessage.style.display = 'block';
@@ -1172,12 +1190,12 @@
                 console.log("Simulating payment processing... Data saved:", userBirthData);
                 await new Promise(resolve => setTimeout(resolve, 2500)); 
                 
-                 console.log("Payment simulation successful."); 
-                 setButtonLoading(finalCheckoutButton, false);
-                 showStep('success'); 
+                console.log("Payment simulation successful."); 
+                setButtonLoading(finalCheckoutButton, false); 
+                showStep('success'); 
             });
 
-            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО v2.17.7) ---
+            // --- КРОК 7: ЗБІР EMAIL ТА ГЕНЕРАЦІЯ (ОНОВЛЕНО) ---
             emailForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const email = userEmailInput.value;
@@ -1189,7 +1207,7 @@
                     isReportReady = false;
                     generatedReportData = null; 
                     
-                    // 2. Готуємо UI до завантаження (v2.17.7)
+                    // 2. Готуємо UI до завантаження
                     emailCaptureBox.style.display = 'none';
                     reportLoadingIndicator.style.display = 'block'; // <- ПОКАЗУЄМО СПІНЕР
                     
@@ -1202,27 +1220,79 @@
                 }
             });
 
-            // LTV Апсел
-            ltvUpsellBtn.addEventListener('click', () => {
-                console.log("User clicked LTV upsell button!");
-                showModal(
-                    "Чудовий вибір!", 
-                    "<strong>'Повний AI-Прогноз на 2026 рік'</strong> додано до вашого замовлення.<br><br>(У реальній версії тут би відкрився другий екран оплати.)"
-                );
-                ltvUpsellBtn.querySelector('.btn-text').innerText = "Додано! ✅";
-                ltvUpsellBtn.disabled = true;
+            // LTV Апсел (ОНОВЛЕНО: ІМІТАЦІЯ ОПЛАТИ + ВІДПРАВКА)
+            ltvUpsellBtn.addEventListener('click', async () => {
+                const btn = ltvUpsellBtn;
+                const originalText = btn.querySelector('.btn-text').innerText;
+                
+                // 1. Вмикаємо лоадер на кнопці
+                btn.classList.add('loading');
+                btn.disabled = true;
+                btn.querySelector('.btn-text').innerText = "Обробка платежу...";
+                
+                try {
+                    console.log("Upsell initiated...");
+                    
+                    // 2. ІМІТАЦІЯ ОПЛАТИ (2.5 секунди)
+                    await new Promise(resolve => setTimeout(resolve, 2500));
+                    console.log("Payment successful.");
+
+                    // 3. Відправляємо запит на бекенд з типом 'upsell'
+                    const email = userEmailInput.value; // Email з форми вище
+                    
+                    // Генеруємо контент прогнозу
+                    const forecastHtml = generatedReportData + 
+                        "<br><br><h2 style='color: #cda45e; font-size: 1.5em; margin-top: 2em;'>🔮 Твій Прогноз на 2026 рік</h2>" +
+                        "<p>Наступний рік стане для тебе роком трансформацій. Сатурн вимагатиме дисципліни, але Юпітер подарує удачу в нових починаннях.</p>" +
+                        "<p>Більше деталей у прикріпленому PDF файлі.</p>";
+                    
+                    await fetch(EMAIL_BACKEND_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userEmail: email,
+                            reportHtml: forecastHtml,
+                            reportType: 'upsell', // <--- КЛЮЧОВИЙ МОМЕНТ: Бекенд побачить це і змінить тему листа
+                            userData: userBirthData // <--- ADDED: Pass user data for Upsell PDF
+                        })
+                    });
+                    
+                    // Успіх UI
+                    btn.classList.remove('loading');
+                    btn.querySelector('.btn-text').innerText = "Оплачено! Прогноз відправлено ✅";
+                    
+                    // Показуємо модалку
+                    showModal(
+                        "Дякуємо за замовлення! 🔮", 
+                        "Ваш <strong>'Персональний Прогноз на 2026 рік'</strong> успішно оплачено.<br><br>Ми вже відправили його (разом з PDF-файлом) окремим листом на вашу пошту."
+                    );
+                    
+                } catch (error) {
+                    console.error("Upsell failed:", error);
+                    showModal("Помилка", "Не вдалося обробити платіж або відправити лист. Спробуйте пізніше.");
+                    btn.classList.remove('loading');
+                    btn.disabled = false;
+                    btn.querySelector('.btn-text').innerText = originalText;
+                }
             });
 
             // Обробники для кнопок PDF/Share (РЕАЛЬНІ)
             downloadPdfBtn.addEventListener('click', async () => {
                 setButtonLoading(downloadPdfBtn, true);
+                
                 if (!generatedReportData) {
                     showModal("Помилка", "Дані звіту ще не згенеровано.");
                     setButtonLoading(downloadPdfBtn, false);
                     return;
                 }
+                
                 try {
-                    // 1. Збираємо стилі з <head>, щоб передати їх у puppeteer
+                    // 🔥 КРОК 1: Створюємо розширений HTML - ПРИБРАНО РУЧНЕ ДОДАВАННЯ!
+                    // Ми покладаємось на те, що BACKEND сам додасть карту і планети
+                    // використовуючи дані userData, які ми передаємо нижче.
+                    let enrichedHtml = generatedReportData;
+                    
+                    // 🔥 КРОК 2: Збираємо CSS стилі
                     const styles = Array.from(document.styleSheets)
                         .map(sheet => {
                             try {
@@ -1236,43 +1306,79 @@
                         })
                         .join('\n');
                     
-                    // 2. Викликаємо нашу серверну функцію PDF (РЕАЛЬНИЙ URL)
-                    console.log("Requesting PDF from backend...");
+                    // 🔥 КРОК 3: Відправляємо на бекенд
+                    console.log("📤 Requesting PDF from backend...");
+                    console.log("📊 Data being sent:", {
+                        hasChartSvg: !!userBirthData.chartSvg,
+                        chartSvgLength: userBirthData.chartSvg?.length || 0,
+                        planetsCount: userBirthData.planets?.length || 0,
+                        htmlLength: enrichedHtml.length
+                    });
+                    
                     const response = await fetch(PDF_BACKEND_URL, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            reportHtml: generatedReportData, 
-                            reportStyles: styles 
+                            reportHtml: enrichedHtml,
+                            reportStyles: styles,
+                            userData: userBirthData // ✅ ОСЬ ТУТ всі дані (SVG і Планети)
                         })
                     });
-
+                    
                     if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || 'Помилка на сервері PDF.');
+                        const errorText = await response.text();
+                        throw new Error(`Backend error: ${response.status} - ${errorText}`);
                     }
-
+                    
                     const result = await response.json();
+                    
                     if (result.success && result.pdfBase64) {
-                        // 3. Запускаємо завантаження файлу в браузері
+                        // Конвертуємо Base64 у Blob та завантажуємо
+                        const pdfBlob = base64ToBlob(result.pdfBase64, 'application/pdf');
+                        const url = URL.createObjectURL(pdfBlob);
+                        
                         const link = document.createElement('a');
-                        link.href = `data:application/pdf;base64,${result.pdfBase64}`;
-                        link.download = result.filename;
+                        link.href = url;
+                        link.download = result.filename || 'DestinyCode_Report.pdf';
                         document.body.appendChild(link);
                         link.click();
                         document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
                         
-                        showModal("Успіх!", "Ваш PDF-звіт успішно завантажено.");
+                        console.log("✅ PDF downloaded successfully!");
+                        showModal("Успіх!", "Твій PDF звіт успішно завантажено! 🎉");
                     } else {
-                        throw new Error(result.error || 'Сервер повернув невірні дані.');
+                        throw new Error("Invalid response from server");
                     }
+                    
                 } catch (error) {
-                    console.error("Failed to generate PDF:", error);
-                    showModal("Помилка PDF", `Не вдалося згенерувати PDF: ${error.message}`);
+                    console.error("❌ PDF Download Error:", error);
+                    showModal("Помилка", `Не вдалося завантажити PDF: ${error.message}`);
                 } finally {
                     setButtonLoading(downloadPdfBtn, false);
                 }
             });
+
+            // ==========================================
+            // HELPER: Base64 to Blob Converter
+            // ==========================================
+            function base64ToBlob(base64, mimeType) {
+                const byteCharacters = atob(base64);
+                const byteArrays = [];
+                
+                for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+                    const slice = byteCharacters.slice(offset, offset + 512);
+                    const byteNumbers = new Array(slice.length);
+                    
+                    for (let i = 0; i < slice.length; i++) {
+                        byteNumbers[i] = slice.charCodeAt(i);
+                    }
+                    
+                    byteArrays.push(new Uint8Array(byteNumbers));
+                }
+                
+                return new Blob(byteArrays, { type: mimeType });
+            }
 
             shareReportBtn.addEventListener('click', () => {
                   showModal("Поділитися", "Функція 'Поділитися' скоро буде доступна!<br><br>(Коли ми реалізуємо постійні посилання на сервері.)");
@@ -1306,9 +1412,7 @@
                 }
             }
             
-            /**
-             * v2.17: Функція генерації ПОВНОГО звіту 
-             */
+            /** * v2.17: Функція генерації ПОВНОГО звіту  */
             async function fetchFullAnalysis(data, email) {
                 let userQuery = `Дата народження: ${data.date}.`;
                 if (data.time) userQuery += ` Час: ${data.time}.`;
@@ -1316,8 +1420,9 @@
                 
                 let astroDataString = "";
                 
-                if (Horoscope && data.date && data.geo) { 
-                     try {
+                // === КРИТИЧНЕ ОНОВЛЕННЯ ДЛЯ SVG ТА ГРАДУСІВ ===
+                if (Horoscope && data.date && data.geo) {  
+                    try {
                         const dateParts = data.date.split('-');
                         const year = parseInt(dateParts[0]);
                         const month = parseInt(dateParts[1]) - 1; // JS month is 0-indexed
@@ -1342,6 +1447,42 @@
                             origin: origin, houseSystem: "placidus", zodiac: "tropical"
                         });
                         
+                        // 1. ГЕНЕРАЦІЯ SVG (Рендеримо в прихований div)
+                        if (Renderer && chartHiddenRender) {
+                            chartHiddenRender.innerHTML = ''; // Очистка
+                            const renderer = new Renderer(horoscope);
+                            renderer.render(chartHiddenRender);
+                            // Витягуємо SVG-рядок та зберігаємо в userBirthData
+                            const svgContent = chartHiddenRender.innerHTML;
+                            userBirthData.chartSvg = svgContent;
+                            console.log("Chart SVG generated and saved to userBirthData. Length:", svgContent.length);
+                        } else {
+                            console.warn("Renderer not available or hidden div missing. SVG skipped.");
+                        }
+
+                        // 2. ГЕНЕРАЦІЯ СПИСКУ ПЛАНЕТ (Градуси)
+                        const planetsList = [];
+                        const bodies = horoscope.CelestialBodies;
+                        // Проходимо по основних планетах
+                        ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'].forEach(key => {
+                             // В бібліотеці Ascendant/Midheaven можуть бути в окремих властивостях, перевіримо
+                             let body = bodies[key];
+                             if (!body && key === 'ascendant') body = horoscope.Ascendant;
+                             if (!body && key === 'midheaven') body = horoscope.Midheaven;
+
+                             if (body) {
+                                 const sign = body.Sign.label;
+                                 const degree = Math.floor(body.ChartPosition.Ecliptic.DecimalDegrees % 30);
+                                 const minute = Math.floor((body.ChartPosition.Ecliptic.DecimalDegrees % 1) * 60);
+                                 const label = key.charAt(0).toUpperCase() + key.slice(1);
+                                 planetsList.push(`${label}:${sign} ${degree}°${minute}'`); // !!! Прибрав пробіл перед двокрапкою для сумісності з Backend
+                             }
+                        });
+                        userBirthData.planets = planetsList;
+                        console.log("Planets degrees generated:", planetsList);
+
+
+                        // 3. Формуємо рядок для AI (як і раніше)
                         astroDataString = `
                         == Технічні Астрологічні Дані (для аналізу) ==
                         * Сонце: ${horoscope.CelestialBodies.sun.Sign.label} (у ${horoscope.CelestialBodies.sun.House.label} Домі)
@@ -1354,11 +1495,12 @@
                         == Кінець Технічних Даних ==
                         `;
                         console.log("Astro data successfully generated for Gemini:", astroDataString);
+
                     } catch (err) {
                         console.error("Failed to calculate full horoscope (Step 7):", err);
                     }
-                } else {
-                     console.log("Calculating report without GEO data (user skipped or validation failed).");
+                } else { 
+                    console.log("Calculating report without GEO data (user skipped or validation failed).");
                 }
                 
                 const finalUserQuery = userQuery + astroDataString;
@@ -1371,18 +1513,22 @@
                 try {
                     const reportData = JSON.parse(rawJsonString);
                     
-                    if (reportData.error) {
-                          formattedReportHTML = `<p>${reportData.message || 'Сталася невідома помилка.'}</p>`;
+                    if (reportData.error) {  
+                        formattedReportHTML = `<p>${reportData.message || 'Сталася невідома помилка.'}</p>`;
                     } else if (reportData && reportData.sections) {
                         
                         for (const section of reportData.sections) {
                             
+                            // === FIX FOR MAGAZINE LAYOUT ===
+                            // Convert \n to </p><p> for real paragraphs
                             const formattedText = section.analysis_text
-                                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-text-color);">$1</strong>')
-                                .replace(/\\n/g, '<br>');
+                                .split('\n')
+                                .filter(line => line.trim().length > 0)
+                                .map(line => `<p>${line.trim().replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`)
+                                .join('');
                             
                             const formattedAdvice = section.practical_advice
-                                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: var(--primary-text-color);">$1</strong>')
+                                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                                 .replace(/\\n/g, '<br>');
 
                             formattedReportHTML += `
@@ -1391,7 +1537,7 @@
                                         ${section.icon || '✨'} ${section.title}
                                     </h2>
                                     
-                                    <div class="text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
+                                    <div class="report-content-text text-left leading-relaxed space-y-4" style="color: var(--secondary-text-color);">
                                         ${formattedText}
                                     </div>
                                     
@@ -1420,14 +1566,14 @@
                 showReportIfReady();
                 
                 // =======================================
-                
+
                 // === ОНОВЛЕНО: Відправка звіту на РЕАЛЬНИЙ backend ===
                 try {
                     // Отримуємо заголовок
                     const reportTitleMatch = formattedReportHTML.match(/<h2.*?>(.*?)<\/h2>/i);
-                    const reportTitle = reportTitleMatch 
-                         ? reportTitleMatch[1].replace(/<.*?>/g, '').trim().replace(/^[^\w]+/, '')
-                         : 'Ваш звіт';
+                    const reportTitle = reportTitleMatch  
+                        ? reportTitleMatch[1].replace(/<.*?>/g, '').trim().replace(/^[^\w]+/, '')
+                        : 'Ваш звіт';
 
                     console.log(`Sending report to ${email} via backend (URL: ${EMAIL_BACKEND_URL})...`);
                     
@@ -1437,8 +1583,9 @@
                         body: JSON.stringify({
                             userEmail: email,
                             reportHtml: formattedReportHTML,
-                            reportTitle: reportTitle
-                            // Тут можна додати userId, якщо він є
+                            reportTitle: reportTitle,
+                            reportType: 'main', // <--- ДОДАНО: Тип звіту (основний)
+                            userData: userBirthData // <--- ADDED: Pass user data for Main PDF (including chartSVG)
                         })
                     });
 
@@ -1481,8 +1628,8 @@
             
             // ВЕРСІЯ З DEV.TXT
             function setDefaultDateOnFirstFocus() {
-                if (birthDateInput.value === '') {
-                      console.log("Setting default date to 1995-01-01 for convenience.");
+                if (birthDateInput.value === '') {  
+                    console.log("Setting default date to 1995-01-01 for convenience.");
                     birthDateInput.value = '1995-01-01';
                 }
             }
