@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- Стилі -->
     <style>
         /* --- Базові Змінні --- */
         :root {
@@ -30,7 +31,7 @@
             -webkit-tap-highlight-color: transparent; 
         }
 
-        /* --- SVG CHART STYLES --- */
+        /* --- SVG CHART STYLES (Критично для PDF) --- */
         .radical-chart-svg {
             background-color: transparent !important;
         }
@@ -223,7 +224,7 @@
 </head>
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
 
-    <!-- HIDDEN CONTAINER FOR CHART -->
+    <!-- HIDDEN CONTAINER FOR CHART (Fix: Fixed position + opacity 0 to ensure rendering) -->
     <div id="hidden-chart-container" style="position: fixed; top: 0; left: 0; z-index: -50; width: 600px; height: 600px; opacity: 0; pointer-events: none;"></div>
 
     <main class="funnel-container">
@@ -281,7 +282,7 @@
         <!-- STEP 4: PREMIUM DATA -->
         <section id="premium-data-step" class="funnel-step space-y-6 text-center">
              <h2 class="text-3xl font-bold text-white tracking-tight">Розблокуй "Золоту Трійку"</h2>
-            <p class="text-lg" style="color: var(--secondary-text-color);">Твій аналіз Сонця - це лише 1/3 твого ядра.</p>
+            <p class="text-lg" style="color: var(--secondary-text-color);">Твій аналіз Сонця - це лише 1/3 твого ядра. Введи час та місто, щоб розкрити свій <strong>Асцендент</strong> (твоя маска) та <strong>Місяць</strong> (твої емоції).</p>
             <div id="premium-form-container" class="w-full space-y-4">
                 <div>
                     <label for="birth-time" class="block text-sm font-medium text-left mb-2" style="color: var(--secondary-text-color);">Точний час народження (опціонально):</label>
@@ -310,15 +311,18 @@
         <section id="final-paywall-step" class="funnel-step space-y-6">
              <h2 class="text-3xl font-bold text-center text-white">Твій повний портрет</h2>
              <div class="space-y-3 pt-2">
-                <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Ядро Особистості</span></div>
+                <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Ядро Особистості (Розширено)</span></div>
                 <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Кохання та Сумісність</span></div>
                 <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Кар'єра та Гроші</span></div>
+                <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Кармічні Уроки та Призначення</span></div>
+                <div class="paywall-item"><span class="paywall-icon">🔒</span><span class="font-semibold">Твої майбутні можливості</span></div>
             </div>
             <div class="space-y-4 pt-4">
                 <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
-                    <span class="btn-text">Розблокувати зараз за 149 грн</span>
+                    <span class="btn-text">Розблокувати зараз за 149 грн (замість <span style="text-decoration: line-through; opacity: 0.8;">399 грн</span>)</span>
                     <span class="btn-spinner"></span>
                 </button>
+                <p class="text-xs text-center" style="color: var(--secondary-text-color);">🔒 Безпечна одноразова оплата.</p>
             </div>
         </section>
         
@@ -332,15 +336,15 @@
         <section id="success-step" class="funnel-step space-y-6">
             <div id="email-capture-box" class="text-center">
                 <h2 class="text-2xl font-bold text-center text-white"><span style="color: var(--accent-color);">Оплату успішно проведено!</span></h2>
-                <p style="color: var(--secondary-text-color);" class="mb-6">Вкажи email на який надіслати звіт:</p>
+                <p style="color: var(--secondary-text-color);" class="mb-6">Твій персональний звіт готується до відправки. Вкажи email на який надіслати:</p>
                 <form id="email-form" class="space-y-4 mb-8">
                     <input type="email" id="user-email" name="user-email" placeholder="your.email@gmail.com" class="input-field text-center" required>
                     <button type="submit" class="btn btn-primary !text-lg !py-4"><span class="btn-text">Отримати звіт</span><span class="btn-spinner"></span></button>
                 </form>
                 <div id="ltv-upsell-box" class="ltv-upsell-box text-left">
                     <h3 class="font-bold" style="color: var(--accent-color);">P.S. Поки твій звіт готується...</h3>
-                    <p class="text-sm mt-2 mb-4" style="color: var(--secondary-text-color);">Додати "Астрологічний AI-прогноз 2026" за 247 грн?</p>
-                    <button id="ltv-upsell-btn" class="btn btn-primary w-full opacity-90 hover:opacity-100"><span class="btn-text">Так, додати!</span><span class="btn-spinner"></span></button>
+                    <p class="text-sm mt-2 mb-4" style="color: var(--secondary-text-color);">Хочеш додати повний <strong>"Астрологічний AI-прогноз" на наступний рік</strong> з Персональною знижкою 65% всього за 247 грн. замість <span style="text-decoration: line-through; opacity: 0.7;">699 грн.</span>?</p>
+                    <button id="ltv-upsell-btn" class="btn btn-primary w-full opacity-90 hover:opacity-100"><span class="btn-text">Так, додати до замовлення!</span><span class="btn-spinner"></span></button>
                 </div>
             </div>
 
@@ -356,6 +360,7 @@
 
             <div id="report-actions-container" style="display: none;">
                 <button id="download-pdf-btn" class="btn btn-secondary"><span class="btn-text">Завантажити PDF</span><span class="btn-spinner"></span></button>
+                <button id="share-report-btn" class="btn btn-secondary"><span class="btn-text">Поділитися звітом</span><span class="btn-spinner"></span></button>
             </div>
         </section>
     </main>
@@ -381,7 +386,7 @@
                 success: document.getElementById('success-step')
             };
             
-            // --- Helper to load library robustly ---
+            // --- Helper to load library robustly (DOUBLE CDN) ---
             async function ensureAstroLibrary() {
                 if (window.CircularNatalHoroscope) return true;
                 
@@ -428,6 +433,7 @@
             const emailForm = document.getElementById('email-form');
             const userEmailInput = document.getElementById('user-email');
             const downloadPdfBtn = document.getElementById('download-pdf-btn');
+            const shareReportBtn = document.getElementById('share-report-btn');
             const ltvUpsellBtn = document.getElementById('ltv-upsell-btn');
             
             // API Config
@@ -440,6 +446,94 @@
 
             let userBirthData = { date: '', time: '', city: '', geo: null, chartSvg: null, planets: [] };
             let generatedReportData = null;
+
+            // --- FULL SYSTEM PROMPTS (RESTORED) ---
+            const mainSystemPrompt = `Ти — 'Майстер Астро-Психолог' Destiny Code. 
+            Твоя Роль: Ти глибокий, мудрий 'астро-психолог', але з тоном твоєї найкращої подруги — емпатичної, авторитетної, і з легким фліртом та гумором. 
+            Твоя Місія: Допомогти клієнтці 'розпакувати' її натальну карту як 'карту душі'. Ти бачиш психологічні патерни, кармічні уроки та прихований потенціал. Ти даєш 'космічну валідацію' її почуттів. 
+            Твоя Мова: Говори українською. Емоційно, але по суті. Використовуй 'ти' та 'твоя'. 
+            КЛЮЧОВА МЕТОДОЛОГІЯ (Твої Правила):
+            1. Емпатія > Факти. Ти 'бачиш' її справжню.
+            2. 'Темні сторони' — це 'суперсили' (напр. упертість = цілеспрямованість).
+            3. ЗАВЖДИ СИНТЕЗУЙ: (Напр. 'Сонце в... робить тебе..., але Асцендент в... вимагає...').
+            4. ДІМ — ЦЕ КОНТЕКСТ: Планета в Домі — це сфера життя, де енергія реалізується.
+            5. 'ВЕЛИКА ТРІЙКА' — ЦЕ ЯДРО: Аналізуй Асцендент ('маска'), Сонце ('сутність') і Місяць ('внутрішній світ') як єдину систему.
+            6. НЕ ЛЯКАЙ: 'Важкі' аспекти — це 'точки росту' або 'джерело прихованої сили'.
+            7. ДАВАЙ 'КЛЮЧ': Завжди пропонуй психологічну пораду або 'ключ до гармонії'.
+            8. Смайли: Використовуй релевантні смайли (😈, ✨, 🔮, 🔥, 👑).
+            9. ЗАБОРОНЕНО: Медичні терміни. Складні астро-терміни без пояснень. "Смерть".`;
+
+            const freeTaskPrompt = `Місія: 'Безкоштовний Гачок'. 
+            ЗАВДАННЯ:
+            1. Визнач знак Сонця за датою. Використовуй ** emojis** у тексті.
+            2. Напиши 'гачок' - яскравий опис **сильних сторін** (і 'темної' сторони як переваги), який вразить її.
+            3. Підкресли, що це лише 1/3 її ядра. 
+            Формат: ТІЛЬКИ JSON.
+            \`\`\`json
+            {
+              "title": "✅ Твоє Ядро: [Знак Сонця] 🔥",
+              "psychological_analysis": "[Тут згенеруй яскравий, преміально оформлений HTML-текст (3-4 абзаци). Говори про її суперсили, її 'темну' сторону (як перевагу) та унікальність. Використовуй **жирний** для акцентів. Використовуй багато (5-7) релевантних смайлів (напр. 😈, ✨, 🔮, 🔥, 👑).]",
+              "premium_hook": "Це лише **5%** від твого повного звіту 🤫.\\nГоловна магія — твій Асцендент, Місяць та кармічні уроки 🔮 — чекає на тебе у повному аналізі. Розблокуй все... 😈"
+            }
+            \`\`\`
+            ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. Жодного тексту до чи після.`;
+
+            const fullTaskPrompt = `Місія: 'Повний Психологічний Портрет' (Платний).
+            (Клієнтка вже заплатила. Цінність має бути вищою за 149 грн. Будь глибоким, емпатичним). 
+            ЗАВДАННЯ:
+            1. Проаналізуй надані дані (дату, час (якщо є) та Технічні Дані (якщо є)).
+            2. Якщо є 'Технічні Дані' (ASC, MC): Використовуй їх для преміум-аналізу.
+            3. Якщо 'Технічних Даних' НЕМАЄ: Роби аналіз 'Космічної Карти' (без Домів/ASC).
+            4. 'practical_advice': Дай ОДНУ, але дуже конкретну пораду ('спробуй це...').
+            5. 'analysis_text': Пиши глибоко, емоційно. 
+            Формат: ТІЛЬКИ JSON.
+            \`\`\`json
+            {
+              "sections": [
+                {
+                  "id": "core_intro", "icon": "✨", "title": "Ядро Особистості: Хто Ти Насправді?",
+                  "analysis_text": "[Глибокий аналіз 'Золотої Трійки' (Сонце, Місяць, Асцендент (якщо є)). Їх взаємодія, твої суперсили та внутрішні конфлікти. Поясни, чому ти відчуваєш себе саме так.]",
+                  "practical_advice": "[Одна порада. Напр. 'Твій Місяць у... вимагає... Спробуй...']"
+                },
+                {
+                  "id": "love", "icon": "❤️‍🔥", "title": "Кохання та Стосунки: Твій Сценарій",
+                  "analysis_text": "[Аналіз Венери та Марса ('твоя мова кохання', 'твій ідеальний партнер', 'твій стиль у конфліктах'). Чого ти насправді шукаєш у стосунках.]",
+                  "practical_advice": "[Одна порада. Напр: 'Твоя Венера у... каже, що для тебе кохання - це... Не бійся просити про...']"
+                },
+                {
+                  "id": "career", "icon": "👑", "title": "Кар'єра та Гроші: Де Твій Успіх?",
+                  "analysis_text": "[Аналіз Midheaven (MC) (якщо є) та Юпітера. **Якщо MC немає, аналізуй 10-й дім за знаком та планетами (якщо є).** Твій потенціал, сфери для реалізації, твій унікальний підхід до грошей.]",
+                  "practical_advice": "[Одна порада. Напр: 'Твій Юпітер у... дає успіх через... Спробуй сфокусуватись на...']"
+                },
+                {
+                  "id": "karma", "icon": "🔮", "title": "Кармічні Уроки та Призначення",
+                  "analysis_text": "[Аналіз Північного/Південного Вузлів (якщо є). Твій шлях душі, завдання на це життя, від чого треба відійти (Пд. Вузол) і до чого прийти (Пн. Вузол).]",
+                  "practical_advice": "[Одна порада. Напр: 'Твій Пн. Вузол у... кличе тебе до... Почни з малого: ...']"
+                },
+                {
+                  "id": "future", "icon": "⚡️", "title": "Майбутні Можливості",
+                  "analysis_text": "[Короткий, але емпатичний огляд 1-2 ключових транзитів (напр. Юпітера, Сатурна) на найближчі 6 місяців. На що звернути увагу. Без 'небезпек', лише 'можливості' та 'уроки'.]",
+                  "practical_advice": "[Одна порада. Напр: 'Юпітер зараз у... твого... Це твій шанс для... Використай його!']"
+                }
+              ]
+            }
+            \`\`\`
+            ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. 'analysis_text' має бути деталізованим (3-4 абзаци), з **жирними** акцентами.`;
+
+            const geoSystemPrompt = `
+                Ти — високоточний географічний API. Твоя єдина мета — повернути JSON-об'єкт, що містить географічні координати (lat, lon), часовий пояс (timezone) та **виправлену назву міста (corrected_name)**.
+                ПРАВИЛА:
+                1. Відповідь має бути ЛИШЕ в форматі JSON. Жодних пояснень.
+                2. Часовий пояс має бути у форматі IANA (наприклад, Europe/Kyiv).
+                3. КРИТИЧНЕ ПРАВИЛО (АВТОВИПРАВЛЕННЯ): Вхідні дані (назва міста) можуть бути будь-якою мовою (українська, англійська, російська) та містити одруки (напр., "Ужгрод", "Львіф", "Harkiv", "Киев"). Ти *повинен* докласти максимум зусиль, щоб розпізнати та **автоматично виправити** ці одруки.
+                4. **Краще автоматично виправити одрук, ніж повернути помилку "not_found".** 5. Поле "corrected_name" **завжди** має містити фінальну, коректну назву міста, яку ти знайшов (напр., "Ужгород").
+                6. Якщо місто неможливо знайти (напр., 'asdfg') -> {"error": "not_found"}
+                7. Якщо місто неоднозначне (напр., 'Париж' без країни) -> {"error": "ambiguous"}
+                
+                Приклад (Успіх з виправленням): {"lat": 48.6208, "lon": 22.2879, "timezone": "Europe/Uzhhorod", "corrected_name": "Ужгород"}
+                Приклад (Успіх без виправлення): {"lat": 50.4501, "lon": 30.5234, "timezone": "Europe/Kyiv", "corrected_name": "Київ"}
+                Приклад (Помилка): {"error": "not_found"}
+            `;
 
             // --- FUNCTIONS ---
             function showStep(id) {
@@ -465,12 +559,16 @@
                 });
             }
 
-            async function callGemini(url, prompt) {
+            async function callGemini(url, taskPrompt, userQuery) {
+                const combinedUserRequest = `${taskPrompt}\n\nВхідні дані:\n${userQuery}`;
                 try {
                     const res = await fetch(url, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                        body: JSON.stringify({ 
+                            contents: [{ parts: [{ text: combinedUserRequest }] }],
+                            systemInstruction: { parts: [{ text: mainSystemPrompt }] }
+                        })
                     });
                     const data = await res.json();
                     let text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -488,14 +586,12 @@
                 if(!userBirthData.date) return;
                 
                 showStep('loading');
-                const prompt = `Місія: 'Безкоштовний Гачок'. Дата: ${userBirthData.date}. JSON format only: { "title": "...", "psychological_analysis": "...", "premium_hook": "..." }`;
-                
                 // Start typing simulation
                 const loadingText = document.getElementById('loading-text');
                 const cursor = document.getElementById('loading-cursor');
                 typeWriter(loadingText, cursor, "Аналізую зірки...", 50);
                 
-                const jsonStr = await callGemini(apiFlashUrl, prompt);
+                const jsonStr = await callGemini(apiFlashUrl, freeTaskPrompt, `Дата народження: ${userBirthData.date}`);
                 try {
                     const data = JSON.parse(jsonStr);
                     resultTitleEl.innerText = "Аналіз";
@@ -520,8 +616,7 @@
                 if(!city) { showStep('paywall'); return; }
                 
                 continueToPaywallButton.classList.add('loading');
-                const prompt = `Geo JSON for city: "${city}". Return: { "lat": number, "lon": number, "timezone": "IANA", "corrected_name": "string" }`;
-                const jsonStr = await callGemini(apiFlashUrl, prompt);
+                const jsonStr = await callGemini(apiFlashUrl, geoSystemPrompt, `Місто: ${city}`);
                 
                 try {
                     const geo = JSON.parse(jsonStr);
@@ -561,6 +656,7 @@
                 // ENSURE LIBRARY IS LOADED
                 const libLoaded = await ensureAstroLibrary();
                 let debugMsg = "";
+                let astroDataString = "";
                 
                 // Generate Chart
                 if (libLoaded && userBirthData.geo) {
@@ -578,12 +674,24 @@
                         
                         const horoscope = new Horoscope({
                             origin: origin, houseSystem: "placidus", zodiac: "tropical",
-                            aspectPoints: ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "ascendant"],
+                            aspectPoints: ["sun", "moon", "mercury", "venus", "mars", "jupiter", "saturn", "ascendant", "midheaven", "northnode"],
                             aspectWithPoints: ["sun", "moon", "venus", "mars"]
                         });
                         
-                        // Planets Text
-                        const bodies = ["sun", "moon", "ascendant", "mercury", "venus", "mars", "jupiter", "saturn"];
+                        // Planets Text for API
+                        astroDataString = `
+                        == Технічні Астрологічні Дані ==
+                        * Сонце: ${horoscope.CelestialBodies.sun.Sign.label} (у ${horoscope.CelestialBodies.sun.House.label} Домі)
+                        * Місяць: ${horoscope.CelestialBodies.moon.Sign.label} (у ${horoscope.CelestialBodies.moon.House.label} Домі)
+                        * Асцендент (ASC): ${horoscope.Ascendant.Sign.label}
+                        * Середина Неба (MC): ${horoscope.Midheaven.Sign.label}
+                        * Венера: ${horoscope.CelestialBodies.venus.Sign.label} (у ${horoscope.CelestialBodies.venus.House.label} Домі)
+                        * Марс: ${horoscope.CelestialBodies.mars.Sign.label} (у ${horoscope.CelestialBodies.mars.House.label} Домі)
+                        * Північний Вузол: ${horoscope.CelestialBodies.northnode.Sign.label} (у ${horoscope.CelestialBodies.northnode.House.label} Домі)
+                        `;
+
+                        // Planets List for PDF
+                        const bodies = ["sun", "moon", "ascendant", "mercury", "venus", "mars", "jupiter", "saturn", "northnode"];
                         userBirthData.planets = bodies.map(b => {
                             const body = horoscope.CelestialBodies[b] || horoscope[b.charAt(0).toUpperCase() + b.slice(1)];
                             return body ? `${b.toUpperCase()}: ${body.Sign.label} ${Math.floor(body.ChartPosition.Ecliptic.DecimalDegrees % 30)}°` : '';
@@ -607,19 +715,24 @@
                     debugMsg = libLoaded ? "No Geo Data" : "Library Failed to Load";
                 }
 
-                // Generate Text
-                const prompt = `Full Report. Date: ${userBirthData.date}. Planets: ${userBirthData.planets.join(', ')}. JSON: { "sections": [{ "title": "...", "analysis_text": "...", "practical_advice": "..." }] }`;
-                const jsonStr = await callGemini(apiProUrl, prompt);
+                // Generate Text with FULL PROMPT
+                const userQuery = `Дата: ${userBirthData.date}. ${astroDataString}`;
+                const jsonStr = await callGemini(apiProUrl, fullTaskPrompt, userQuery);
                 
                 try {
                     const report = JSON.parse(jsonStr);
-                    let html = report.sections.map(s => `
-                        <div class="report-section mb-6">
-                            <h2 style="color: #cda45e; font-size: 1.5rem; font-weight: 700; margin-top: 2rem;">${s.title}</h2>
-                            <div style="color: #a0a0a0; line-height: 1.6;">${s.analysis_text.replace(/\n/g, '<br>')}</div>
-                            <div class="report-advice mt-4"><strong style="color: #cda45e;">Порада:</strong> ${s.practical_advice}</div>
-                        </div>
-                    `).join('');
+                    let html = "";
+                    if(report.sections) {
+                        html = report.sections.map(s => `
+                            <div class="report-section mb-6">
+                                <h2 style="color: #cda45e; font-size: 1.5rem; font-weight: 700; margin-top: 2rem;">${s.title}</h2>
+                                <div style="color: #a0a0a0; line-height: 1.6;">${s.analysis_text.replace(/\n/g, '<br>')}</div>
+                                <div class="report-advice mt-4"><strong style="color: #cda45e;">Порада:</strong> ${s.practical_advice}</div>
+                            </div>
+                        `).join('');
+                    } else {
+                        html = "<p>Помилка генерації структури.</p>";
+                    }
                     
                     if(debugMsg) html += `<div style="color: red; border: 1px solid red; padding: 10px; margin-top: 20px;">DEBUG: ${debugMsg}</div>`;
                     
@@ -641,6 +754,10 @@
                     showModal("Помилка", "Збій генерації звіту.");
                 }
             };
+
+            shareReportBtn.addEventListener('click', () => {
+                  showModal("Поділитися", "Функція 'Поділитися' скоро буде доступна!");
+            });
 
             // Helper for inputs
             [birthDateInput, birthTimeInput].forEach(el => {
