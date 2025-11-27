@@ -171,6 +171,20 @@
             border-radius: 0.25rem 0.5rem 0.5rem 0.25rem;
         }
 
+        /* Chart Visuals on Frontend */
+        .chart-visual svg {
+            width: 100%; height: auto;
+            max-height: 350px;
+        }
+        .chart-visual svg text {
+            fill: var(--primary-text-color) !important;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 12px;
+        }
+        .chart-visual svg path, .chart-visual svg circle {
+            stroke: var(--accent-color) !important;
+        }
+
         .ltv-upsell-box {
             background-color: var(--card-bg-color);
             border: 1px solid var(--accent-color);
@@ -733,6 +747,18 @@
                 
                 // Build HTML
                 let html = '';
+                
+                // Add Chart at the top
+                if (userBirthData.chartSvg) {
+                    html += `
+                        <div class="chart-visual w-full flex justify-center items-center mb-6">
+                            <div style="width: 100%; max-width: 320px;">
+                                ${userBirthData.chartSvg}
+                            </div>
+                        </div>
+                    `;
+                }
+                
                 data.sections.forEach(sec => {
                     const content = sec.analysis_text.split('\n').map(p => `<p>${p.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</p>`).join('');
                     html += `<div class="report-section mb-6">
