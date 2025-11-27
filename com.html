@@ -340,6 +340,9 @@
             width: 600px;
             height: 600px;
             visibility: hidden;
+            /* Важливо: display block, інакше SVG може не намалюватись */
+            display: block; 
+            z-index: -1;
         }
     </style>
 </head>
@@ -634,7 +637,8 @@
         const { Origin, Horoscope, Renderer } = window.CircularNatalHoroscope || {};
 
         if (!Horoscope || !Renderer) {
-            console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD !!!");
+            console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD OR RENDERER MISSING !!!");
+            console.log("Library object:", window.CircularNatalHoroscope);
         } else {
             console.log("Astro Library (CircularNatalHoroscopeJS) loaded successfully.");
         }
@@ -1286,45 +1290,24 @@
                     return;
                 }
                 
+                // === DEBUG ALERT: ВИДАЛИТИ ПІСЛЯ ТЕСТУ ===
+                // Перевіряємо, чи є дані перед відправкою
+                const chartStatus = userBirthData.chartSvg ? "✅ Карта Є" : "❌ Карти Немає (Renderer?)";
+                const planetsStatus = (userBirthData.planets && userBirthData.planets.length > 0) 
+                    ? `✅ Планет: ${userBirthData.planets.length}` 
+                    : "❌ Планет Немає";
+                
+                console.log(`DEBUG Check: ${chartStatus}, ${planetsStatus}`);
+                if (!userBirthData.chartSvg || !userBirthData.planets || userBirthData.planets.length === 0) {
+                     alert(`УВАГА! Проблема з даними: \n${chartStatus}\n${planetsStatus}\n\nСпробуйте оновити сторінку.`);
+                }
+                // ==========================================
+
                 try {
-                    // 🔥 КРОК 1: Створюємо розширений HTML з натальною картою та планетами
+                    // 🔥 КРОК 1: Створюємо розширений HTML - ПРИБРАНО РУЧНЕ ДОДАВАННЯ!
+                    // Ми покладаємось на те, що BACKEND сам додасть карту і планети
+                    // використовуючи дані userData, які ми передаємо нижче.
                     let enrichedHtml = generatedReportData;
-                    
-                    // Додаємо натальну карту (SVG)
-                    if (userBirthData.chartSvg) {
-                        enrichedHtml += `
-                            <div class="natal-chart-section" style="page-break-before: always; text-align: center; margin: 2rem 0; padding: 2rem;">
-                                <h2 style="color: #cda45e; font-size: 1.8em; margin-bottom: 1rem; font-family: 'Playfair Display', serif; text-transform: uppercase; letter-spacing: 3px;">
-                                    🌟 Твоя Натальна Карта
-                                </h2>
-                                <div style="display: flex; justify-content: center; align-items: center; width: 100%; max-width: 650px; margin: 0 auto;">
-                                    ${userBirthData.chartSvg}
-                                </div>
-                            </div>
-                        `;
-                        console.log("✅ SVG Chart added to PDF HTML");
-                    } else {
-                        console.warn("⚠️ No chartSvg found in userBirthData");
-                    }
-                    
-                    // Додаємо позиції планет
-                    if (userBirthData.planets && userBirthData.planets.length > 0) {
-                        enrichedHtml += `
-                            <div class="planets-section" style="margin: 2rem auto; padding: 1.5rem; background: rgba(205, 164, 94, 0.1); border-radius: 8px; max-width: 600px; border-left: 3px solid #cda45e;">
-                                <h3 style="color: #cda45e; font-size: 1.5em; margin-bottom: 1rem; font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 2px;">
-                                    📍 Позиції Планет у Твоїй Карті
-                                </h3>
-                                <ul style="list-style: none; padding: 0; columns: 2; column-gap: 2rem;">
-                                    ${userBirthData.planets.map(planet => 
-                                        `<li style="margin-bottom: 0.5rem; color: #e0e0e0; font-family: 'Montserrat', sans-serif; font-size: 0.9em;">${planet}</li>`
-                                    ).join('')}
-                                </ul>
-                            </div>
-                        `;
-                        console.log("✅ Planets list added to PDF HTML");
-                    } else {
-                        console.warn("⚠️ No planets data found in userBirthData");
-                    }
                     
                     // 🔥 КРОК 2: Збираємо CSS стилі
                     const styles = Array.from(document.styleSheets)
@@ -1353,9 +1336,9 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            reportHtml: enrichedHtml,  // ✅ Тепер включає SVG та планети!
+                            reportHtml: enrichedHtml,
                             reportStyles: styles,
-                            userData: userBirthData
+                            userData: userBirthData // ✅ ОСЬ ТУТ всі дані (SVG і Планети)
                         })
                     });
                     
@@ -1482,16 +1465,23 @@
                         });
                         
                         // 1. ГЕНЕРАЦІЯ SVG (Рендеримо в прихований div)
+                        // Додана перевірка Renderer!
                         if (Renderer && chartHiddenRender) {
                             chartHiddenRender.innerHTML = ''; // Очистка
-                            const renderer = new Renderer(horoscope);
-                            renderer.render(chartHiddenRender);
-                            // Витягуємо SVG-рядок та зберігаємо в userBirthData
-                            const svgContent = chartHiddenRender.innerHTML;
-                            userBirthData.chartSvg = svgContent;
-                            console.log("Chart SVG generated and saved to userBirthData. Length:", svgContent.length);
+                            try {
+                                const renderer = new Renderer(horoscope);
+                                renderer.render(chartHiddenRender);
+                                // Витягуємо SVG-рядок та зберігаємо в userBirthData
+                                const svgContent = chartHiddenRender.innerHTML;
+                                userBirthData.chartSvg = svgContent;
+                                console.log("✅ Chart SVG generated. Length:", svgContent.length);
+                            } catch (renderErr) {
+                                console.error("❌ Renderer failed:", renderErr);
+                                userBirthData.chartSvg = null; 
+                            }
                         } else {
-                            console.warn("Renderer not available or hidden div missing. SVG skipped.");
+                            console.warn("⚠️ Renderer not available or hidden div missing. SVG skipped.");
+                            userBirthData.chartSvg = null;
                         }
 
                         // 2. ГЕНЕРАЦІЯ СПИСКУ ПЛАНЕТ (Градуси)
@@ -1509,11 +1499,13 @@
                                  const degree = Math.floor(body.ChartPosition.Ecliptic.DecimalDegrees % 30);
                                  const minute = Math.floor((body.ChartPosition.Ecliptic.DecimalDegrees % 1) * 60);
                                  const label = key.charAt(0).toUpperCase() + key.slice(1);
-                                 planetsList.push(`${label}: ${sign} ${degree}°${minute}'`);
+                                 planetsList.push(`${label}:${sign} ${degree}°${minute}'`); // !!! Прибрав пробіл перед двокрапкою для сумісності з Backend
                              }
                         });
+                        
+                        // ПРИМУСОВЕ ЗБЕРЕЖЕННЯ В ГЛОБАЛЬНУ ЗМІННУ
                         userBirthData.planets = planetsList;
-                        console.log("Planets degrees generated:", planetsList);
+                        console.log("✅ Planets degrees generated:", planetsList.length);
 
 
                         // 3. Формуємо рядок для AI (як і раніше)
