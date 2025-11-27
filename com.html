@@ -1279,14 +1279,28 @@
                     return;
                 }
                 
-                // === DEBUG ALERT: Повідомлення про знайдені планети ===
-                let planetsMsg = "Планети не знайдено.";
-                if (userBirthData.planets && userBirthData.planets.length > 0) {
-                    planetsMsg = "✅ Знайдено планет: " + userBirthData.planets.length + "\n\n" + userBirthData.planets.join("\n");
+                // === DEBUG ALERT: ВИДАЛИТИ ПІСЛЯ ТЕСТУ ===
+                // Перевіряємо, чи є дані перед відправкою
+                const chartStatus = userBirthData.chartSvg ? "✅ Карта Є" : "❌ Карти Немає (вимкнено)";
+                const planetsStatus = (userBirthData.planets && userBirthData.planets.length > 0) 
+                    ? `✅ Планет: ${userBirthData.planets.length}` 
+                    : "❌ Планет Немає";
+                
+                // Додаємо більше діагностики
+                let debugMsg = `DEBUG Check:\n\n${chartStatus}\n${planetsStatus}`;
+                if (typeof window.CircularNatalHoroscope === 'undefined') {
+                    debugMsg += "\n\n❌ BIIBLIOTEKA NE ZAVANTAZHYLAS!";
+                } else {
+                    debugMsg += "\n\n✅ Бібліотека OK.";
                 }
                 
-                // Показуємо користувачу результат розрахунку перед генерацією PDF
-                alert(`РЕЗУЛЬТАТ РОЗРАХУНКУ:\n${planetsMsg}`);
+                if (!userBirthData.geo) {
+                    debugMsg += "\n\n❌ GEO дані відсутні!";
+                } else {
+                    debugMsg += `\n\n✅ GEO: ${JSON.stringify(userBirthData.geo)}`;
+                }
+                
+                alert(debugMsg);
                 // ==========================================
 
                 try {
@@ -1423,7 +1437,14 @@
                 let horoscope = null; 
                 
                 // === ЕТАП 1: РОЗРАХУНОК ГОРОСКОПУ (МАТЕМАТИКА) ===
-                if (Horoscope && data.date && data.geo) {  
+                // FALLBACK LOGIC: Use Kyiv as default if geo data is missing (user skipped Step 4)
+                let calculationGeo = data.geo;
+                if (!calculationGeo) {
+                    console.log("⚠️ No GEO data provided. Using default (Kyiv) for calculation fallback.");
+                    calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
+                }
+
+                if (Horoscope && data.date && calculationGeo) {  
                     try {
                         console.log("🔮 Starting Horoscope Calculation...");
                         const dateParts = data.date.split('-');
@@ -1445,9 +1466,9 @@
                             date: dateNum,
                             hour: hour, 
                             minute: minute,
-                            latitude: parseFloat(data.geo.latitude), 
-                            longitude: parseFloat(data.geo.longitude),
-                            timezone: data.geo.timezone
+                            latitude: parseFloat(calculationGeo.latitude), 
+                            longitude: parseFloat(calculationGeo.longitude),
+                            timezone: calculationGeo.timezone
                         });
                         
                         horoscope = new Horoscope({
@@ -1459,7 +1480,7 @@
                         console.error("❌ Failed to calculate horoscope (Math Error):", err);
                     }
                 } else { 
-                    console.log("⚠️ Calculating report without GEO data (user skipped or validation failed).");
+                    console.log("⚠️ Calculating report completely without GEO data (should not happen with fallback).");
                 }
 
                 // === ЕТАП 2: ГЕНЕРАЦІЯ СПИСКУ ПЛАНЕТ (БЕЗПЕЧНИЙ БЛОК) ===
@@ -1483,7 +1504,7 @@
                         });
                         
                         userBirthData.planets = planetsList;
-                        console.table(planetsList); // <--- ДОДАНО ДЛЯ КОНСОЛІ
+                        console.table(planetsList); 
                         console.log(`✅ Planets list generated: ${planetsList.length} planets.`);
                         
                         // Формуємо рядок для AI
