@@ -832,14 +832,30 @@
                     });
                     
                     const data = await res.json();
-                    if (data.success) {
+                    if (data.success && data.pdfBase64) {
+                        // === CRITICAL MOBILE FIX (Blob) ===
+                        const byteCharacters = atob(data.pdfBase64);
+                        const byteNumbers = new Array(byteCharacters.length);
+                        for (let i = 0; i < byteCharacters.length; i++) {
+                            byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        }
+                        const byteArray = new Uint8Array(byteNumbers);
+                        const blob = new Blob([byteArray], {type: 'application/pdf'});
+                        const blobUrl = URL.createObjectURL(blob);
+                        
                         const link = document.createElement('a');
-                        link.href = `data:application/pdf;base64,${data.pdfBase64}`;
+                        link.href = blobUrl;
                         link.download = data.filename;
+                        document.body.appendChild(link);
                         link.click();
-                    } else throw new Error(data.error);
+                        document.body.removeChild(link);
+                        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+                        
+                        showModal("Успіх!", "Ваш PDF-звіт успішно завантажено.");
+                    } else throw new Error(data.error || "Server returned invalid data");
                 } catch (e) {
-                    showModal("Помилка", "Не вдалося завантажити PDF.");
+                    console.error(e);
+                    showModal("Помилка", "Не вдалося завантажити PDF. " + e.message);
                 } finally {
                     setBtnLoading(DOM.buttons.pdf, false);
                 }
