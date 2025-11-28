@@ -17,28 +17,44 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     
     <!-- ================================================================= -->
-    <!-- 🔥 ASTRO LIBRARY LOADER (THE "SHIM" HACK) 🔥 -->
-    <!-- Ми емулюємо середовище Node.js, щоб браузер "з'їв" бібліотеку -->
+    <!-- 🔥 ASTRO LIBRARY LOADER (EVENT-BASED SHIM) 🔥 -->
     <!-- ================================================================= -->
     <script>
-        // 1. Створюємо фіктивні об'єкти module та exports
+        // 1. Готуємо ґрунт для бібліотеки
         window.module = { exports: {} };
         window.exports = window.module.exports;
-    </script>
-    
-    <!-- 2. Завантажуємо бібліотеку як звичайний скрипт (вона запишеться в window.module.exports) -->
-    <script src="https://unpkg.com/circular-natal-horoscope-js@1.1.0/dist/index.js"></script>
-    
-    <script>
-        // 3. Витягуємо бібліотеку з "пастки" і робимо глобальною
-        if (window.module && window.module.exports && window.module.exports.Horoscope) {
-            window.CircularNatalHoroscope = window.module.exports;
-            console.log("✅ Astro Library Loaded via CommonJS Shim!");
-        } else {
-            console.error("❌ Shim failed. Library structure mismatch.");
-            // Тут ми не панікуємо, бо маємо запасний план (Fallback Calculator)
+        
+        // Прапор статусу
+        window.isAstroLibReady = false;
+
+        function onAstroLibLoad() {
+            // 3. Ця функція запуститься ТІЛЬКИ коли файл повністю завантажиться
+            if (window.module && window.module.exports && window.module.exports.Horoscope) {
+                window.CircularNatalHoroscope = window.module.exports;
+                window.isAstroLibReady = true;
+                console.log("✅ Astro Library Loaded via Shim (OnLoad Event)!");
+                
+                // Якщо сторінка вже завантажена, спробуємо оновити дані
+                if (typeof renderPlanetaryFingerprint === 'function') {
+                    renderPlanetaryFingerprint();
+                }
+            } else {
+                console.error("❌ Library loaded but structure is wrong.");
+            }
+        }
+
+        function onAstroLibError() {
+            console.error("❌ Failed to load Astro Library from CDN.");
+            // Тут можна спробувати завантажити з резервного CDN, якщо треба
         }
     </script>
+    
+    <!-- 2. Завантажуємо бібліотеку з правильними обробниками подій -->
+    <script 
+        src="https://unpkg.com/circular-natal-horoscope-js@1.1.0/dist/index.js" 
+        onload="onAstroLibLoad()" 
+        onerror="onAstroLibError()"
+    ></script>
     <!-- ================================================================= -->
     
     <style>
@@ -401,14 +417,15 @@
         .astro-data-item strong {
             color: var(--primary-text-color);
         }
-        .btn-retry {
-            background: none;
-            border: none;
-            color: var(--accent-color);
-            text-decoration: underline;
-            cursor: pointer;
-            font-size: 0.75rem;
-            margin-top: 0.5rem;
+        
+        /* Анімація для очікування */
+        .pulse-text {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
         }
     </style>
 </head>
@@ -729,25 +746,28 @@
         let Origin, Horoscope, Renderer;
 
         function initAstroLibrary() {
-            const lib = window.CircularNatalHoroscope || {};
-            Origin = lib.Origin;
-            Horoscope = lib.Horoscope;
-            Renderer = lib.Renderer;
-
-            if (!Horoscope || !Renderer) {
-                console.warn("⚠️ Main Library missing. Fallback mode enabled.");
-                return false;
-            } else {
-                console.log("✅ Library Initialized.");
+            // Check global flag from shim
+            if (window.isAstroLibReady && window.CircularNatalHoroscope) {
+                const lib = window.CircularNatalHoroscope;
+                Origin = lib.Origin;
+                Horoscope = lib.Horoscope;
+                Renderer = lib.Renderer;
                 return true;
             }
+            // Also check standard global just in case shim worked differently
+            if (window.CircularNatalHoroscope) {
+                const lib = window.CircularNatalHoroscope;
+                Origin = lib.Origin;
+                Horoscope = lib.Horoscope;
+                Renderer = lib.Renderer;
+                return true;
+            }
+            return false;
         }
 
         // ===============================================
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Ініціалізуємо бібліотеку після завантаження сторінки
-            setTimeout(initAstroLibrary, 500); 
             
             // --- 1. ОТРИМАННЯ ЕЛЕМЕНТІВ ---
             
@@ -1146,8 +1166,15 @@
             function generateAstroDataHTML() {
                 // 1. RE-INIT CHECK
                 if (!initAstroLibrary()) {
-                    // FALLBACK FOR STEP 5/7: If lib is dead, show nothing or minimal info
-                    return ""; 
+                    // Показуємо статус завантаження замість пустоти, щоб користувач бачив, що процес йде
+                    return `
+                        <div class="astro-data-box" style="border-color: #d29922; background: rgba(210, 153, 34, 0.1);">
+                            <p class="text-xs text-yellow-400 text-center pulse-text">
+                                ⏳ Завантаження астро-даних...<br>
+                                (Спробуйте зачекати кілька секунд)
+                            </p>
+                        </div>
+                    `;
                 }
 
                 // 2. Check Data
@@ -1225,7 +1252,7 @@
 
                 } catch (e) {
                     console.error("Fingerprint render error:", e);
-                    return ""; // Hide box on error
+                    return `<div class="astro-data-box"><p class="text-xs text-red-400 text-center">Помилка розрахунку: ${e.message}</p></div>`;
                 }
             }
 
@@ -1717,10 +1744,7 @@
                     calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
                 }
 
-                // Check again for safety
-                if (!initAstroLibrary()) {
-                     console.warn("Library still missing at report generation. Skipping map.");
-                } else if (data.date && calculationGeo) {  
+                if (Horoscope && data.date && calculationGeo) {  
                     try {
                         console.log("🔮 Starting Horoscope Calculation...");
                         const dateParts = data.date.split('-');
