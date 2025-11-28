@@ -346,6 +346,38 @@
             z-index: -9999;
             background: transparent;
         }
+
+        /* === NEW: СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5) === */
+        #paywall-astro-data {
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: rgba(205, 164, 94, 0.05);
+            border: 1px dashed rgba(205, 164, 94, 0.3);
+            border-radius: 8px;
+            text-align: left;
+            display: none; /* Покажемо через JS */
+        }
+        .astro-data-title {
+            color: var(--accent-color);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            text-align: center;
+        }
+        .astro-data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--secondary-text-color);
+            font-family: monospace; /* Технічний вигляд */
+        }
+        .astro-data-item strong {
+            color: var(--primary-text-color);
+        }
     </style>
 </head>
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
@@ -514,6 +546,12 @@
                     <span class="font-semibold">Твої майбутні можливості</span>
                 </div>
             </div>
+            
+            <!-- === NEW: БЛОК ДЛЯ ПЕРЕВІРКИ ДАНИХ (Trust Trigger) === -->
+            <div id="paywall-astro-data">
+                <!-- Сюди JS вставить список планет -->
+            </div>
+            <!-- ===================================================== -->
 
             <div class="space-y-4 pt-4">
                 <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
@@ -707,6 +745,7 @@
 
             const wfpFormContainer = document.getElementById('wfp-form-container');
             const chartHiddenRender = document.getElementById('chart-hidden-render'); // Елемент для рендеру SVG
+            const paywallAstroDataContainer = document.getElementById('paywall-astro-data'); // NEW
 
             const modal = document.getElementById('modal');
             const modalTitle = document.getElementById('modal-title');
@@ -1040,6 +1079,87 @@
                 }
             }
 
+            // ==========================================
+            // NEW FUNCTION: RENDER PLANETARY FINGERPRINT (STEP 5)
+            // ==========================================
+            function renderPlanetaryFingerprint() {
+                // 1. Check if we have data to calculate
+                let calcData = userBirthData;
+                
+                // Fallback for Geo if skipped
+                let calculationGeo = calcData.geo;
+                if (!calculationGeo) {
+                    calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
+                }
+
+                if (!Horoscope || !calcData.date) {
+                    console.warn("Astro library missing or no date.");
+                    return;
+                }
+
+                try {
+                    // 2. Quick Calculation
+                    const dateParts = calcData.date.split('-');
+                    const year = parseInt(dateParts[0]);
+                    const month = parseInt(dateParts[1]) - 1; 
+                    const dateNum = parseInt(dateParts[2]);
+                    
+                    let hour = 12, minute = 0;
+                    if (calcData.time) {
+                        const timeParts = calcData.time.split(':');
+                        hour = parseInt(timeParts[0]);
+                        minute = parseInt(timeParts[1]);
+                    }
+                    
+                    const origin = new Origin({
+                        year: year, month: month, date: dateNum,
+                        hour: hour, minute: minute,
+                        latitude: parseFloat(calculationGeo.latitude), 
+                        longitude: parseFloat(calculationGeo.longitude),
+                        timezone: calculationGeo.timezone
+                    });
+                    
+                    const horoscope = new Horoscope({
+                        origin: origin, houseSystem: "placidus", zodiac: "tropical"
+                    });
+
+                    // 3. Extract Core Planets for Display
+                    // We only show Sun, Moon, Ascendant, Venus, Mars to keep it compact
+                    const displayList = [];
+                    const bodies = horoscope.CelestialBodies;
+
+                    function getFormattedPos(bodyName, label) {
+                         let body = bodies[bodyName];
+                         if (!body && bodyName === 'ascendant') body = horoscope.Ascendant;
+                         if (body) {
+                             const sign = body.Sign.label;
+                             const degree = Math.floor(body.ChartPosition.Ecliptic.DecimalDegrees % 30);
+                             return `<div class="astro-data-item"><strong>${label}:</strong> ${sign} ${degree}°</div>`;
+                         }
+                         return '';
+                    }
+
+                    displayList.push(getFormattedPos('sun', 'Сонце'));
+                    displayList.push(getFormattedPos('moon', 'Місяць'));
+                    displayList.push(getFormattedPos('ascendant', 'ASC'));
+                    displayList.push(getFormattedPos('venus', 'Венера'));
+                    displayList.push(getFormattedPos('mars', 'Марс'));
+                    displayList.push(getFormattedPos('jupiter', 'Юпітер'));
+
+                    // 4. Render HTML
+                    paywallAstroDataContainer.innerHTML = `
+                        <div class="astro-data-title">Твій Космічний Відбиток</div>
+                        <div class="astro-data-grid">
+                            ${displayList.join('')}
+                        </div>
+                    `;
+                    paywallAstroDataContainer.style.display = 'block';
+
+                } catch (e) {
+                    console.error("Fingerprint render error:", e);
+                }
+            }
+
             // --- 6. ОБРОБНИКИ ПОДІЙ ---
 
             // === КРОК 1 -> КРОК 2 (Лендінг -> Завантаження) ===
@@ -1133,6 +1253,10 @@
                     userBirthData.city = '';
                     userBirthData.geo = null;
                     console.log("City field empty, skipping validation.");
+                    
+                    // NEW: RENDER FINGERPRINT
+                    renderPlanetaryFingerprint();
+                    
                     showStep('paywall');
                     return;
                 }
@@ -1161,6 +1285,8 @@
                     
                     setButtonLoading(continueToPaywallButton, false);
                     setTimeout(() => {
+                        // NEW: RENDER FINGERPRINT
+                        renderPlanetaryFingerprint();
                         showStep('paywall');
                     }, infoText ? 1200 : 0);
 
@@ -1184,6 +1310,10 @@
                 userBirthData.city = '';
                 userBirthData.geo = null;
                 console.log("User skipped premium data.");
+                
+                // NEW: RENDER FINGERPRINT
+                renderPlanetaryFingerprint();
+                
                 showStep('paywall');
             });
 
