@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astro Library Diagnostics</title>
+    <style>
+        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+        .status { padding: 15px; border: 1px solid #333; margin-bottom: 20px; font-size: 1.2em; }
+        .error { color: #f55; border-color: #f55; background: #311; }
+        .success { color: #5f5; border-color: #5f5; background: #131; }
+        #chart { background: white; width: 400px; height: 400px; margin-top: 20px; }
+    </style>
+
+    <!-- Спроба 1: Unpkg -->
+    <script src="https://unpkg.com/circular-natal-horoscope-js"></script>
+</head>
+<body>
+
+    <h1>🛠 Astro Library Diagnostics</h1>
+
+    <div id="status-box" class="status">Initializing...</div>
+
+    <h3>Debug Log:</h3>
+    <div id="log"></div>
+
+    <div id="chart"></div>
+
+    <script>
+        const statusBox = document.getElementById('status-box');
+        const logBox = document.getElementById('log');
+        const chartBox = document.getElementById('chart');
+
+        function log(msg) {
+            logBox.innerHTML += `<div>> ${msg}</div>`;
+            console.log(msg);
+        }
+
+        function error(msg) {
+            logBox.innerHTML += `<div style="color:#f55">> ERROR: ${msg}</div>`;
+            statusBox.innerText = "CRITICAL FAILURE: " + msg;
+            statusBox.className = "status error";
+        }
+
+        function success(msg) {
+            statusBox.innerText = "SUCCESS: " + msg;
+            statusBox.className = "status success";
+        }
+
+        window.onload = function() {
+            log("Window loaded. Checking for 'CircularNatalHoroscope'...");
+
+            if (typeof window.CircularNatalHoroscope === 'undefined') {
+                error("Library Object NOT found on window. The script failed to load.");
+                
+                // Спроба динамічного порятунку для тесту
+                log("Attempting emergency load from Backup CDN...");
+                const s = document.createElement('script');
+                s.src = "https://cdn.jsdelivr.net/npm/circular-natal-horoscope-js@1.0.3/dist/circular-natal-horoscope-js.min.js";
+                s.onload = () => {
+                    log("Backup script loaded. Reload page to test.");
+                    alert("Backup loaded. Refresh page.");
+                };
+                document.head.appendChild(s);
+                return;
+            }
+
+            log("Library found! Object keys: " + Object.keys(window.CircularNatalHoroscope).join(", "));
+
+            try {
+                const { Origin, Horoscope, Renderer } = window.CircularNatalHoroscope;
+
+                log("Calculating test horoscope (Kyiv, Now)...");
+                
+                const origin = new Origin({
+                    year: 2023, month: 0, date: 1, // 1 Jan 2023
+                    hour: 12, minute: 0,
+                    latitude: 50.45, longitude: 30.52
+                });
+
+                const horoscope = new Horoscope({
+                    origin: origin,
+                    houseSystem: "placidus",
+                    zodiac: "tropical",
+                    aspectPoints: ['bodies', 'points', 'angles'],
+                    aspectWithPoints: ['bodies', 'points', 'angles'],
+                    aspects: [ { value: 0, label: "conjunction" }, { value: 180, label: "opposition" } ]
+                });
+
+                log("Planets calculated: Sun is in " + horoscope.CelestialBodies.sun.Sign.label);
+
+                log("Attempting to render SVG...");
+                const renderer = new Renderer(horoscope);
+                renderer.render(chartBox);
+
+                if (chartBox.innerHTML.includes("<svg")) {
+                    log("SVG rendered successfully.");
+                    success("Library is WORKING correctly.");
+                } else {
+                    error("Calculation worked, but SVG did not render.");
+                }
+
+            } catch (e) {
+                error("Exception during execution: " + e.message);
+            }
+        };
+    </script>
+</body>
+</html>
