@@ -45,11 +45,10 @@
 
         function onAstroLibError() {
             console.error("❌ Failed to load Astro Library from CDN.");
-            // Тут можна спробувати завантажити з резервного CDN, якщо треба
         }
     </script>
     
-    <!-- 2. Завантажуємо бібліотеку з правильними обробниками подій -->
+    <!-- 2. Завантажуємо бібліотеку -->
     <script 
         src="https://unpkg.com/circular-natal-horoscope-js@1.1.0/dist/index.js" 
         onload="onAstroLibLoad()" 
@@ -416,6 +415,18 @@
         }
         .astro-data-item strong {
             color: var(--primary-text-color);
+        }
+        
+        /* Chart Preview in Astro Box */
+        .astro-chart-preview {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 15px auto;
+            position: relative;
+        }
+        .astro-chart-preview svg {
+            width: 100%;
+            height: 100%;
         }
         
         /* Анімація для очікування */
@@ -1241,9 +1252,35 @@
                     displayList.push(getFormattedPos('mars', 'Марс'));
                     displayList.push(getFormattedPos('jupiter', 'Юпітер'));
 
+                    // === NEW: RENDER CHART SVG PREVIEW ===
+                    let chartPreviewHtml = '';
+                    if (Renderer && chartHiddenRender) {
+                        chartHiddenRender.innerHTML = '';
+                        const renderer = new Renderer(horoscope);
+                        renderer.render(chartHiddenRender);
+                        
+                        // Apply Gold Theme
+                        applyGoldThemeToSVG(chartHiddenRender);
+                        
+                        // Get SVG and prep for display
+                        const svgContent = chartHiddenRender.innerHTML;
+                        if (svgContent.includes('<svg')) {
+                            // Save for PDF
+                            userBirthData.chartSvg = svgContent;
+                            // Add to display
+                            chartPreviewHtml = `
+                                <div class="astro-chart-preview">
+                                    ${svgContent}
+                                </div>
+                            `;
+                        }
+                    }
+                    // ======================================
+
                     return `
                         <div class="astro-data-box">
                             <div class="astro-data-title">Твій Космічний Відбиток</div>
+                            ${chartPreviewHtml} <!-- Insert Chart Here -->
                             <div class="astro-data-grid">
                                 ${displayList.join('')}
                             </div>
