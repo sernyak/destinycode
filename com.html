@@ -16,8 +16,23 @@
     <!-- Шрифт Playfair Display для заголовків PDF -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     
-    <!-- Астро-бібліотека (ПОВЕРНУЛИ CIRCULAR-NATAL-HOROSCOPE-JS) -->
-    <script src="https://cdn.jsdelivr.net/npm/circular-natal-horoscope-js/dist/circular-natal-horoscope-js.browser.min.js"></script>
+    <!-- === АСТРО-БІБЛІОТЕКА: ПОТРІЙНИЙ ЗАХИСТ ЗАВАНТАЖЕННЯ === -->
+    <!-- 1. Основний канал (Unpkg - автоматично шукає main file) -->
+    <script src="https://unpkg.com/circular-natal-horoscope-js" onerror="loadBackupScript(this)"></script>
+    
+    <!-- 2. Функція порятунку (якщо основний не спрацював) -->
+    <script>
+        function loadBackupScript(originalScript) {
+            console.warn("⚠️ Main Astro-script failed. Loading backup...");
+            const backupScript = document.createElement('script');
+            // 3. Запасний канал (Інший CDN)
+            backupScript.src = 'https://cdn.jsdelivr.net/npm/circular-natal-horoscope-js@1.0.3/dist/circular-natal-horoscope-js.min.js';
+            backupScript.onload = function() { console.log("✅ Backup Astro-script loaded!"); };
+            backupScript.onerror = function() { console.error("❌ Critical: All script sources failed."); };
+            document.head.appendChild(backupScript);
+        }
+    </script>
+    <!-- ========================================================== -->
     
     <style>
         /* --- Базові Змінні --- */
@@ -379,6 +394,15 @@
         .astro-data-item strong {
             color: var(--primary-text-color);
         }
+        .btn-retry {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
@@ -675,17 +699,30 @@
     <script>
         // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
         // ВАЖЛИВО: Деструктуризуємо також Renderer для малювання SVG
-        const { Origin, Horoscope, Renderer } = window.CircularNatalHoroscope || {};
+        // Note: Зачекаємо DOMContentLoaded, бо скрипт може ще вантажитись
+        
+        let Origin, Horoscope, Renderer;
 
-        if (!Horoscope || !Renderer) {
-            console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD !!!");
-        } else {
-            console.log("Astro Library (CircularNatalHoroscopeJS) loaded successfully.");
+        function initAstroLibrary() {
+            const lib = window.CircularNatalHoroscope || {};
+            Origin = lib.Origin;
+            Horoscope = lib.Horoscope;
+            Renderer = lib.Renderer;
+
+            if (!Horoscope || !Renderer) {
+                console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD !!!");
+                return false;
+            } else {
+                console.log("Astro Library (CircularNatalHoroscopeJS) loaded successfully.");
+                return true;
+            }
         }
 
         // ===============================================
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Ініціалізуємо бібліотеку після завантаження сторінки
+            setTimeout(initAstroLibrary, 500); // Даємо 0.5с фору скрипту
             
             // --- 1. ОТРИМАННЯ ЕЛЕМЕНТІВ ---
             
@@ -1082,10 +1119,18 @@
             // HELPER: Generate Astro HTML String
             // ==========================================
             function generateAstroDataHTML() {
-                // 1. Check Library
-                if (!window.CircularNatalHoroscope) {
-                    console.error("Astro Library is missing!");
-                    return `<div class="astro-data-box" style="border-color: #ef4444;"><p class="text-xs text-red-400 text-center">Астро-бібліотека не завантажена. Перевірте з'єднання.</p></div>`;
+                // 1. RE-INIT CHECK
+                if (!initAstroLibrary()) {
+                    return `
+                        <div class="astro-data-box" style="border-color: #ef4444; background: rgba(239, 68, 68, 0.1);">
+                            <p class="text-xs text-red-400 text-center">
+                                Астро-бібліотека не завантажена. Перевірте з'єднання.
+                            </p>
+                            <div class="text-center">
+                                <button type="button" class="btn-retry" onclick="window.location.reload()">Перезавантажити сторінку</button>
+                            </div>
+                        </div>
+                    `;
                 }
 
                 // 2. Check Data
@@ -1100,7 +1145,6 @@
 
                 try {
                     // 3. Calculate
-                    const { Origin, Horoscope } = window.CircularNatalHoroscope;
                     const dateParts = calcData.date.split('-');
                     const year = parseInt(dateParts[0]);
                     const month = parseInt(dateParts[1]) - 1; 
@@ -1647,7 +1691,10 @@
                     calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
                 }
 
-                if (Horoscope && data.date && calculationGeo) {  
+                // Check again for safety
+                if (!initAstroLibrary()) {
+                     console.warn("Library still missing at report generation. Skipping map.");
+                } else if (data.date && calculationGeo) {  
                     try {
                         console.log("🔮 Starting Horoscope Calculation...");
                         const dateParts = data.date.split('-');
