@@ -16,8 +16,46 @@
     <!-- Шрифт Playfair Display для заголовків PDF -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     
-    <!-- Астро-бібліотека (ПОВЕРНУЛИ CIRCULAR-NATAL-HOROSCOPE-JS) -->
-    <script src="https://cdn.jsdelivr.net/npm/circular-natal-horoscope-js/dist/circular-natal-horoscope-js.browser.min.js"></script>
+    <!-- ================================================================= -->
+    <!-- 🔥 ASTRO LIBRARY LOADER (EVENT-BASED SHIM) 🔥 -->
+    <!-- ================================================================= -->
+    <script>
+        // 1. Готуємо ґрунт для бібліотеки
+        window.module = { exports: {} };
+        window.exports = window.module.exports;
+        
+        // Прапор статусу
+        window.isAstroLibReady = false;
+
+        function onAstroLibLoad() {
+            // 3. Ця функція запуститься ТІЛЬКИ коли файл повністю завантажиться
+            if (window.module && window.module.exports && window.module.exports.Horoscope) {
+                window.CircularNatalHoroscope = window.module.exports;
+                window.isAstroLibReady = true;
+                console.log("✅ Astro Library Loaded via Shim (OnLoad Event)!");
+                
+                // Якщо сторінка вже завантажена, спробуємо оновити дані
+                if (typeof renderPlanetaryFingerprint === 'function') {
+                    renderPlanetaryFingerprint();
+                }
+            } else {
+                console.error("❌ Library loaded but structure is wrong.");
+            }
+        }
+
+        function onAstroLibError() {
+            console.error("❌ Failed to load Astro Library from CDN.");
+            // Тут можна спробувати завантажити з резервного CDN, якщо треба
+        }
+    </script>
+    
+    <!-- 2. Завантажуємо бібліотеку з правильними обробниками подій -->
+    <script 
+        src="https://unpkg.com/circular-natal-horoscope-js@1.1.0/dist/index.js" 
+        onload="onAstroLibLoad()" 
+        onerror="onAstroLibError()"
+    ></script>
+    <!-- ================================================================= -->
     
     <style>
         /* --- Базові Змінні --- */
@@ -347,8 +385,8 @@
             background: transparent;
         }
 
-        /* === NEW: СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5) === */
-        #paywall-astro-data {
+        /* === NEW: СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) === */
+        .astro-data-box {
             margin-top: 1.5rem;
             margin-bottom: 1.5rem;
             padding: 1rem;
@@ -356,16 +394,17 @@
             border: 1px dashed rgba(205, 164, 94, 0.3);
             border-radius: 8px;
             text-align: left;
-            display: none; /* Покажемо через JS */
         }
         .astro-data-title {
             color: var(--accent-color);
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             font-weight: 700;
             text-align: center;
+            border-bottom: 1px solid rgba(205, 164, 94, 0.2);
+            padding-bottom: 0.5rem;
         }
         .astro-data-grid {
             display: grid;
@@ -377,6 +416,16 @@
         }
         .astro-data-item strong {
             color: var(--primary-text-color);
+        }
+        
+        /* Анімація для очікування */
+        .pulse-text {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
         }
     </style>
 </head>
@@ -548,9 +597,7 @@
             </div>
             
             <!-- === NEW: БЛОК ДЛЯ ПЕРЕВІРКИ ДАНИХ (Trust Trigger) === -->
-            <div id="paywall-astro-data">
-                <!-- Сюди JS вставить список планет -->
-            </div>
+            <div id="paywall-astro-data" style="display: none;"></div>
             <!-- ===================================================== -->
 
             <div class="space-y-4 pt-4">
@@ -674,14 +721,48 @@
     <!-- JAVASCRIPT ЛОГІКА v2.17.8 (Data Passing Update) -->
     <!-- ====================================================== -->
     <script>
-        // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
-        // ВАЖЛИВО: Деструктуризуємо також Renderer для малювання SVG
-        const { Origin, Horoscope, Renderer } = window.CircularNatalHoroscope || {};
+        // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
+        // Використовується, якщо бібліотека не завантажилась, щоб дати хоч якийсь результат
+        function getSimpleZodiacSign(dateString) {
+            const date = new Date(dateString);
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            
+            if((month == 1 && day <= 19) || (month == 12 && day >=22)) return "Козеріг";
+            if((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "Водолій";
+            if((month == 2 && day >= 19) || (month == 3 && day <= 20)) return "Риби";
+            if((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "Овен";
+            if((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "Телець";
+            if((month == 5 && day >= 21) || (month == 6 && day <= 20)) return "Близнюки";
+            if((month == 6 && day >= 21) || (month == 7 && day <= 22)) return "Рак";
+            if((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "Лев";
+            if((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "Діва";
+            if((month == 9 && day >= 23) || (month == 10 && day <= 22)) return "Терези";
+            if((month == 10 && day >= 23) || (month == 11 && day <= 21)) return "Скорпіон";
+            if((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "Стрілець";
+            return "Знак не визначено";
+        }
+        
+        let Origin, Horoscope, Renderer;
 
-        if (!Horoscope || !Renderer) {
-            console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD !!!");
-        } else {
-            console.log("Astro Library (CircularNatalHoroscopeJS) loaded successfully.");
+        function initAstroLibrary() {
+            // Check global flag from shim
+            if (window.isAstroLibReady && window.CircularNatalHoroscope) {
+                const lib = window.CircularNatalHoroscope;
+                Origin = lib.Origin;
+                Horoscope = lib.Horoscope;
+                Renderer = lib.Renderer;
+                return true;
+            }
+            // Also check standard global just in case shim worked differently
+            if (window.CircularNatalHoroscope) {
+                const lib = window.CircularNatalHoroscope;
+                Origin = lib.Origin;
+                Horoscope = lib.Horoscope;
+                Renderer = lib.Renderer;
+                return true;
+            }
+            return false;
         }
 
         // ===============================================
@@ -745,7 +826,7 @@
 
             const wfpFormContainer = document.getElementById('wfp-form-container');
             const chartHiddenRender = document.getElementById('chart-hidden-render'); // Елемент для рендеру SVG
-            const paywallAstroDataContainer = document.getElementById('paywall-astro-data'); // NEW
+            const paywallAstroDataContainer = document.getElementById('paywall-astro-data'); // STEP 5
 
             const modal = document.getElementById('modal');
             const modalTitle = document.getElementById('modal-title');
@@ -1080,25 +1161,34 @@
             }
 
             // ==========================================
-            // NEW FUNCTION: RENDER PLANETARY FINGERPRINT (STEP 5)
+            // HELPER: Generate Astro HTML String
             // ==========================================
-            function renderPlanetaryFingerprint() {
-                // 1. Check if we have data to calculate
+            function generateAstroDataHTML() {
+                // 1. RE-INIT CHECK
+                if (!initAstroLibrary()) {
+                    // Показуємо статус завантаження замість пустоти, щоб користувач бачив, що процес йде
+                    return `
+                        <div class="astro-data-box" style="border-color: #d29922; background: rgba(210, 153, 34, 0.1);">
+                            <p class="text-xs text-yellow-400 text-center pulse-text">
+                                ⏳ Завантаження астро-даних...<br>
+                                (Спробуйте зачекати кілька секунд)
+                            </p>
+                        </div>
+                    `;
+                }
+
+                // 2. Check Data
                 let calcData = userBirthData;
-                
-                // Fallback for Geo if skipped
                 let calculationGeo = calcData.geo;
                 if (!calculationGeo) {
                     calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
                 }
-
-                if (!Horoscope || !calcData.date) {
-                    console.warn("Astro library missing or no date.");
-                    return;
+                if (!calcData.date) {
+                    return ""; // No data yet
                 }
 
                 try {
-                    // 2. Quick Calculation
+                    // 3. Calculate
                     const dateParts = calcData.date.split('-');
                     const year = parseInt(dateParts[0]);
                     const month = parseInt(dateParts[1]) - 1; 
@@ -1123,20 +1213,25 @@
                         origin: origin, houseSystem: "placidus", zodiac: "tropical"
                     });
 
-                    // 3. Extract Core Planets for Display
-                    // We only show Sun, Moon, Ascendant, Venus, Mars to keep it compact
-                    const displayList = [];
+                    // 4. Format
                     const bodies = horoscope.CelestialBodies;
+                    const displayList = [];
 
                     function getFormattedPos(bodyName, label) {
                          let body = bodies[bodyName];
                          if (!body && bodyName === 'ascendant') body = horoscope.Ascendant;
                          if (body) {
                              const sign = body.Sign.label;
-                             const degree = Math.floor(body.ChartPosition.Ecliptic.DecimalDegrees % 30);
-                             return `<div class="astro-data-item"><strong>${label}:</strong> ${sign} ${degree}°</div>`;
+                             // Calculate degrees, minutes, seconds
+                             const fullDegree = body.ChartPosition.Ecliptic.DecimalDegrees % 30;
+                             const degree = Math.floor(fullDegree);
+                             const minutesRaw = (fullDegree - degree) * 60;
+                             const minutes = Math.floor(minutesRaw);
+                             const seconds = Math.round((minutesRaw - minutes) * 60);
+
+                             return `<div class="astro-data-item"><strong>${label}:</strong> ${sign} ${degree}° ${minutes}' ${seconds}"</div>`;
                          }
-                         return '';
+                         return `<div class="astro-data-item"><strong>${label}:</strong> n/a</div>`;
                     }
 
                     displayList.push(getFormattedPos('sun', 'Сонце'));
@@ -1146,17 +1241,29 @@
                     displayList.push(getFormattedPos('mars', 'Марс'));
                     displayList.push(getFormattedPos('jupiter', 'Юпітер'));
 
-                    // 4. Render HTML
-                    paywallAstroDataContainer.innerHTML = `
-                        <div class="astro-data-title">Твій Космічний Відбиток</div>
-                        <div class="astro-data-grid">
-                            ${displayList.join('')}
+                    return `
+                        <div class="astro-data-box">
+                            <div class="astro-data-title">Твій Космічний Відбиток</div>
+                            <div class="astro-data-grid">
+                                ${displayList.join('')}
+                            </div>
                         </div>
                     `;
-                    paywallAstroDataContainer.style.display = 'block';
 
                 } catch (e) {
                     console.error("Fingerprint render error:", e);
+                    return `<div class="astro-data-box"><p class="text-xs text-red-400 text-center">Помилка розрахунку: ${e.message}</p></div>`;
+                }
+            }
+
+            // ==========================================
+            // NEW FUNCTION: RENDER PLANETARY FINGERPRINT (STEP 5 & 7)
+            // ==========================================
+            function renderPlanetaryFingerprint() {
+                const html = generateAstroDataHTML();
+                if (paywallAstroDataContainer) {
+                    paywallAstroDataContainer.innerHTML = html;
+                    paywallAstroDataContainer.style.display = html ? 'block' : 'none';
                 }
             }
 
@@ -1178,7 +1285,16 @@
                     showStep('loading');
                     
                     // === v2.17: Викликаємо повернений промпт ===
-                    const reportPromise = callGeminiAPI(apiFlashUrl, freeTaskPrompt, `Дата народження: ${selectedDate}`);
+                    // FALLBACK LOGIC: If date exists but no library, simple calc is needed? 
+                    // No, prompt handles "Free Hook" via Gemini nicely.
+                    
+                    // We DO need to pass Sun Sign if library is missing
+                    let simpleSunSign = "";
+                    if (!Horoscope) {
+                        simpleSunSign = ` (Знак: ${getSimpleZodiacSign(selectedDate)})`;
+                    }
+
+                    const reportPromise = callGeminiAPI(apiFlashUrl, freeTaskPrompt, `Дата народження: ${selectedDate}${simpleSunSign}`);
                     
                     const loadingSteps = [
                         'Аналізую положення планет', 
@@ -1805,7 +1921,11 @@
                 
                 // === v2.17: Нова логіка синхронізації ===
                 
-                generatedReportData = formattedReportHTML;
+                // === NEW v2.19: PREPEND ASTRO DATA TO REPORT ON SCREEN ===
+                const astroHtml = generateAstroDataHTML();
+                generatedReportData = astroHtml + formattedReportHTML;
+                // =========================================================
+                
                 console.log("Sync: Report FINISHED.");
                 isReportReady = true;
                 
