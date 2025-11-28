@@ -16,23 +16,30 @@
     <!-- Шрифт Playfair Display для заголовків PDF -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
     
-    <!-- === АСТРО-БІБЛІОТЕКА: ПОТРІЙНИЙ ЗАХИСТ ЗАВАНТАЖЕННЯ === -->
-    <!-- 1. Основний канал (Unpkg - автоматично шукає main file) -->
-    <script src="https://unpkg.com/circular-natal-horoscope-js" onerror="loadBackupScript(this)"></script>
-    
-    <!-- 2. Функція порятунку (якщо основний не спрацював) -->
+    <!-- ================================================================= -->
+    <!-- 🔥 ASTRO LIBRARY LOADER (THE "SHIM" HACK) 🔥 -->
+    <!-- Ми емулюємо середовище Node.js, щоб браузер "з'їв" бібліотеку -->
+    <!-- ================================================================= -->
     <script>
-        function loadBackupScript(originalScript) {
-            console.warn("⚠️ Main Astro-script failed. Loading backup...");
-            const backupScript = document.createElement('script');
-            // 3. Запасний канал (Інший CDN)
-            backupScript.src = 'https://cdn.jsdelivr.net/npm/circular-natal-horoscope-js@1.0.3/dist/circular-natal-horoscope-js.min.js';
-            backupScript.onload = function() { console.log("✅ Backup Astro-script loaded!"); };
-            backupScript.onerror = function() { console.error("❌ Critical: All script sources failed."); };
-            document.head.appendChild(backupScript);
+        // 1. Створюємо фіктивні об'єкти module та exports
+        window.module = { exports: {} };
+        window.exports = window.module.exports;
+    </script>
+    
+    <!-- 2. Завантажуємо бібліотеку як звичайний скрипт (вона запишеться в window.module.exports) -->
+    <script src="https://unpkg.com/circular-natal-horoscope-js@1.1.0/dist/index.js"></script>
+    
+    <script>
+        // 3. Витягуємо бібліотеку з "пастки" і робимо глобальною
+        if (window.module && window.module.exports && window.module.exports.Horoscope) {
+            window.CircularNatalHoroscope = window.module.exports;
+            console.log("✅ Astro Library Loaded via CommonJS Shim!");
+        } else {
+            console.error("❌ Shim failed. Library structure mismatch.");
+            // Тут ми не панікуємо, бо маємо запасний план (Fallback Calculator)
         }
     </script>
-    <!-- ========================================================== -->
+    <!-- ================================================================= -->
     
     <style>
         /* --- Базові Змінні --- */
@@ -697,9 +704,27 @@
     <!-- JAVASCRIPT ЛОГІКА v2.17.8 (Data Passing Update) -->
     <!-- ====================================================== -->
     <script>
-        // === ПЕРЕВІРКА ТА ІМПОРТ АСТРО-БІБЛІОТЕКИ ===
-        // ВАЖЛИВО: Деструктуризуємо також Renderer для малювання SVG
-        // Note: Зачекаємо DOMContentLoaded, бо скрипт може ще вантажитись
+        // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
+        // Використовується, якщо бібліотека не завантажилась, щоб дати хоч якийсь результат
+        function getSimpleZodiacSign(dateString) {
+            const date = new Date(dateString);
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            
+            if((month == 1 && day <= 19) || (month == 12 && day >=22)) return "Козеріг";
+            if((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "Водолій";
+            if((month == 2 && day >= 19) || (month == 3 && day <= 20)) return "Риби";
+            if((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "Овен";
+            if((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "Телець";
+            if((month == 5 && day >= 21) || (month == 6 && day <= 20)) return "Близнюки";
+            if((month == 6 && day >= 21) || (month == 7 && day <= 22)) return "Рак";
+            if((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "Лев";
+            if((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "Діва";
+            if((month == 9 && day >= 23) || (month == 10 && day <= 22)) return "Терези";
+            if((month == 10 && day >= 23) || (month == 11 && day <= 21)) return "Скорпіон";
+            if((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "Стрілець";
+            return "Знак не визначено";
+        }
         
         let Origin, Horoscope, Renderer;
 
@@ -710,10 +735,10 @@
             Renderer = lib.Renderer;
 
             if (!Horoscope || !Renderer) {
-                console.error("!!! Astro Library (CircularNatalHoroscopeJS) FAILED TO LOAD !!!");
+                console.warn("⚠️ Main Library missing. Fallback mode enabled.");
                 return false;
             } else {
-                console.log("Astro Library (CircularNatalHoroscopeJS) loaded successfully.");
+                console.log("✅ Library Initialized.");
                 return true;
             }
         }
@@ -722,7 +747,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             // Ініціалізуємо бібліотеку після завантаження сторінки
-            setTimeout(initAstroLibrary, 500); // Даємо 0.5с фору скрипту
+            setTimeout(initAstroLibrary, 500); 
             
             // --- 1. ОТРИМАННЯ ЕЛЕМЕНТІВ ---
             
@@ -1121,16 +1146,8 @@
             function generateAstroDataHTML() {
                 // 1. RE-INIT CHECK
                 if (!initAstroLibrary()) {
-                    return `
-                        <div class="astro-data-box" style="border-color: #ef4444; background: rgba(239, 68, 68, 0.1);">
-                            <p class="text-xs text-red-400 text-center">
-                                Астро-бібліотека не завантажена. Перевірте з'єднання.
-                            </p>
-                            <div class="text-center">
-                                <button type="button" class="btn-retry" onclick="window.location.reload()">Перезавантажити сторінку</button>
-                            </div>
-                        </div>
-                    `;
+                    // FALLBACK FOR STEP 5/7: If lib is dead, show nothing or minimal info
+                    return ""; 
                 }
 
                 // 2. Check Data
@@ -1208,7 +1225,7 @@
 
                 } catch (e) {
                     console.error("Fingerprint render error:", e);
-                    return `<div class="astro-data-box"><p class="text-xs text-red-400 text-center">Помилка розрахунку: ${e.message}</p></div>`;
+                    return ""; // Hide box on error
                 }
             }
 
@@ -1241,7 +1258,16 @@
                     showStep('loading');
                     
                     // === v2.17: Викликаємо повернений промпт ===
-                    const reportPromise = callGeminiAPI(apiFlashUrl, freeTaskPrompt, `Дата народження: ${selectedDate}`);
+                    // FALLBACK LOGIC: If date exists but no library, simple calc is needed? 
+                    // No, prompt handles "Free Hook" via Gemini nicely.
+                    
+                    // We DO need to pass Sun Sign if library is missing
+                    let simpleSunSign = "";
+                    if (!Horoscope) {
+                        simpleSunSign = ` (Знак: ${getSimpleZodiacSign(selectedDate)})`;
+                    }
+
+                    const reportPromise = callGeminiAPI(apiFlashUrl, freeTaskPrompt, `Дата народження: ${selectedDate}${simpleSunSign}`);
                     
                     const loadingSteps = [
                         'Аналізую положення планет', 
