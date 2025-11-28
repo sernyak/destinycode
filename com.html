@@ -1133,8 +1133,14 @@
                          if (!body && bodyName === 'ascendant') body = horoscope.Ascendant;
                          if (body) {
                              const sign = body.Sign.label;
-                             const degree = Math.floor(body.ChartPosition.Ecliptic.DecimalDegrees % 30);
-                             return `<div class="astro-data-item"><strong>${label}:</strong> ${sign} ${degree}°</div>`;
+                             // Calculate degrees, minutes, seconds
+                             const fullDegree = body.ChartPosition.Ecliptic.DecimalDegrees % 30;
+                             const degree = Math.floor(fullDegree);
+                             const minutesRaw = (fullDegree - degree) * 60;
+                             const minutes = Math.floor(minutesRaw);
+                             const seconds = Math.round((minutesRaw - minutes) * 60);
+
+                             return `<div class="astro-data-item"><strong>${label}:</strong> ${sign} ${degree}° ${minutes}' ${seconds}"</div>`;
                          }
                          return '';
                     }
