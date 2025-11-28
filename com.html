@@ -347,8 +347,8 @@
             background: transparent;
         }
 
-        /* === NEW: СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5) === */
-        #paywall-astro-data {
+        /* === NEW: СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) === */
+        .astro-data-box {
             margin-top: 1.5rem;
             margin-bottom: 1.5rem;
             padding: 1rem;
@@ -356,16 +356,17 @@
             border: 1px dashed rgba(205, 164, 94, 0.3);
             border-radius: 8px;
             text-align: left;
-            display: none; /* Покажемо через JS */
         }
         .astro-data-title {
             color: var(--accent-color);
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             font-weight: 700;
             text-align: center;
+            border-bottom: 1px solid rgba(205, 164, 94, 0.2);
+            padding-bottom: 0.5rem;
         }
         .astro-data-grid {
             display: grid;
@@ -548,9 +549,7 @@
             </div>
             
             <!-- === NEW: БЛОК ДЛЯ ПЕРЕВІРКИ ДАНИХ (Trust Trigger) === -->
-            <div id="paywall-astro-data">
-                <!-- Сюди JS вставить список планет -->
-            </div>
+            <div id="paywall-astro-data" style="display: none;"></div>
             <!-- ===================================================== -->
 
             <div class="space-y-4 pt-4">
@@ -745,7 +744,7 @@
 
             const wfpFormContainer = document.getElementById('wfp-form-container');
             const chartHiddenRender = document.getElementById('chart-hidden-render'); // Елемент для рендеру SVG
-            const paywallAstroDataContainer = document.getElementById('paywall-astro-data'); // NEW
+            const paywallAstroDataContainer = document.getElementById('paywall-astro-data'); // STEP 5
 
             const modal = document.getElementById('modal');
             const modalTitle = document.getElementById('modal-title');
@@ -1080,25 +1079,28 @@
             }
 
             // ==========================================
-            // NEW FUNCTION: RENDER PLANETARY FINGERPRINT (STEP 5)
+            // HELPER: Generate Astro HTML String
             // ==========================================
-            function renderPlanetaryFingerprint() {
-                // 1. Check if we have data to calculate
+            function generateAstroDataHTML() {
+                // 1. Check Library
+                if (!window.CircularNatalHoroscope) {
+                    console.error("Astro Library is missing!");
+                    return `<div class="astro-data-box" style="border-color: #ef4444;"><p class="text-xs text-red-400 text-center">Астро-бібліотека не завантажена. Перевірте з'єднання.</p></div>`;
+                }
+
+                // 2. Check Data
                 let calcData = userBirthData;
-                
-                // Fallback for Geo if skipped
                 let calculationGeo = calcData.geo;
                 if (!calculationGeo) {
                     calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
                 }
-
-                if (!Horoscope || !calcData.date) {
-                    console.warn("Astro library missing or no date.");
-                    return;
+                if (!calcData.date) {
+                    return ""; // No data yet
                 }
 
                 try {
-                    // 2. Quick Calculation
+                    // 3. Calculate
+                    const { Origin, Horoscope } = window.CircularNatalHoroscope;
                     const dateParts = calcData.date.split('-');
                     const year = parseInt(dateParts[0]);
                     const month = parseInt(dateParts[1]) - 1; 
@@ -1123,10 +1125,9 @@
                         origin: origin, houseSystem: "placidus", zodiac: "tropical"
                     });
 
-                    // 3. Extract Core Planets for Display
-                    // We only show Sun, Moon, Ascendant, Venus, Mars to keep it compact
-                    const displayList = [];
+                    // 4. Format
                     const bodies = horoscope.CelestialBodies;
+                    const displayList = [];
 
                     function getFormattedPos(bodyName, label) {
                          let body = bodies[bodyName];
@@ -1142,7 +1143,7 @@
 
                              return `<div class="astro-data-item"><strong>${label}:</strong> ${sign} ${degree}° ${minutes}' ${seconds}"</div>`;
                          }
-                         return '';
+                         return `<div class="astro-data-item"><strong>${label}:</strong> n/a</div>`;
                     }
 
                     displayList.push(getFormattedPos('sun', 'Сонце'));
@@ -1152,17 +1153,29 @@
                     displayList.push(getFormattedPos('mars', 'Марс'));
                     displayList.push(getFormattedPos('jupiter', 'Юпітер'));
 
-                    // 4. Render HTML
-                    paywallAstroDataContainer.innerHTML = `
-                        <div class="astro-data-title">Твій Космічний Відбиток</div>
-                        <div class="astro-data-grid">
-                            ${displayList.join('')}
+                    return `
+                        <div class="astro-data-box">
+                            <div class="astro-data-title">Твій Космічний Відбиток</div>
+                            <div class="astro-data-grid">
+                                ${displayList.join('')}
+                            </div>
                         </div>
                     `;
-                    paywallAstroDataContainer.style.display = 'block';
 
                 } catch (e) {
                     console.error("Fingerprint render error:", e);
+                    return `<div class="astro-data-box"><p class="text-xs text-red-400 text-center">Помилка розрахунку: ${e.message}</p></div>`;
+                }
+            }
+
+            // ==========================================
+            // NEW FUNCTION: RENDER PLANETARY FINGERPRINT (STEP 5 & 7)
+            // ==========================================
+            function renderPlanetaryFingerprint() {
+                const html = generateAstroDataHTML();
+                if (paywallAstroDataContainer) {
+                    paywallAstroDataContainer.innerHTML = html;
+                    paywallAstroDataContainer.style.display = html ? 'block' : 'none';
                 }
             }
 
@@ -1811,7 +1824,11 @@
                 
                 // === v2.17: Нова логіка синхронізації ===
                 
-                generatedReportData = formattedReportHTML;
+                // === NEW v2.19: PREPEND ASTRO DATA TO REPORT ON SCREEN ===
+                const astroHtml = generateAstroDataHTML();
+                generatedReportData = astroHtml + formattedReportHTML;
+                // =========================================================
+                
                 console.log("Sync: Report FINISHED.");
                 isReportReady = true;
                 
