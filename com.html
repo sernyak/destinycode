@@ -766,7 +766,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.30 (FULL PLANETS LIST) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.31 (Correct PDF Data + Perfect UI) -->
     <!-- ====================================================== -->
     <script>
         // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
@@ -1252,13 +1252,18 @@
                         origin: origin, houseSystem: "placidus", zodiac: "tropical"
                     });
 
-                    // 4. Format
+                    // 4. Format & PREPARE FOR PDF (Unified Logic)
                     const bodies = horoscope.CelestialBodies;
                     const displayList = [];
+                    
+                    // 🔥 ВИПРАВЛЕННЯ v2.31: ПРИБРАНО planetsListForPdf ТА ПОБІЧНІ ЕФЕКТИ 
+                    // Ця функція тепер генерує ТІЛЬКИ HTML для екрану.
+                    // Повний список для PDF генерується окремо в fetchFullAnalysis.
 
-                    function getFormattedPos(bodyName, label) { 
+                    function getFormattedPos(bodyName, label, englishLabel) { 
                         let body = bodies[bodyName]; 
                         if (!body && bodyName === 'ascendant') body = horoscope.Ascendant;
+                        if (!body && bodyName === 'midheaven') body = horoscope.Midheaven;
                         
                         if (body) { 
                             const sign = body.Sign.label; 
@@ -1283,12 +1288,13 @@
                         return `<div class="astro-data-item"><strong>${label}:</strong> n/a</div>`;
                     }
 
-                    displayList.push(getFormattedPos('sun', 'Сонце'));
-                    displayList.push(getFormattedPos('moon', 'Місяць'));
-                    displayList.push(getFormattedPos('ascendant', 'ASC'));
-                    displayList.push(getFormattedPos('venus', 'Венера'));
-                    displayList.push(getFormattedPos('mars', 'Марс'));
-                    displayList.push(getFormattedPos('jupiter', 'Юпітер'));
+                    // Генеруємо ТІЛЬКИ HTML для екрану
+                    displayList.push(getFormattedPos('sun', 'Сонце', 'Sun'));
+                    displayList.push(getFormattedPos('moon', 'Місяць', 'Moon'));
+                    displayList.push(getFormattedPos('ascendant', 'ASC', 'Ascendant')); 
+                    displayList.push(getFormattedPos('venus', 'Венера', 'Venus'));
+                    displayList.push(getFormattedPos('mars', 'Марс', 'Mars'));
+                    displayList.push(getFormattedPos('jupiter', 'Юпітер', 'Jupiter'));
 
                     // === NEW: RENDER CHART SVG PREVIEW ===
                     let chartPreviewHtml = '';
