@@ -385,12 +385,11 @@
             background: transparent;
         }
 
-        /* === СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) === */
-        /* === UPDATED v2.23: ULTRA COMPACT & CLEAN === */
+        /* === СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) - ВІДНОВЛЕНО З РОБОЧОГО ФАЙЛУ === */
         .astro-data-box {
-            margin-top: 1rem;       /* Менше відступу зверху */
-            margin-bottom: 1.5rem;  /* Менше відступу знизу */
-            padding: 0.75rem;       /* Компактніший паддінг */
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
             background-color: rgba(205, 164, 94, 0.05);
             border: 1px dashed rgba(205, 164, 94, 0.3);
             border-radius: 8px;
@@ -399,58 +398,34 @@
 
         .astro-data-title {
             color: var(--accent-color);
-            font-size: 0.75rem;     /* Трохи менший шрифт */
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 0.5rem;  /* Менший відступ */
+            margin-bottom: 0.75rem;
             font-weight: 700;
             text-align: center;
             border-bottom: 1px solid rgba(205, 164, 94, 0.2);
-            padding-bottom: 0.25rem;
+            padding-bottom: 0.5rem;
         }
 
         .astro-data-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.5rem; /* Значно менший зазор для компактності */
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--secondary-text-color);
+            font-family: monospace; /* Технічний вигляд */
         }
-        
-        .astro-data-item {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            font-family: 'Montserrat', monospace;
-        }
-        
-        /* РЯДОК 1: Планета + Знак */
-        .astro-data-header {
-            font-size: 0.8rem; /* Трохи компактніше */
+
+        .astro-data-item strong {
             color: var(--primary-text-color);
-            font-weight: 600;
-            line-height: 1.1;
-            white-space: nowrap; 
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
         
-        .astro-data-header strong {
-            color: #fff;
-        }
-
-        /* РЯДОК 2: Координати */
-        .astro-data-coords {
-            font-size: 0.65rem; /* Менший, "технічний" шрифт */
-            color: #888;
-            font-family: monospace;
-            margin-top: 2px;
-            letter-spacing: 0px;
-        }
-
         /* Chart Preview in Astro Box */
         .astro-chart-preview {
-            width: 150px;  /* Зменшено з 200px */
-            height: 150px; /* Зменшено з 200px */
-            margin: 0 auto 8px auto; /* Менший відступ */
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 15px auto;
             position: relative;
         }
 
@@ -614,10 +589,9 @@
                 Розблокуй <strong>повну карту</strong>, щоб побачити свій справжній потенціал.
             </p>
             
-            <!-- === UPDATED v2.20: ПЕРЕНЕСЕНО СЮДИ (ЗНИЗУ) ДЛЯ ПІДВИЩЕННЯ ДОВІРИ === -->
-            <!-- БЛОК ДЛЯ ПЕРЕВІРКИ ДАНИХ (Trust Trigger) -->
+            <!-- === UPDATED: БЛОК ДЛЯ ПЕРЕВІРКИ ДАНИХ (Trust Trigger) === -->
             <div id="paywall-astro-data" style="display: none;"></div>
-            <!-- ==================================================================== -->
+            <!-- ===================================================== -->
 
             <div class="space-y-3 pt-2">
                 <div class="paywall-item">
@@ -739,8 +713,6 @@
         </section>
     </main>
 
-    <!-- === ПРИБРАНО: <div id="wfp-form-container"> (Мертвий код для старої оплати) === -->
-    
     <!-- === НОВЕ: Прихований контейнер для генерації SVG === -->
     <div id="chart-hidden-render"></div>
 
@@ -759,7 +731,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.24 (Fixed Data Passing) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.25 (Restore Display Logic) -->
     <!-- ====================================================== -->
     <script>
         // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
@@ -865,8 +837,6 @@
             const userEmailInput = document.getElementById('user-email');
             const ltvUpsellBtn = document.getElementById('ltv-upsell-btn');
 
-            // === ПРИБРАНО: const wfpFormContainer (не використовується) ===
-            
             const chartHiddenRender = document.getElementById('chart-hidden-render'); // Елемент для рендеру SVG
             const paywallAstroDataContainer = document.getElementById('paywall-astro-data'); // STEP 5
 
@@ -890,8 +860,6 @@
             const PDF_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/createPDF'; 
             // ==================================================
             
-            // === ПРИБРАНО: BACKEND_URL, MERCHANT_LOGIN, RETURN_URL (не використовуються) ===
-
             let userBirthData = {
                 date: '',
                 time: '',
@@ -1266,17 +1234,8 @@
                             const minutes = Math.floor(minutesRaw);
                             const seconds = Math.round((minutesRaw - minutes) * 60);
                             
-                            // === UPDATED v2.22: Compact 2-Line Format (Forced) ===
-                            return `
-                                <div class="astro-data-item">
-                                    <div class="astro-data-header">
-                                        <strong>${label}</strong>: ${sign}
-                                    </div>
-                                    <div class="astro-data-coords">
-                                        ${degree}° ${minutes}' ${seconds}"
-                                    </div>
-                                </div>
-                            `;
+                            // === RESTORED TO SINGLE LINE (FROM ATTACHED FILE) ===
+                            return `<div class="astro-data-item"><strong>${label}:</strong> ${sign} ${degree}° ${minutes}' ${seconds}"</div>`;
                         } 
                         return `<div class="astro-data-item"><strong>${label}:</strong> n/a</div>`;
                     }
@@ -1880,7 +1839,7 @@
                                 const degree = Math.floor(fullDegree);
                                 const minutesRaw = (fullDegree - degree) * 60;
                                 const minute = Math.floor(minutesRaw);
-                                const seconds = Math.round((minutesRaw - minutes) * 60);
+                                const seconds = Math.round((minutesRaw - minute) * 60);
                                 
                                 const label = key.charAt(0).toUpperCase() + key.slice(1);
                                 planetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`); // Added seconds here
