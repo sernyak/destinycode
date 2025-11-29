@@ -385,10 +385,11 @@
             background: transparent;
         }
 
-        /* === СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) - ВІДНОВЛЕНО З РОБОЧОГО ФАЙЛУ === */
+        /* === СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) === */
+        /* === UPDATED v2.26: STRICT 2-LINE FORMAT === */
         .astro-data-box {
             margin-top: 1.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             padding: 1rem;
             background-color: rgba(205, 164, 94, 0.05);
             border: 1px dashed rgba(205, 164, 94, 0.3);
@@ -411,14 +412,37 @@
         .astro-data-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.5rem;
-            font-size: 0.75rem;
-            color: var(--secondary-text-color);
-            font-family: monospace; /* Технічний вигляд */
+            gap: 0.75rem; /* Оптимальний зазор */
+            /* ПРИБРАНО глобальний monospace, щоб назви знаків влізли */
+        }
+        
+        /* КОНТЕЙНЕР ЕЛЕМЕНТА */
+        .astro-data-item {
+            display: flex;
+            flex-direction: column; /* Вертикальне вирівнювання */
+            justify-content: center;
         }
 
-        .astro-data-item strong {
+        /* РЯДОК 1: НАЗВА (Венера: Sagittarius) */
+        .astro-label-row {
             color: var(--primary-text-color);
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap; /* 🔥 ЗАБОРОНА ПЕРЕНОСУ, щоб було в один рядок */
+            overflow: hidden;    /* Обрізаємо, якщо раптом не влізе */
+            text-overflow: ellipsis; 
+            margin-bottom: 2px;
+        }
+        
+        .astro-label-row strong {
+            color: #fff;
+        }
+
+        /* РЯДОК 2: КООРДИНАТИ (20° 40' 52") */
+        .astro-coords-row {
+            color: var(--secondary-text-color);
+            font-family: monospace; /* Технічний шрифт для цифр */
+            font-size: 0.7rem;
         }
         
         /* Chart Preview in Astro Box */
@@ -731,7 +755,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.25 (Restore Display Logic) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.26 (Strict 2-Line Format) -->
     <!-- ====================================================== -->
     <script>
         // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
@@ -1234,8 +1258,13 @@
                             const minutes = Math.floor(minutesRaw);
                             const seconds = Math.round((minutesRaw - minutes) * 60);
                             
-                            // === RESTORED TO SINGLE LINE (FROM ATTACHED FILE) ===
-                            return `<div class="astro-data-item"><strong>${label}:</strong> ${sign} ${degree}° ${minutes}' ${seconds}"</div>`;
+                            // === UPDATED v2.26: STRICT 2-LINE FORMAT ===
+                            return `
+                                <div class="astro-data-item">
+                                    <div class="astro-label-row"><strong>${label}:</strong> ${sign}</div>
+                                    <div class="astro-coords-row">${degree}° ${minutes}' ${seconds}"</div>
+                                </div>
+                            `;
                         } 
                         return `<div class="astro-data-item"><strong>${label}:</strong> n/a</div>`;
                     }
@@ -1839,7 +1868,7 @@
                                 const degree = Math.floor(fullDegree);
                                 const minutesRaw = (fullDegree - degree) * 60;
                                 const minute = Math.floor(minutesRaw);
-                                const seconds = Math.round((minutesRaw - minute) * 60);
+                                const seconds = Math.round((minutesRaw - minutes) * 60);
                                 
                                 const label = key.charAt(0).toUpperCase() + key.slice(1);
                                 planetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`); // Added seconds here
