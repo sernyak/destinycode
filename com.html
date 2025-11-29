@@ -1567,6 +1567,24 @@
                 }
             });
 
+            // ==========================================
+            // HELPER: CLEAN HTML FOR PDF (NEW)
+            // ==========================================
+            function cleanHtmlForPdf(htmlContent) {
+                if (!htmlContent) return '';
+                // Create a temp element to manipulate DOM
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                
+                // Remove Astro Data Box (because it's already on the Cover Page)
+                const astroBox = tempDiv.querySelector('.astro-data-box');
+                if (astroBox) {
+                    astroBox.remove();
+                }
+                
+                return tempDiv.innerHTML;
+            }
+
             // Обробники для кнопок PDF/Share (РЕАЛЬНІ)
             downloadPdfBtn.addEventListener('click', async () => {
                 setButtonLoading(downloadPdfBtn, true);
@@ -1589,10 +1607,8 @@
 
                 try {
                     // 🔥 КРОК 1: Створюємо розширений HTML
-                    let enrichedHtml = generatedReportData;
-                    
-                    // !!! UPDATE v2.18: Removed "planets-section" appended block as requested.
-                    // The planets are already on the cover page.
+                    // !!! FIX v3.29: CLEAN HTML TO REMOVE DUPLICATE PAGE 2
+                    let enrichedHtml = cleanHtmlForPdf(generatedReportData);
                     
                     // 🔥 КРОК 2: Збираємо CSS стилі
                     const styles = Array.from(document.styleSheets)
