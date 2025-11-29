@@ -386,7 +386,7 @@
         }
 
         /* === СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) === */
-        /* === UPDATED v2.26: STRICT 2-LINE FORMAT === */
+        /* === UPDATED v2.27: MATCHED TO USER IMAGE REFERENCE === */
         .astro-data-box {
             margin-top: 1.5rem;
             margin-bottom: 2rem;
@@ -412,37 +412,44 @@
         .astro-data-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.75rem; /* Оптимальний зазор */
-            /* ПРИБРАНО глобальний monospace, щоб назви знаків влізли */
+            gap: 1.25rem 0.75rem; /* Vertical gap bigger for separation between planets */
         }
         
         /* КОНТЕЙНЕР ЕЛЕМЕНТА */
         .astro-data-item {
             display: flex;
-            flex-direction: column; /* Вертикальне вирівнювання */
-            justify-content: center;
+            flex-direction: column; 
+            justify-content: flex-start;
         }
 
-        /* РЯДОК 1: НАЗВА (Венера: Sagittarius) */
+        /* РЯДОК 1: НАЗВА ПЛАНЕТИ + ЗНАК */
         .astro-label-row {
-            color: var(--primary-text-color);
-            font-size: 0.8rem;
-            font-weight: 600;
-            white-space: nowrap; /* 🔥 ЗАБОРОНА ПЕРЕНОСУ, щоб було в один рядок */
-            overflow: hidden;    /* Обрізаємо, якщо раптом не влізе */
+            font-size: 0.85rem;
+            line-height: 1.2;
+            white-space: nowrap; 
+            overflow: hidden;
             text-overflow: ellipsis; 
-            margin-bottom: 2px;
+            margin-bottom: 3px;
         }
         
-        .astro-label-row strong {
-            color: #fff;
+        .astro-planet-name {
+            color: #ffffff;
+            font-weight: 700;
+            margin-right: 4px;
+        }
+        
+        .astro-sign-name {
+            color: #9ca3af; /* Grey technical */
+            font-weight: 400;
+            font-family: 'Montserrat', sans-serif;
         }
 
-        /* РЯДОК 2: КООРДИНАТИ (20° 40' 52") */
+        /* РЯДОК 2: КООРДИНАТИ */
         .astro-coords-row {
-            color: var(--secondary-text-color);
-            font-family: monospace; /* Технічний шрифт для цифр */
-            font-size: 0.7rem;
+            color: #6b7280; /* Darker grey technical */
+            font-family: monospace; 
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
         }
         
         /* Chart Preview in Astro Box */
@@ -755,7 +762,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.26 (Strict 2-Line Format) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.27 (Exact Style Match) -->
     <!-- ====================================================== -->
     <script>
         // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
@@ -1258,10 +1265,13 @@
                             const minutes = Math.floor(minutesRaw);
                             const seconds = Math.round((minutesRaw - minutes) * 60);
                             
-                            // === UPDATED v2.26: STRICT 2-LINE FORMAT ===
+                            // === UPDATED v2.27: TWO-LINE FORMAT WITH SPANS ===
                             return `
                                 <div class="astro-data-item">
-                                    <div class="astro-label-row"><strong>${label}:</strong> ${sign}</div>
+                                    <div class="astro-label-row">
+                                        <span class="astro-planet-name">${label}:</span> 
+                                        <span class="astro-sign-name">${sign}</span>
+                                    </div>
                                     <div class="astro-coords-row">${degree}° ${minutes}' ${seconds}"</div>
                                 </div>
                             `;
