@@ -52,7 +52,7 @@
     <script 
         src="https://unpkg.com/circular-natal-horoscope-js@1.1.0/dist/index.js" 
         onload="onAstroLibLoad()" 
-        onerror="onAstroLibError()" 
+        onerror="onAstroLibError()"
     ></script>
 
     <!-- ================================================================= -->
@@ -385,11 +385,10 @@
             background: transparent;
         }
 
-        /* === СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) === */
-        /* === UPDATED v2.28: EXACT MATCH TO USER IMAGE === */
+        /* === NEW: СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) === */
         .astro-data-box {
             margin-top: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             padding: 1rem;
             background-color: rgba(205, 164, 94, 0.05);
             border: 1px dashed rgba(205, 164, 94, 0.3);
@@ -412,44 +411,44 @@
         .astro-data-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.25rem 0.75rem; /* Vertical gap bigger for separation between planets */
+            gap: 1rem; /* Збільшив проміжок для нового дизайну */
+            font-size: 0.75rem;
+            color: var(--secondary-text-color);
         }
-        
-        /* КОНТЕЙНЕР ЕЛЕМЕНТА */
+
+        /* --- ОНОВЛЕНИЙ ДИЗАЙН ПУНКТІВ (ДВА РЯДКИ) --- */
         .astro-data-item {
             display: flex;
-            flex-direction: column; 
-            justify-content: flex-start;
+            flex-direction: column;
         }
-
-        /* РЯДОК 1: НАЗВА ПЛАНЕТИ + ЗНАК */
-        .astro-label-row {
+        
+        /* Рядок 1: Планета + Знак */
+        .astro-item-header {
+            color: var(--primary-text-color);
+            font-weight: 600;
             font-size: 0.85rem;
-            line-height: 1.2;
-            white-space: nowrap; 
-            overflow: hidden;
-            text-overflow: ellipsis; 
-            margin-bottom: 3px;
+            margin-bottom: 2px;
+            display: flex;
+            justify-content: space-between;
         }
         
-        .astro-planet-name {
-            color: #ffffff;
-            font-weight: 700;
-            margin-right: 4px;
-        }
-        
-        .astro-sign-name {
-            color: #9ca3af; /* Grey technical */
+        .astro-item-sign {
+            color: #a0a0a0;
+            font-family: 'Courier New', Courier, monospace; /* Технічний шрифт */
             font-weight: 400;
-            font-family: monospace; /* 🔥 Changed to monospace as requested */
+            text-transform: uppercase;
         }
 
-        /* РЯДОК 2: КООРДИНАТИ */
-        .astro-coords-row {
-            color: #6b7280; /* Darker grey technical */
-            font-family: monospace; 
-            font-size: 0.75rem;
+        /* Рядок 2: Градуси */
+        .astro-item-coords {
+            font-family: 'Courier New', Courier, monospace; /* Технічний шрифт */
+            font-size: 0.7rem;
+            color: #666;
             letter-spacing: 0.5px;
+        }
+
+        .astro-data-item strong {
+            color: var(--primary-text-color);
         }
         
         /* Chart Preview in Astro Box */
@@ -459,7 +458,7 @@
             margin: 0 auto 15px auto;
             position: relative;
         }
-
+        
         .astro-chart-preview svg {
             width: 100%;
             height: 100%;
@@ -511,8 +510,8 @@
                     </svg>
                     <span id="date-placeholder" style="color: var(--secondary-text-color);">Обрати дату</span>
                     <!-- ВАЖЛИВО: opacity: 0.001 щоб інпут був "присутній" для кліку, але невидимий -->
-                    <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required
-                            style="opacity: 0.001;"> 
+                    <input type="date" id="birth-date" name="birth-date" class="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer" required 
+                           style="opacity: 0.001;"> 
                 </label>
                 <p id="error-message" class="error-text">
                     Будь ласка, обери дату народження.
@@ -620,10 +619,11 @@
                 Розблокуй <strong>повну карту</strong>, щоб побачити свій справжній потенціал.
             </p>
             
-            <!-- === UPDATED: БЛОК ДЛЯ ПЕРЕВІРКИ ДАНИХ (Trust Trigger) === -->
+            <!-- === UPDATED LOCATION: БЛОК ДЛЯ ПЕРЕВІРКИ ДАНИХ (Trust Trigger) === -->
+            <!-- Тепер цей блок стоїть одразу під заголовком і описом, ПЕРЕД пунктами -->
             <div id="paywall-astro-data" style="display: none;"></div>
             <!-- ===================================================== -->
-
+            
             <div class="space-y-3 pt-2">
                 <div class="paywall-item">
                     <span class="paywall-icon">🔒</span>
@@ -659,7 +659,7 @@
                 </p>
             </div>
         </section>
-        
+
         <!-- ====================================================== -->
         <!-- КРОК 6: СТОРІНКА УСПІХУ (ПІСЛЯ /success.html) -->
         <!-- ====================================================== -->
@@ -672,7 +672,7 @@
             </p>
             <div class="spinner"></div>
         </section>
-        
+
         <!-- ====================================================== -->
         <!-- КРОК 7: УСПІХ + LTV АПСЕЛ (НОВИЙ) -->
         <!-- ====================================================== -->
@@ -693,7 +693,6 @@
                 <form id="email-form" class="space-y-4 mb-8">
                     <label for="user-email" class="sr-only">Ваш Email</label>
                     <input type="email" id="user-email" name="user-email" placeholder="your.email@gmail.com" class="input-field text-center" required>
-
                     <button type="submit" class="btn btn-primary !text-lg !py-4">
                         <span class="btn-text">Отримати звіт</span>
                         <span class="btn-spinner"></span>
@@ -744,6 +743,9 @@
         </section>
     </main>
 
+    <!-- Прихований контейнер для динамічної форми WayForPay -->
+    <div id="wfp-form-container" style="display: none;"></div>
+    
     <!-- === НОВЕ: Прихований контейнер для генерації SVG === -->
     <div id="chart-hidden-render"></div>
 
@@ -762,7 +764,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.28 (Exact Image Match) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.17.8 (Data Passing Update) -->
     <!-- ====================================================== -->
     <script>
         // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
@@ -788,7 +790,6 @@
         }
 
         let Origin, Horoscope, Renderer;
-
         function initAstroLibrary() {
             // Check global flag from shim
             if (window.isAstroLibReady && window.CircularNatalHoroscope) {
@@ -810,7 +811,6 @@
         }
 
         // ===============================================
-
         document.addEventListener('DOMContentLoaded', () => {
             
             // --- 1. ОТРИМАННЯ ЕЛЕМЕНТІВ ---
@@ -868,6 +868,7 @@
             const userEmailInput = document.getElementById('user-email');
             const ltvUpsellBtn = document.getElementById('ltv-upsell-btn');
 
+            const wfpFormContainer = document.getElementById('wfp-form-container');
             const chartHiddenRender = document.getElementById('chart-hidden-render'); // Елемент для рендеру SVG
             const paywallAstroDataContainer = document.getElementById('paywall-astro-data'); // STEP 5
 
@@ -891,6 +892,10 @@
             const PDF_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/createPDF'; 
             // ==================================================
             
+            const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; // !! ЗАМІНИТИ КОЛИ ДОДАМО ОПЛАТУ !!
+            const MERCHANT_LOGIN = 'destinycode_online'; // !! ЗАМІНИТИ !!
+            const RETURN_URL = window.location.origin + window.location.pathname + '?payment=success'; 
+
             let userBirthData = {
                 date: '',
                 time: '',
@@ -1153,8 +1158,8 @@
                         delay *= 2;
                     } catch (error) {
                         console.error("Gemini API Error (Client):", error);
-                        if (i === 2) {
-                              return '{"error": "network_failure", "message": "На жаль, сервіс тимчасово недоступний."}';
+                        if (i === 2) {  
+                            return '{"error": "network_failure", "message": "На жаль, сервіс тимчасово недоступний."}';
                         }
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
@@ -1180,13 +1185,14 @@
                             error: null
                         };
                     } 
-                    if (coords && coords.error) {
-                          console.warn(`Geocoding failed for ${cityName}:`, coords.error);
+                    if (coords && coords.error) {  
+                        console.warn(`Geocoding failed for ${cityName}:`, coords.error);
                         return { error: coords.error };
                     }
                     
                     console.error(`Geocoding JSON parsing error for ${cityName}:`, coords);
                     return { error: "parse_error" };
+
                 } catch (error) {
                     console.error(`Geocoding API call failed for ${cityName}:`, error);
                     return { error: "network_failure" };
@@ -1213,7 +1219,6 @@
                 // 2. Check Data
                 let calcData = userBirthData;
                 let calculationGeo = calcData.geo;
-
                 if (!calculationGeo) {
                     calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
                 }
@@ -1265,16 +1270,18 @@
                             const minutes = Math.floor(minutesRaw);
                             const seconds = Math.round((minutesRaw - minutes) * 60);
                             
-                            // === UPDATED v2.28: TWO-LINE FORMAT MATCHING IMAGE EXACTLY ===
+                            // === ОНОВЛЕНИЙ ФОРМАТ (2 РЯДКИ) ===
                             return `
                                 <div class="astro-data-item">
-                                    <div class="astro-label-row">
-                                        <span class="astro-planet-name">${label}:</span> 
-                                        <span class="astro-sign-name">${sign}</span>
+                                    <div class="astro-item-header">
+                                        <strong>${label}:</strong>
+                                        <span class="astro-item-sign">${sign}</span>
                                     </div>
-                                    <div class="astro-coords-row">${degree}° ${minutes}' ${seconds}"</div>
+                                    <div class="astro-item-coords">
+                                        ${degree}° ${minutes}' ${seconds}"
+                                    </div>
                                 </div>
-                            `;
+                            `; 
                         } 
                         return `<div class="astro-data-item"><strong>${label}:</strong> n/a</div>`;
                     }
@@ -1339,7 +1346,7 @@
             }
 
             // --- 6. ОБРОБНИКИ ПОДІЙ ---
-
+            
             // === КРОК 1 -> КРОК 2 (Лендінг -> Завантаження) ===
             birthForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
@@ -1364,7 +1371,6 @@
                     if (!Horoscope) {
                         simpleSunSign = ` (Знак: ${getSimpleZodiacSign(selectedDate)})`;
                     }
-
                     const reportPromise = callGeminiAPI(apiFlashUrl, freeTaskPrompt, `Дата народження: ${selectedDate}${simpleSunSign}`);
                     
                     const loadingSteps = [
@@ -1454,10 +1460,10 @@
                 let infoText = null;  
                 if (coords && coords.latitude) {
                     userBirthData.geo = {  
-                          latitude: coords.latitude,  
-                          longitude: coords.longitude,  
-                          timezone: coords.timezone 
-                     };
+                        latitude: coords.latitude,  
+                        longitude: coords.longitude,  
+                        timezone: coords.timezone 
+                    };
                     userBirthData.city = coords.corrected_name;
                     console.log("City validated and saved:", userBirthData.geo);
                     
@@ -1476,7 +1482,6 @@
                         renderPlanetaryFingerprint();
                         showStep('paywall');
                     }, infoText ? 1200 : 0);
-
                 } else if (coords && coords.error === 'ambiguous') {
                     cityErrorMessage.innerText = `Місто "${city}" знайдено в кількох місцях. Будь ласка, уточни, додавши країну (напр., 'Париж, Франція').`;
                     cityErrorMessage.style.display = 'block';
@@ -1635,8 +1640,8 @@
                 // Перевіряємо, чи є дані перед відправкою
                 const chartStatus = userBirthData.chartSvg ? "✅ Карта Є" : "❌ Карти Немає (Renderer?)";
                 const planetsStatus = (userBirthData.planets && userBirthData.planets.length > 0) 
-                     ? `✅ Планет: ${userBirthData.planets.length}` 
-                     : "❌ Планет Немає";
+                    ? `✅ Планет: ${userBirthData.planets.length}` 
+                    : "❌ Планет Немає";
                 
                 console.log(`DEBUG Check: ${chartStatus}, ${planetsStatus}`);
                 // ==========================================
@@ -1803,10 +1808,6 @@
 
             /** * v2.17: Функція генерації ПОВНОГО звіту  */
             async function fetchFullAnalysis(data, email) {
-                // === FIX v2.24: Ensure Astro Library is INIT before calculation ===
-                initAstroLibrary(); 
-                // =================================================================
-                
                 let userQuery = `Дата народження: ${data.date}.`;
                 if (data.time) userQuery += ` Час: ${data.time}.`;
                 if (data.city) userQuery += ` Місто: ${data.city}.`;
@@ -1853,6 +1854,7 @@
                             origin: origin, houseSystem: "placidus", zodiac: "tropical"
                         });
                         console.log("✅ Horoscope calculated successfully.");
+
                     } catch (err) {
                         console.error("❌ Failed to calculate horoscope (Math Error):", err);
                     }
@@ -1866,23 +1868,23 @@
                         const planetsList = [];
                         const bodies = horoscope.CelestialBodies;
                         
-                        ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'].forEach(key => {
-                             let body = bodies[key]; 
-                             if (!body && key === 'ascendant') body = horoscope.Ascendant;
-                             if (!body && key === 'midheaven') body = horoscope.Midheaven;
-                             
-                             if (body) { 
-                                 const sign = body.Sign.label; 
-                                 // === UPDATED CALCULATION (Added Seconds) ===
+                        ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'].forEach(key => {  
+                            let body = bodies[key]; 
+                            if (!body && key === 'ascendant') body = horoscope.Ascendant; 
+                            if (!body && key === 'midheaven') body = horoscope.Midheaven; 
+                            
+                            if (body) { 
+                                const sign = body.Sign.label; 
+                                // === UPDATED CALCULATION (Added Seconds) ===
                                 const fullDegree = body.ChartPosition.Ecliptic.DecimalDegrees % 30;
                                 const degree = Math.floor(fullDegree);
                                 const minutesRaw = (fullDegree - degree) * 60;
                                 const minute = Math.floor(minutesRaw);
-                                const seconds = Math.round((minutesRaw - minutes) * 60);
+                                const seconds = Math.round((minutesRaw - minute) * 60);
                                 
                                 const label = key.charAt(0).toUpperCase() + key.slice(1);
-                                planetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`); // Added seconds here
-                             }
+                                planetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`); // Added seconds here 
+                            }
                         });
                         
                         userBirthData.planets = planetsList;
@@ -1910,6 +1912,7 @@
                         
                         == Кінець Технічних Даних ==
                         `;
+
                     } catch (err) {
                         console.error("❌ Failed to generate planet list/astro string:", err);
                     }
@@ -1939,6 +1942,7 @@
                             console.warn("⚠️ Renderer finished but output is empty.");
                             userBirthData.chartSvg = null;
                         }
+
                     } catch (renderErr) {
                         console.error("❌ Renderer CRASHED:", renderErr);
                         userBirthData.chartSvg = null; 
@@ -1958,8 +1962,8 @@
                 try {
                     const reportData = JSON.parse(rawJsonString);
                     
-                    if (reportData.error) {
-                            formattedReportHTML = `<p>${reportData.message || 'Сталася невідома помилка.'}</p>`;
+                    if (reportData.error) {    
+                        formattedReportHTML = `<p>${reportData.message || 'Сталася невідома помилка.'}</p>`;
                     } else if (reportData && reportData.sections) {
                         
                         for (const section of reportData.sections) {
@@ -2003,14 +2007,11 @@
                 
                 // === v2.17: Нова логіка синхронізації ===
                 
-                // === UPDATED v2.20: APPEND ASTRO DATA TO BOTTOM OF REPORT (Moved from top) ===
+                // === NEW v2.19: MOVED ASTRO DATA TO THE BOTTOM ===
                 const astroHtml = generateAstroDataHTML();
-                
-                // Додаємо роздільник перед технічними даними
-                const separator = `<br><hr style="border-color: #333; margin: 3rem 0; opacity: 0.5;">`;
-                
-                // Звіт (Текст) + Роздільник + Технічні Дані
-                generatedReportData = formattedReportHTML + separator + astroHtml;
+                // Раніше було: generatedReportData = astroHtml + formattedReportHTML;
+                // Тепер:
+                generatedReportData = formattedReportHTML + astroHtml;
                 // =========================================================
                 
                 console.log("Sync: Report FINISHED.");
@@ -2081,8 +2082,8 @@
             
             // ВЕРСІЯ З DEV.TXT
             function setDefaultDateOnFirstFocus() {
-                if (birthDateInput.value === '') {
-                      console.log("Setting default date to 1995-01-01 for convenience.");
+                if (birthDateInput.value === '') {  
+                    console.log("Setting default date to 1995-01-01 for convenience.");
                     birthDateInput.value = '1995-01-01';
                 }
             }
