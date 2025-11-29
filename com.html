@@ -693,7 +693,7 @@
             <div class="sticky-paywall-footer">
                 <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4 btn-pulse-glow shadow-2xl">
                     <span class="btn-text">
-                        Розблокувати зараз за 149 грн (замість <span style="text-decoration: line-through; opacity: 0.8;">799 грн</span>)
+                        Розблокувати зараз за 149 грн <span style="text-decoration: line-through; opacity: 0.7; margin-left: 4px;">799 грн</span>
                     </span>
                     <span class="btn-spinner"></span>
                 </button>
@@ -1048,6 +1048,8 @@
                 });
                 if (steps[stepId]) {
                     steps[stepId].classList.add('active');
+                    // 🔥 FIX: Прокручуємо вгору при зміні кроку, щоб користувач бачив початок контенту
+                    window.scrollTo(0, 0);
                 } else {
                     console.error("Attempted to show non-existent step:", stepId);
                 }
