@@ -56,7 +56,6 @@
     ></script>
 
     <!-- ================================================================= -->
-
     <style>
         /* --- Базові Змінні --- */
         :root {
@@ -390,11 +389,11 @@
         }
 
         /* === СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) === */
-        /* === UPDATED v2.32: EXACT MATCH TO USER IMAGE === */
+        /* === UPDATED v2.34: SUPER COMPACT MODE (Запит на зменшення висоти) === */
         .astro-data-box {
-            margin-top: 1.5rem;
-            margin-bottom: 2rem;
-            padding: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 0.75rem; /* Compact padding */
             background-color: rgba(205, 164, 94, 0.05);
             border: 1px dashed rgba(205, 164, 94, 0.3);
             border-radius: 8px;
@@ -403,64 +402,66 @@
 
         .astro-data-title {
             color: var(--accent-color);
-            font-size: 0.8rem;
+            font-size: 0.7rem; /* Smaller title */
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             font-weight: 700;
             text-align: center;
             border-bottom: 1px solid rgba(205, 164, 94, 0.2);
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
         }
 
         .astro-data-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.25rem 0.75rem; /* Vertical gap bigger for separation between planets */
+            gap: 0.5rem 0.25rem; /* Very small gap */
         }
         
-        /* КОНТЕЙНЕР ЕЛЕМЕНТА */
+        /* Element Container */
         .astro-data-item {
             display: flex;
             flex-direction: column; 
             justify-content: flex-start;
+            padding-left: 5px;
         }
 
-        /* РЯДОК 1: НАЗВА ПЛАНЕТИ + ЗНАК */
+        /* Row 1: Planet + Sign */
         .astro-label-row {
-            font-size: 0.85rem;
-            line-height: 1.2;
+            font-size: 0.8rem; /* Compact font */
+            line-height: 1.1;
             white-space: nowrap; 
             overflow: hidden;
             text-overflow: ellipsis; 
-            margin-bottom: 3px;
+            margin-bottom: 1px;
         }
         
         .astro-planet-name {
             color: #ffffff;
             font-weight: 700;
-            margin-right: 4px;
+            margin-right: 3px;
         }
         
         .astro-sign-name {
             color: #9ca3af; /* Grey technical */
             font-weight: 400;
-            font-family: monospace; /* 🔥 Changed to monospace as requested */
-        }
-
-        /* РЯДОК 2: КООРДИНАТИ */
-        .astro-coords-row {
-            color: #6b7280; /* Darker grey technical */
             font-family: monospace; 
             font-size: 0.75rem;
-            letter-spacing: 0.5px;
+        }
+
+        /* Row 2: Coordinates */
+        .astro-coords-row {
+            color: #6b7280; 
+            font-family: monospace; 
+            font-size: 0.65rem; 
+            letter-spacing: 0px;
         }
         
-        /* Chart Preview in Astro Box */
+        /* Chart Preview in Astro Box - Smaller */
         .astro-chart-preview {
-            width: 200px;
-            height: 200px;
-            margin: 0 auto 15px auto;
+            width: 140px;   
+            height: 140px;
+            margin: 0 auto 8px auto;
             position: relative;
         }
 
@@ -469,7 +470,7 @@
             height: 100%;
         }
         
-        /* Анімація для очікування */
+        /* Pulse Animation */
         .pulse-text {
             animation: pulse 1.5s infinite;
         }
@@ -479,6 +480,7 @@
             50% { opacity: 1; }
             100% { opacity: 0.5; }
         }
+
     </style>
 </head>
 <body class="antialiased min-h-screen flex items-center justify-center p-4">
@@ -697,7 +699,6 @@
                 <form id="email-form" class="space-y-4 mb-8">
                     <label for="user-email" class="sr-only">Ваш Email</label>
                     <input type="email" id="user-email" name="user-email" placeholder="your.email@gmail.com" class="input-field text-center" required>
-
                     <button type="submit" class="btn btn-primary !text-lg !py-4">
                         <span class="btn-text">Отримати звіт</span>
                         <span class="btn-spinner"></span>
@@ -746,8 +747,9 @@
                 </button>
             </div>
         </section>
-    </main>
 
+    </main>
+    
     <!-- === НОВЕ: Прихований контейнер для генерації SVG === -->
     <div id="chart-hidden-render"></div>
 
@@ -813,7 +815,6 @@
         }
 
         // ===============================================
-
         document.addEventListener('DOMContentLoaded', () => {
             
             // --- 1. ОТРИМАННЯ ЕЛЕМЕНТІВ ---
@@ -941,6 +942,7 @@
             }
             \`\`\`
             ВИМОГИ: Відповідай ТІЛЬКИ валідним JSON. Жодного тексту до чи після.`;
+
             // ========================================================
             
             const fullTaskPrompt = `Місія: 'Повний Психологічний Портрет' (Платний).
@@ -1153,10 +1155,11 @@
                         console.error("Gemini API Error (Server):", errorData);
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
+
                     } catch (error) {
                         console.error("Gemini API Error (Client):", error);
-                        if (i === 2) {
-                              return '{"error": "network_failure", "message": "На жаль, сервіс тимчасово недоступний."}';
+                        if (i === 2) {  
+                            return '{"error": "network_failure", "message": "На жаль, сервіс тимчасово недоступний."}';
                         }
                         await new Promise(resolve => setTimeout(resolve, delay));
                         delay *= 2;
@@ -1182,8 +1185,8 @@
                             error: null
                         };
                     } 
-                    if (coords && coords.error) {
-                          console.warn(`Geocoding failed for ${cityName}:`, coords.error);
+                    if (coords && coords.error) {  
+                        console.warn(`Geocoding failed for ${cityName}:`, coords.error);
                         return { error: coords.error };
                     }
                     
@@ -1215,7 +1218,6 @@
                 // 2. Check Data
                 let calcData = userBirthData;
                 let calculationGeo = calcData.geo;
-
                 if (!calculationGeo) {
                     calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
                 }
@@ -1258,23 +1260,23 @@
                     const pdfPlanetsList = [];
                     const fullBodyKeys = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'];
 
-                    fullBodyKeys.forEach(key => {
+                    fullBodyKeys.forEach(key => { 
                          let body = bodies[key]; 
-                         if (!body && key === 'ascendant') body = horoscope.Ascendant;
+                          if (!body && key === 'ascendant') body = horoscope.Ascendant; 
                          if (!body && key === 'midheaven') body = horoscope.Midheaven;
                          
-                         if (body) { 
-                             const sign = body.Sign.label; 
-                             const fullDegree = body.ChartPosition.Ecliptic.DecimalDegrees % 30;
+                         if (body) {
+                              const sign = body.Sign.label;
+                              const fullDegree = body.ChartPosition.Ecliptic.DecimalDegrees % 30;
                              const degree = Math.floor(fullDegree);
                              const minutesRaw = (fullDegree - degree) * 60;
                              const minute = Math.floor(minutesRaw);
                              const seconds = Math.round((minutesRaw - minute) * 60);
                              
-                             const label = key.charAt(0).toUpperCase() + key.slice(1);
+                             const label = key.charAt(0).toUpperCase() + key.slice(1); 
                              // Format: "Name:Sign D° M' S"" -> Backend splits by ':'
-                             pdfPlanetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`); 
-                         }
+                             pdfPlanetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`);
+                          }
                     });
                     
                     // SAVE FULL DATA FOR PDF
@@ -1286,14 +1288,14 @@
                     // --- PART B: GENERATE HTML FOR SCREEN (ONLY 6 BODIES) ---
                     // This uses the nice styling we agreed upon
                     
-                    function getFormattedPosForScreen(bodyName, label) { 
-                        let body = bodies[bodyName]; 
-                        if (!body && bodyName === 'ascendant') body = horoscope.Ascendant;
+                    function getFormattedPosForScreen(bodyName, label) {
+                         let body = bodies[bodyName];
+                         if (!body && bodyName === 'ascendant') body = horoscope.Ascendant;
                         if (!body && bodyName === 'midheaven') body = horoscope.Midheaven;
                         
-                        if (body) { 
-                            const sign = body.Sign.label; 
-                            const fullDegree = body.ChartPosition.Ecliptic.DecimalDegrees % 30;
+                        if (body) {
+                             const sign = body.Sign.label;
+                             const fullDegree = body.ChartPosition.Ecliptic.DecimalDegrees % 30;
                             const degree = Math.floor(fullDegree);
                             const minutesRaw = (fullDegree - degree) * 60;
                             const minutes = Math.floor(minutesRaw);
@@ -1438,7 +1440,6 @@
                         freeReportHookEl.innerHTML = formattedHook;
                         
                         showStep('result'); 
-
                     } catch (error) {
                         console.error("Failed to parse JSON response (Step 3):", error, "Raw text:", rawJsonString);
                         resultTitleEl.innerText = "Ой, сталася помилка";
@@ -1481,13 +1482,14 @@
                 setButtonLoading(continueToPaywallButton, true);
                 const coords = await getCoordinatesFromGemini(city);
                 
-                let infoText = null;  
+                let infoText = null;
+  
                 if (coords && coords.latitude) {
-                    userBirthData.geo = {  
-                          latitude: coords.latitude,  
-                          longitude: coords.longitude,  
-                          timezone: coords.timezone 
-                     };
+                    userBirthData.geo = {
+                            latitude: coords.latitude,
+                            longitude: coords.longitude,
+                            timezone: coords.timezone
+                      };
                     userBirthData.city = coords.corrected_name;
                     console.log("City validated and saved:", userBirthData.geo);
                     
@@ -1506,7 +1508,6 @@
                         renderPlanetaryFingerprint();
                         showStep('paywall');
                     }, infoText ? 1200 : 0);
-
                 } else if (coords && coords.error === 'ambiguous') {
                     cityErrorMessage.innerText = `Місто "${city}" знайдено в кількох місцях. Будь ласка, уточни, додавши країну (напр., 'Париж, Франція').`;
                     cityErrorMessage.style.display = 'block';
@@ -1624,6 +1625,7 @@
                         "Ваш <strong>'Персональний Прогноз на 2026 рік'</strong> успішно оплачено.<br><br>Ми вже відправили його (разом з PDF-файлом) окремим листом на вашу пошту."
                     );
                     
+
                 } catch (error) {
                     console.error("Upsell failed:", error);
                     showModal("Помилка", "Не вдалося обробити платіж або відправити лист. Спробуйте пізніше.");
@@ -1664,9 +1666,9 @@
                 // === DEBUG ALERT: ВИДАЛИТИ ПІСЛЯ ТЕСТУ ===
                 // Перевіряємо, чи є дані перед відправкою
                 const chartStatus = userBirthData.chartSvg ? "✅ Карта Є" : "❌ Карти Немає (Renderer?)";
-                const planetsStatus = (userBirthData.planets && userBirthData.planets.length > 0) 
-                     ? `✅ Планет: ${userBirthData.planets.length}` 
-                     : "❌ Планет Немає";
+                const planetsStatus = (userBirthData.planets && userBirthData.planets.length > 0)
+                      ? `✅ Планет: ${userBirthData.planets.length}`
+                      : "❌ Планет Немає";
                 
                 console.log(`DEBUG Check: ${chartStatus}, ${planetsStatus}`);
                 // ==========================================
@@ -1734,7 +1736,7 @@
                     } else {
                         throw new Error("Invalid response from server");
                     }
-                    
+
                 } catch (error) {
                     console.error("❌ PDF Download Error:", error);
                     showModal("Помилка", `Не вдалося завантажити PDF: ${error.message}`);
@@ -1852,8 +1854,8 @@
                     calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
                 }
 
-                if (Horoscope && data.date && calculationGeo) {  
-                    try {
+                if (Horoscope && data.date && calculationGeo) { 
+                     try {
                         console.log("🔮 Starting Horoscope Calculation...");
                         const dateParts = data.date.split('-');
                         const year = parseInt(dateParts[0]);
@@ -1882,6 +1884,7 @@
                         horoscope = new Horoscope({
                             origin: origin, houseSystem: "placidus", zodiac: "tropical"
                         });
+
                         console.log("✅ Horoscope calculated successfully.");
                     } catch (err) {
                         console.error("❌ Failed to calculate horoscope (Math Error):", err);
@@ -1899,14 +1902,14 @@
                         const bodies = horoscope.CelestialBodies;
                         const fullBodyKeys = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'];
                         
-                        fullBodyKeys.forEach(key => {
+                        fullBodyKeys.forEach(key => { 
                              let body = bodies[key]; 
-                             if (!body && key === 'ascendant') body = horoscope.Ascendant;
+                              if (!body && key === 'ascendant') body = horoscope.Ascendant; 
                              if (!body && key === 'midheaven') body = horoscope.Midheaven;
                              
-                             if (body) { 
-                                 const sign = body.Sign.label; 
-                                 // === UPDATED CALCULATION (Added Seconds) ===
+                             if (body) {
+                                  const sign = body.Sign.label;
+                                  // === UPDATED CALCULATION (Added Seconds) ===
                                 const fullDegree = body.ChartPosition.Ecliptic.DecimalDegrees % 30;
                                 const degree = Math.floor(fullDegree);
                                 const minutesRaw = (fullDegree - degree) * 60;
@@ -1914,8 +1917,8 @@
                                 const seconds = Math.round((minutesRaw - minute) * 60);
                                 
                                 const label = key.charAt(0).toUpperCase() + key.slice(1);
-                                planetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`); 
-                             }
+                                planetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`);
+                              }
                         });
                         
                         // 🔥 FORCE UPDATE for PDF (Redundant safety check)
@@ -2038,9 +2041,11 @@
                 
                 // === v2.17: Нова логіка синхронізації ===
                 
-                // === UPDATED v2.20: APPEND ASTRO DATA TO BOTTOM OF REPORT (Moved from top) ===
+                // === UPDATED v2.34: APPEND ASTRO DATA TO BOTTOM OF REPORT (SWAPPED) ===
+                // Раніше було: astroHtml + formattedReportHTML
+                // Тепер (за запитом): спочатку текст, потім блок "Космічний Відбиток"
                 const astroHtml = generateAstroDataHTML();
-                generatedReportData = astroHtml + formattedReportHTML;
+                generatedReportData = formattedReportHTML + astroHtml; 
                 // =========================================================
                 
                 console.log("Sync: Report FINISHED.");
@@ -2054,8 +2059,8 @@
                 try {
                     // Отримуємо заголовок
                     const reportTitleMatch = formattedReportHTML.match(/<h2.*?>(.*?)<\/h2>/i);
-                    const reportTitle = reportTitleMatch  
-                        ? reportTitleMatch[1].replace(/<.*?>/g, '').trim().replace(/^[^\w]+/, '')
+                    const reportTitle = reportTitleMatch 
+                          ? reportTitleMatch[1].replace(/<.*?>/g, '').trim().replace(/^[^\w]+/, '')
                         : 'Ваш звіт';
 
                     console.log(`Sending report to ${email} via backend (URL: ${EMAIL_BACKEND_URL})...`);
@@ -2106,16 +2111,18 @@
                     }
                 }
             }
+            
             birthDateInput.addEventListener('input', updateDatePlaceholder);
             birthDateInput.addEventListener('change', updateDatePlaceholder);
             
             // ВЕРСІЯ З DEV.TXT
             function setDefaultDateOnFirstFocus() {
-                if (birthDateInput.value === '') {
-                      console.log("Setting default date to 1995-01-01 for convenience.");
+                if (birthDateInput.value === '') { 
+                     console.log("Setting default date to 1995-01-01 for convenience.");
                     birthDateInput.value = '1995-01-01';
                 }
             }
+            
             birthDateInput.addEventListener('focus', setDefaultDateOnFirstFocus);
             birthDateInput.addEventListener('click', setDefaultDateOnFirstFocus);
             birthDateInput.addEventListener('touchstart', setDefaultDateOnFirstFocus); // <-- ЦЕ ВАЖЛИВО ДЛЯ iOS!
