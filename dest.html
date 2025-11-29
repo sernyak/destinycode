@@ -390,11 +390,11 @@
         }
 
         /* === СТИЛІ ДЛЯ БЛОКУ ПЕРЕВІРКИ ДАНИХ (STEP 5 & 7) === */
-        /* === UPDATED: EXACT MATCH TO USER IMAGE === */
+        /* === UPDATED v2.34: SUPER COMPACT MODE === */
         .astro-data-box {
-            margin-top: 1.5rem;
-            margin-bottom: 2rem;
-            padding: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 0.75rem 0.5rem; /* Менші відступи */
             background-color: rgba(205, 164, 94, 0.05);
             border: 1px dashed rgba(205, 164, 94, 0.3);
             border-radius: 8px;
@@ -403,20 +403,20 @@
 
         .astro-data-title {
             color: var(--accent-color);
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
             font-weight: 700;
             text-align: center;
             border-bottom: 1px solid rgba(205, 164, 94, 0.2);
-            padding-bottom: 0.5rem;
+            padding-bottom: 0.25rem;
         }
 
         .astro-data-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.25rem 0.75rem; /* Vertical gap bigger for separation between planets */
+            gap: 0.5rem 0.25rem; /* Дуже малий зазор */
         }
         
         /* КОНТЕЙНЕР ЕЛЕМЕНТА */
@@ -424,43 +424,45 @@
             display: flex;
             flex-direction: column; 
             justify-content: flex-start;
+            padding-left: 5px;
         }
 
         /* РЯДОК 1: НАЗВА ПЛАНЕТИ + ЗНАК */
         .astro-label-row {
-            font-size: 0.85rem;
-            line-height: 1.2;
+            font-size: 0.8rem; /* Компактний шрифт */
+            line-height: 1.1;
             white-space: nowrap; 
             overflow: hidden;
             text-overflow: ellipsis; 
-            margin-bottom: 3px;
+            margin-bottom: 1px;
         }
         
         .astro-planet-name {
             color: #ffffff;
             font-weight: 700;
-            margin-right: 4px;
+            margin-right: 3px;
         }
         
         .astro-sign-name {
             color: #9ca3af; /* Grey technical */
             font-weight: 400;
-            font-family: monospace; /* 🔥 Changed to monospace as requested */
+            font-family: monospace; 
+            font-size: 0.75rem;
         }
 
         /* РЯДОК 2: КООРДИНАТИ */
         .astro-coords-row {
             color: #6b7280; /* Darker grey technical */
             font-family: monospace; 
-            font-size: 0.75rem;
-            letter-spacing: 0.5px;
+            font-size: 0.65rem; /* Дрібний шрифт */
+            letter-spacing: 0px;
         }
         
-        /* Chart Preview in Astro Box */
+        /* Chart Preview in Astro Box - SMALLER */
         .astro-chart-preview {
-            width: 200px;
-            height: 200px;
-            margin: 0 auto 15px auto;
+            width: 140px;   /* Зменшено з 200px */
+            height: 140px;  /* Зменшено з 200px */
+            margin: 0 auto 8px auto;
             position: relative;
         }
 
@@ -766,7 +768,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.29 (Fix Jumping & PDF Data) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.34 (COMPACT BOX + BOTTOM PLACEMENT) -->
     <!-- ====================================================== -->
     <script>
         // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
@@ -872,6 +874,7 @@
             const userEmailInput = document.getElementById('user-email');
             const ltvUpsellBtn = document.getElementById('ltv-upsell-btn');
 
+            const wfpFormContainer = document.getElementById('wfp-form-container');
             const chartHiddenRender = document.getElementById('chart-hidden-render'); // Елемент для рендеру SVG
             const paywallAstroDataContainer = document.getElementById('paywall-astro-data'); // STEP 5
 
@@ -895,6 +898,10 @@
             const PDF_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/createPDF'; 
             // ==================================================
             
+            const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; // !! ЗАМІНИТИ КОЛИ ДОДАМО ОПЛАТУ !!
+            const MERCHANT_LOGIN = 'destinycode_online'; // !! ЗАМІНИТИ !!
+            const RETURN_URL = window.location.origin + window.location.pathname + '?payment=success'; 
+
             let userBirthData = {
                 date: '',
                 time: '',
@@ -1252,12 +1259,11 @@
                         origin: origin, houseSystem: "placidus", zodiac: "tropical"
                     });
 
-                    // 4. Format & PREPARE FOR PDF (Unified Logic)
+                    // 4. Format
                     const bodies = horoscope.CelestialBodies;
                     const displayList = [];
-                    const planetsListForPdf = []; // 🔥 Новий масив для гарантованого збереження
 
-                    function getFormattedPos(bodyName, label, englishLabel) { 
+                    function getFormattedPos(bodyName, label) { 
                         let body = bodies[bodyName]; 
                         if (!body && bodyName === 'ascendant') body = horoscope.Ascendant;
                         if (!body && bodyName === 'midheaven') body = horoscope.Midheaven;
@@ -1271,14 +1277,7 @@
                             const minutes = Math.floor(minutesRaw);
                             const seconds = Math.round((minutesRaw - minutes) * 60);
                             
-                            // 1. Prepare String for PDF Backend (Format: "Name:Sign Deg Min Sec")
-                            // Використовуємо англійську назву, бо бекенд очікує англійську для ключів? 
-                            // Ні, бекенд просто показує текст до двокрапки. 
-                            // Але щоб було гарно, візьмемо англійську назву для PDF (як просив замовник в прикладі "Sun: Aries")
-                            const pdfString = `${englishLabel}:${sign} ${degree}° ${minutes}' ${seconds}"`;
-                            planetsListForPdf.push(pdfString);
-
-                            // 2. Prepare HTML for Screen
+                            // === UPDATED v2.34: COMPACT 2-LINE FORMAT ===
                             return `
                                 <div class="astro-data-item">
                                     <div class="astro-label-row">
@@ -1292,19 +1291,12 @@
                         return `<div class="astro-data-item"><strong>${label}:</strong> n/a</div>`;
                     }
 
-                    // Генеруємо і HTML, і Дані для PDF одночасно
-                    displayList.push(getFormattedPos('sun', 'Сонце', 'Sun'));
-                    displayList.push(getFormattedPos('moon', 'Місяць', 'Moon'));
-                    displayList.push(getFormattedPos('ascendant', 'ASC', 'Ascendant')); // ASC is usually kept as ASC or Ascendant
-                    displayList.push(getFormattedPos('venus', 'Венера', 'Venus'));
-                    displayList.push(getFormattedPos('mars', 'Марс', 'Mars'));
-                    displayList.push(getFormattedPos('jupiter', 'Юпітер', 'Jupiter'));
-
-                    // 🔥 ВАЖЛИВО: Зберігаємо дані в глобальний об'єкт одразу при рендері
-                    if (planetsListForPdf.length > 0) {
-                        userBirthData.planets = planetsListForPdf;
-                        console.log("✅ Planets data saved for PDF from Render:", userBirthData.planets);
-                    }
+                    displayList.push(getFormattedPos('sun', 'Сонце'));
+                    displayList.push(getFormattedPos('moon', 'Місяць'));
+                    displayList.push(getFormattedPos('ascendant', 'ASC'));
+                    displayList.push(getFormattedPos('venus', 'Венера'));
+                    displayList.push(getFormattedPos('mars', 'Марс'));
+                    displayList.push(getFormattedPos('jupiter', 'Юпітер'));
 
                     // === NEW: RENDER CHART SVG PREVIEW ===
                     let chartPreviewHtml = '';
@@ -1823,33 +1815,31 @@
 
             /** * v2.17: Функція генерації ПОВНОГО звіту  */
             async function fetchFullAnalysis(data, email) {
-                // === FIX v2.24: Ensure Astro Library is INIT before calculation ===
-                initAstroLibrary(); 
-                // =================================================================
+                console.log("🚀 fetchFullAnalysis STARTED");
                 
-                let userQuery = `Дата народження: ${data.date}.`;
-                if (data.time) userQuery += ` Час: ${data.time}.`;
-                if (data.city) userQuery += ` Місто: ${data.city}.`;
-                
-                let astroDataString = "";
-                let horoscope = null; 
-
-                // === ЕТАП 1: РОЗРАХУНОК ГОРОСКОПУ (МАТЕМАТИКА) ===
-                // FALLBACK LOGIC: Use Kyiv as default if geo data is missing (user skipped Step 4)
-                let calculationGeo = data.geo;
-                if (!calculationGeo) {
-                    console.log("⚠️ No GEO data provided. Using default (Kyiv) for calculation fallback.");
-                    calculationGeo = { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
+                // 1. Force Init Library
+                if (!window.CircularNatalHoroscope && window.module && window.module.exports && window.module.exports.Horoscope) {
+                    window.CircularNatalHoroscope = window.module.exports;
+                }
+                if (window.CircularNatalHoroscope) {
+                     Origin = window.CircularNatalHoroscope.Origin;
+                     Horoscope = window.CircularNatalHoroscope.Horoscope;
+                     Renderer = window.CircularNatalHoroscope.Renderer;
                 }
 
-                if (Horoscope && data.date && calculationGeo) {  
+                // 2. Calculate Horoscope & Planets (Crucial for PDF)
+                const planetsListForPdf = [];
+                let horoscope = null;
+                
+                // Fallback Geo
+                let calculationGeo = data.geo || { latitude: 50.45, longitude: 30.52, timezone: "Europe/Kyiv" };
+                
+                if (Horoscope && data.date) {
                     try {
-                        console.log("🔮 Starting Horoscope Calculation...");
                         const dateParts = data.date.split('-');
                         const year = parseInt(dateParts[0]);
-                        const month = parseInt(dateParts[1]) - 1; 
+                        const month = parseInt(dateParts[1]) - 1;
                         const dateNum = parseInt(dateParts[2]);
-                        
                         let hour = 12, minute = 0;
                         if (data.time) {
                             const timeParts = data.time.split(':');
@@ -1857,14 +1847,10 @@
                             minute = parseInt(timeParts[1]);
                         }
                         
-                        // !!! ВАЖЛИВО: Явне перетворення типів для стабільності
                         const origin = new Origin({
-                            year: year, 
-                            month: month, 
-                            date: dateNum,
-                            hour: hour, 
-                            minute: minute,
-                            latitude: parseFloat(calculationGeo.latitude), 
+                            year: year, month: month, date: dateNum,
+                            hour: hour, minute: minute,
+                            latitude: parseFloat(calculationGeo.latitude),
                             longitude: parseFloat(calculationGeo.longitude),
                             timezone: calculationGeo.timezone
                         });
@@ -1872,49 +1858,48 @@
                         horoscope = new Horoscope({
                             origin: origin, houseSystem: "placidus", zodiac: "tropical"
                         });
-                        console.log("✅ Horoscope calculated successfully.");
-                    } catch (err) {
-                        console.error("❌ Failed to calculate horoscope (Math Error):", err);
-                    }
-                } else { 
-                    console.log("⚠️ Calculating report completely without GEO data (should not happen with fallback).");
-                }
-
-                // === ЕТАП 2: ГЕНЕРАЦІЯ СПИСКУ ПЛАНЕТ (БЕЗПЕЧНИЙ БЛОК) ===
-                if (horoscope) {
-                    try {
-                        const planetsList = [];
-                        const bodies = horoscope.CelestialBodies;
                         
-                        ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'].forEach(key => {
-                             let body = bodies[key]; 
+                        // GENERATE 12 PLANETS (FIX: UPDATED v2.30 logic embedded here)
+                         const fullBodyKeys = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'];
+                         
+                         const bodies = horoscope.CelestialBodies;
+                         fullBodyKeys.forEach(key => {
+                             let body = bodies[key];
                              if (!body && key === 'ascendant') body = horoscope.Ascendant;
                              if (!body && key === 'midheaven') body = horoscope.Midheaven;
                              
-                             if (body) { 
-                                 const sign = body.Sign.label; 
-                                 // === UPDATED CALCULATION (Added Seconds) ===
+                             if (body) {
+                                const sign = body.Sign.label;
                                 const fullDegree = body.ChartPosition.Ecliptic.DecimalDegrees % 30;
                                 const degree = Math.floor(fullDegree);
                                 const minutesRaw = (fullDegree - degree) * 60;
                                 const minute = Math.floor(minutesRaw);
                                 const seconds = Math.round((minutesRaw - minutes) * 60);
-                                
                                 const label = key.charAt(0).toUpperCase() + key.slice(1);
-                                planetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`); // Added seconds here
+                                // Format matched to backend expectation
+                                planetsListForPdf.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`);
                              }
-                        });
+                         });
+                         
+                         // 🔥 CRITICAL SAVE: Populate for PDF
+                         userBirthData.planets = planetsListForPdf;
+                         console.log("✅ PDF Planets Saved (Full List):", userBirthData.planets);
+
+                    } catch (e) {
+                        console.error("Calculation Error:", e);
+                    }
+                } else {
+                    console.error("❌ Library not ready or date missing");
+                }
+
+                // === ЕТАП 2: ГЕНЕРАЦІЯ СПИСКУ ПЛАНЕТ (БЕЗПЕЧНИЙ БЛОК) ===
+                if (horoscope) {
+                    try {
+                        // We already calculated full planets list above for PDF.
+                        // Here we prepare the prompt text for Gemini.
                         
-                        // 🔥 ВАЖЛИВО: ЯКЩО МИ ВЖЕ МАЄМО ДАНІ В userBirthData.planets (З generateAstroDataHTML),
-                        // МИ НЕ ПЕРЕЗАПИСУЄМО ЇХ, ЯКЩО НОВИЙ СПИСОК ПОРОЖНІЙ.
-                        if (planetsList.length > 0) {
-                             userBirthData.planets = planetsList;
-                             console.log(`✅ Planets list generated in fetchFullAnalysis: ${planetsList.length} planets.`);
-                        }
-                        
-                        // Формуємо рядок для AI
-                        // V2.18: Adding precise coordinates (degrees + minutes) for better AI interpretation
-                        const precisePlanetsText = planetsList.join('\n');
+                        // Form string for AI
+                        const precisePlanetsText = planetsListForPdf.join('\n');
                         
                         astroDataString = `
                         == Технічні Астрологічні Дані (для аналізу) ==
@@ -2027,13 +2012,13 @@
                 
                 // === v2.17: Нова логіка синхронізації ===
                 
-                // === UPDATED v2.20: APPEND ASTRO DATA TO BOTTOM OF REPORT (Moved from top) ===
+                // === UPDATED v2.34: APPEND ASTRO DATA TO BOTTOM OF REPORT (Moved from top) ===
                 const astroHtml = generateAstroDataHTML();
                 
                 // Додаємо роздільник перед технічними даними
-                const separator = `<br><hr style="border-color: #333; margin: 3rem 0; opacity: 0.5;">`;
+                const separator = `<br><hr style="border-color: rgba(205, 164, 94, 0.3); margin: 2rem 0;">`;
                 
-                // Звіт (Текст) + Роздільник + Технічні Дані
+                // Звіт (Текст) + Роздільник + Технічні Дані (В КІНЦІ)
                 generatedReportData = formattedReportHTML + separator + astroHtml;
                 // =========================================================
                 
