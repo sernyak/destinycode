@@ -726,8 +726,7 @@
         </section>
     </main>
 
-    <!-- Прихований контейнер для динамічної форми WayForPay -->
-    <div id="wfp-form-container" style="display: none;"></div>
+    <!-- === ПРИБРАНО: <div id="wfp-form-container"> (Мертвий код для старої оплати) === -->
     
     <!-- === НОВЕ: Прихований контейнер для генерації SVG === -->
     <div id="chart-hidden-render"></div>
@@ -747,7 +746,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.17.8 (Data Passing Update) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.21 (Cleanup) -->
     <!-- ====================================================== -->
     <script>
         // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
@@ -853,7 +852,8 @@
             const userEmailInput = document.getElementById('user-email');
             const ltvUpsellBtn = document.getElementById('ltv-upsell-btn');
 
-            const wfpFormContainer = document.getElementById('wfp-form-container');
+            // === ПРИБРАНО: const wfpFormContainer (не використовується) ===
+            
             const chartHiddenRender = document.getElementById('chart-hidden-render'); // Елемент для рендеру SVG
             const paywallAstroDataContainer = document.getElementById('paywall-astro-data'); // STEP 5
 
@@ -877,9 +877,7 @@
             const PDF_BACKEND_URL = 'https://europe-west1-destinycode-982fa.cloudfunctions.net/createPDF'; 
             // ==================================================
             
-            const BACKEND_URL = 'https://us-central1-your-project-id.cloudfunctions.net/createWayForPaySignature'; // !! ЗАМІНИТИ КОЛИ ДОДАМО ОПЛАТУ !!
-            const MERCHANT_LOGIN = 'destinycode_online'; // !! ЗАМІНИТИ !!
-            const RETURN_URL = window.location.origin + window.location.pathname + '?payment=success'; 
+            // === ПРИБРАНО: BACKEND_URL, MERCHANT_LOGIN, RETURN_URL (не використовуються) ===
 
             let userBirthData = {
                 date: '',
