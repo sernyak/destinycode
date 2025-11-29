@@ -766,7 +766,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.29 (Fix Jumping & PDF Data) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.30 (FULL PLANETS LIST) -->
     <!-- ====================================================== -->
     <script>
         // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
@@ -1252,15 +1252,13 @@
                         origin: origin, houseSystem: "placidus", zodiac: "tropical"
                     });
 
-                    // 4. Format & PREPARE FOR PDF (Unified Logic)
+                    // 4. Format
                     const bodies = horoscope.CelestialBodies;
                     const displayList = [];
-                    const planetsListForPdf = []; // 🔥 Новий масив для гарантованого збереження
 
-                    function getFormattedPos(bodyName, label, englishLabel) { 
+                    function getFormattedPos(bodyName, label) { 
                         let body = bodies[bodyName]; 
                         if (!body && bodyName === 'ascendant') body = horoscope.Ascendant;
-                        if (!body && bodyName === 'midheaven') body = horoscope.Midheaven;
                         
                         if (body) { 
                             const sign = body.Sign.label; 
@@ -1271,14 +1269,7 @@
                             const minutes = Math.floor(minutesRaw);
                             const seconds = Math.round((minutesRaw - minutes) * 60);
                             
-                            // 1. Prepare String for PDF Backend (Format: "Name:Sign Deg Min Sec")
-                            // Використовуємо англійську назву, бо бекенд очікує англійську для ключів? 
-                            // Ні, бекенд просто показує текст до двокрапки. 
-                            // Але щоб було гарно, візьмемо англійську назву для PDF (як просив замовник в прикладі "Sun: Aries")
-                            const pdfString = `${englishLabel}:${sign} ${degree}° ${minutes}' ${seconds}"`;
-                            planetsListForPdf.push(pdfString);
-
-                            // 2. Prepare HTML for Screen
+                            // === UPDATED v2.28: TWO-LINE FORMAT MATCHING IMAGE EXACTLY ===
                             return `
                                 <div class="astro-data-item">
                                     <div class="astro-label-row">
@@ -1292,19 +1283,12 @@
                         return `<div class="astro-data-item"><strong>${label}:</strong> n/a</div>`;
                     }
 
-                    // Генеруємо і HTML, і Дані для PDF одночасно
-                    displayList.push(getFormattedPos('sun', 'Сонце', 'Sun'));
-                    displayList.push(getFormattedPos('moon', 'Місяць', 'Moon'));
-                    displayList.push(getFormattedPos('ascendant', 'ASC', 'Ascendant')); // ASC is usually kept as ASC or Ascendant
-                    displayList.push(getFormattedPos('venus', 'Венера', 'Venus'));
-                    displayList.push(getFormattedPos('mars', 'Марс', 'Mars'));
-                    displayList.push(getFormattedPos('jupiter', 'Юпітер', 'Jupiter'));
-
-                    // 🔥 ВАЖЛИВО: Зберігаємо дані в глобальний об'єкт одразу при рендері
-                    if (planetsListForPdf.length > 0) {
-                        userBirthData.planets = planetsListForPdf;
-                        console.log("✅ Planets data saved for PDF from Render:", userBirthData.planets);
-                    }
+                    displayList.push(getFormattedPos('sun', 'Сонце'));
+                    displayList.push(getFormattedPos('moon', 'Місяць'));
+                    displayList.push(getFormattedPos('ascendant', 'ASC'));
+                    displayList.push(getFormattedPos('venus', 'Венера'));
+                    displayList.push(getFormattedPos('mars', 'Марс'));
+                    displayList.push(getFormattedPos('jupiter', 'Юпітер'));
 
                     // === NEW: RENDER CHART SVG PREVIEW ===
                     let chartPreviewHtml = '';
@@ -1886,7 +1870,10 @@
                         const planetsList = [];
                         const bodies = horoscope.CelestialBodies;
                         
-                        ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'].forEach(key => {
+                        // === UPDATED v2.30: FULL PLANET LIST FOR PDF COVER (FROM DEV FILE) ===
+                        const fullBodyList = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'ascendant', 'midheaven'];
+                        
+                        fullBodyList.forEach(key => {
                              let body = bodies[key]; 
                              if (!body && key === 'ascendant') body = horoscope.Ascendant;
                              if (!body && key === 'midheaven') body = horoscope.Midheaven;
@@ -1901,19 +1888,18 @@
                                 const seconds = Math.round((minutesRaw - minutes) * 60);
                                 
                                 const label = key.charAt(0).toUpperCase() + key.slice(1);
-                                planetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`); // Added seconds here
+                                // Format: "Label:Sign D° M' S"" - Matches backend parser
+                                planetsList.push(`${label}:${sign} ${degree}° ${minute}' ${seconds}"`); 
                              }
                         });
                         
-                        // 🔥 ВАЖЛИВО: ЯКЩО МИ ВЖЕ МАЄМО ДАНІ В userBirthData.planets (З generateAstroDataHTML),
-                        // МИ НЕ ПЕРЕЗАПИСУЄМО ЇХ, ЯКЩО НОВИЙ СПИСОК ПОРОЖНІЙ.
+                        // 🔥 FORCE UPDATE: This ensures the PDF gets the FULL list, not the partial one from screen render
                         if (planetsList.length > 0) {
                              userBirthData.planets = planetsList;
-                             console.log(`✅ Planets list generated in fetchFullAnalysis: ${planetsList.length} planets.`);
+                             console.log(`✅ PDF Data Updated: Full Planets list generated (${planetsList.length} bodies).`);
                         }
                         
                         // Формуємо рядок для AI
-                        // V2.18: Adding precise coordinates (degrees + minutes) for better AI interpretation
                         const precisePlanetsText = planetsList.join('\n');
                         
                         astroDataString = `
