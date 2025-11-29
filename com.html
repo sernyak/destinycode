@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Destiny Code - Твій AI-Астролог</title>
 
     <!-- Підключення Tailwind CSS -->
@@ -80,7 +80,7 @@
 
         /* --- Контейнер Воронки (ВИПРАВЛЕНО СТРИБКИ) --- */
         .funnel-container {
-            max-width: 420px; /* Оптимально для мобільних */
+            max-width: 480px; /* Трохи ширше для комфорту */
             margin: 0 auto;   /* Центрування по горизонталі */
             display: flex;
             flex-direction: column;
@@ -88,17 +88,23 @@
             justify-content: flex-start; /* 🔥 FIX: flex-start замість center, щоб не стрибало при скролі */
             padding-top: 40px;           /* Відступ зверху для балансу */
             padding-bottom: 40px;        /* Відступ знизу */
+            position: relative;
         }
 
         .funnel-step {
             display: none; /* Всі кроки сховані */
             animation: fadeIn 0.5s ease-out; /* Плавна поява */
-            margin-top: auto; /* Ці два margin роблять вертикальне центрування */
-            margin-bottom: auto; /* коли контент короткий, але дозволяють скрол, коли довгий */
+            /* Видалено auto margins, які конфліктували зі скролом */
+            padding-bottom: 20px;
         }
 
         .funnel-step.active {
             display: block; /* Активний крок видимий */
+        }
+        
+        /* Спеціальний відступ для Paywall, щоб контент не ховався за Sticky Button */
+        #final-paywall-step {
+            padding-bottom: 140px; 
         }
 
         @keyframes fadeIn {
@@ -481,9 +487,39 @@
             100% { opacity: 0.5; }
         }
 
+        /* === NEW: Sticky Paywall Button Styles === */
+        .sticky-paywall-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 1.5rem 1.5rem 1.5rem;
+            background: linear-gradient(to top, #121212 90%, rgba(18, 18, 18, 0) 100%);
+            /* Glassmorphism background for the button container */
+            backdrop-filter: blur(8px);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Pulse glow for the main CTA */
+        .btn-pulse-glow {
+            animation: btn-glow 2s infinite;
+        }
+        
+        @keyframes btn-glow {
+            0% { box-shadow: 0 0 0 0 rgba(205, 164, 94, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(205, 164, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(205, 164, 94, 0); }
+        }
+
     </style>
 </head>
-<body class="antialiased min-h-screen flex items-center justify-center p-4">
+<!-- 🔥 FIX: Видалено 'flex items-center justify-center', що викликало стрибки при скролі.
+     Тепер body поводиться як звичайний блоковий елемент, що стабільніше на мобільних. -->
+<body class="antialiased min-h-screen bg-[#121212] p-4">
 
     <!-- Головний контейнер воронки -->
     <main class="funnel-container">
@@ -491,7 +527,7 @@
         <!-- ====================================================== -->
         <!-- КРОК 1: ЛЕНДІНГ (Збір дати народження) -->
         <!-- ====================================================== -->
-        <section id="landing-step" class="funnel-step active space-y-8 text-center">
+        <section id="landing-step" class="funnel-step active space-y-8 text-center" style="margin-top: auto; margin-bottom: auto;">
             
             <div>
                 <svg class="w-16 h-16 mx-auto" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" style="color: var(--accent-color);">
@@ -534,7 +570,7 @@
         <!-- ====================================================== -->
         <!-- КРОК 2: ЕКРАН ЗАВАНТАЖЕННЯ (Анімація набору тексту) -->
         <!-- ====================================================== -->
-        <section id="loading-step" class="funnel-step text-center space-y-6">
+        <section id="loading-step" class="funnel-step text-center space-y-6" style="margin-top: auto; margin-bottom: auto;">
             <div class="spinner"></div>
             <div id="loading-typing-container" class="typing-container">
                 <span id="loading-text"></span><span id="loading-cursor" class="typing-cursor" style="display: none;"></span>
@@ -544,7 +580,7 @@
         <!-- ====================================================== -->
         <!-- КРОК 3: РЕЗУЛЬТАТ (Безкоштовний аналіз "Ядро") -->
         <!-- ====================================================== -->
-        <section id="result-step" class="funnel-step space-y-6">
+        <section id="result-step" class="funnel-step space-y-6" style="margin-top: auto; margin-bottom: auto;">
             <h2 class="text-2xl font-bold text-center text-white" id="result-title">Аналіз твоєї особистості</h2>
             
             <div class="p-5 rounded-lg space-y-3" style="background-color: var(--card-bg-color); border: 1px solid var(--border-color);">
@@ -572,7 +608,7 @@
         <!-- ====================================================== -->
         <!-- КРОК 4: ЗБІР ЧАСУ ТА МІСЦЯ (Опціонально) -->
         <!-- ====================================================== -->
-        <section id="premium-data-step" class="funnel-step space-y-6 text-center">
+        <section id="premium-data-step" class="funnel-step space-y-6 text-center" style="margin-top: auto; margin-bottom: auto;">
              <h2 class="text-3xl font-bold text-white tracking-tight">
                 Розблокуй "Золоту Трійку"
             </h2>
@@ -653,23 +689,25 @@
                 </div>
             </div>
             
-            <div class="space-y-4 pt-4">
-                <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4">
+            <!-- 🔥 STICKY FOOTER BUTTON (NEW) 🔥 -->
+            <div class="sticky-paywall-footer">
+                <button id="final-checkout-button" class="btn btn-primary !text-lg !py-4 btn-pulse-glow shadow-2xl">
                     <span class="btn-text">
                         Розблокувати зараз за 149 грн (замість <span style="text-decoration: line-through; opacity: 0.8;">799 грн</span>)
                     </span>
                     <span class="btn-spinner"></span>
                 </button>
-                <p class="text-xs text-center" style="color: var(--secondary-text-color);">
-                    🔒 Безпечна одноразова оплата.
-                </p>
+                <div class="mt-2 flex items-center justify-center space-x-2 opacity-70">
+                    <svg class="w-3 h-3 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <span class="text-[10px] text-gray-400 uppercase tracking-widest">Secure SSL Payment</span>
+                </div>
             </div>
         </section>
         
         <!-- ====================================================== -->
         <!-- КРОК 6: СТОРІНКА УСПІХУ (ПІСЛЯ /success.html) -->
         <!-- ====================================================== -->
-        <section id="payment-success-return-step" class="funnel-step text-center space-y-6">
+        <section id="payment-success-return-step" class="funnel-step text-center space-y-6" style="margin-top: auto; margin-bottom: auto;">
             <h2 class="text-2xl font-bold" style="color: var(--accent-color);">
                 Обробка платежу...
             </h2>
@@ -682,7 +720,7 @@
         <!-- ====================================================== -->
         <!-- КРОК 7: УСПІХ + LTV АПСЕЛ (НОВИЙ) -->
         <!-- ====================================================== -->
-        <section id="success-step" class="funnel-step space-y-6">
+        <section id="success-step" class="funnel-step space-y-6" style="margin-top: auto; margin-bottom: auto;">
             
             <div id="email-capture-box" class="text-center">
                 <!-- v2.17.10: Повернули зелений колір галочці -->
