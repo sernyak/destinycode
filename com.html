@@ -759,7 +759,7 @@
     </div>
 
     <!-- ====================================================== -->
-    <!-- JAVASCRIPT ЛОГІКА v2.21 (Cleanup) -->
+    <!-- JAVASCRIPT ЛОГІКА v2.24 (Fixed Data Passing) -->
     <!-- ====================================================== -->
     <script>
         // === ЗАПАСНИЙ РОЗРАХУНОК (FALLBACK CALCULATOR) ===
@@ -1805,6 +1805,10 @@
 
             /** * v2.17: Функція генерації ПОВНОГО звіту  */
             async function fetchFullAnalysis(data, email) {
+                // === FIX v2.24: Ensure Astro Library is INIT before calculation ===
+                initAstroLibrary(); 
+                // =================================================================
+                
                 let userQuery = `Дата народження: ${data.date}.`;
                 if (data.time) userQuery += ` Час: ${data.time}.`;
                 if (data.city) userQuery += ` Місто: ${data.city}.`;
